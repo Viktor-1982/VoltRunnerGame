@@ -1882,7 +1882,9 @@
       let screenShakeTime = 0;
       let screenShakeAmp = 0;
       let hitStop = 0;
-      let bounceCombo = 0;   // { x, y, w, h, animTimer }
+      let bounceCombo = 0;
+      let overchargeGauge = 0;   // 0..10 batteries
+      let turboTimer = 0;        // Overcharge turbo mode timer   // { x, y, w, h, animTimer }
       let stalactites = [];   // { col, x, y, startY, w: 24, h: 44, vy: 0, state: 'idle'|'shake'|'falling'|'broken', shakeTimer: 0 }
       let bubbles = [];       // { x, y, vx, vy, r, life, maxLife }
       let cloudPlats = [];    // { x, y, w, h, stepped: false, shakeTimer: 0, dissolveTimer: 0, dissolved: false, respawnTimer: 0 }
@@ -2192,10 +2194,10 @@
 
         startPadObj = { x: 1.4 * TILE, y: FLOOR_Y - 64, w: 64, h: 64 };
 
-        const END_COL = 270;
-        const BOSS_ARENA_COL = 245;
+        const END_COL = 520;
+        const BOSS_ARENA_COL = 490;
 
-        // End chamber setup: Trophy at 268.5, Secret Gates at 271.2 (always visible, doors open when Trophy touched!), Solid Wall at 274
+        // End chamber setup: Trophy at 518.5, Secret Gates at 521.2 (always visible, doors open when Trophy touched!), Solid Wall at 524
         trophyObj = {
           x: (END_COL - 1.5) * TILE,
           y: FLOOR_Y - 76,
@@ -2213,18 +2215,18 @@
           open: false
         };
 
-        // Solid end ground & continuous towering brick wall (Cols 240..280)
-        addGroundSpan(240, 280);
+        // Solid end ground & continuous towering brick wall (Cols 485..530)
+        addGroundSpan(485, 530);
         for (let r = 1; r <= 24; r++) {
-          addTile(274, r, 'steel');
-          addTile(275, r, 'steel');
+          addTile(524, r, 'steel');
+          addTile(525, r, 'steel');
         }
 
         // Progressive Boss Setup across Stages 1..6 (HP scales 3 -> 6, Speed scales 105 -> 175)
         const bossHpByStage = [0, 3, 3, 4, 4, 5, 6];
         const bossSpeedByStage = [0, 105, 120, 132, 146, 160, 175];
         boss = {
-          x: 254 * TILE,
+          x: 498 * TILE,
           y: FLOOR_Y - 60,
           w: 80,
           h: 60,
@@ -2236,12 +2238,12 @@
           maxHp: bossHpByStage[stageNum] || 3,
           dead: false,
           hurtTimer: 0,
-          minX: 245 * TILE,
-          maxX: 264 * TILE,
+          minX: 490 * TILE,
+          maxX: 512 * TILE,
           isHeavy: stageNum >= 3,
           stageNum: stageNum
         };
-        addSign(245.5, 3.8, `⚠️ BOSS ARENA (${boss.maxHp} HP)! STOMP OR USE FIRE 🔥`, `⚠️ БОСС-СТРАЖ (${boss.maxHp} ХП)! ПРЫГАЙ СВЕРХУ ИЛИ СТРЕЛЯЙ 🔥`);
+        addSign(490.5, 3.8, `⚠️ BOSS ARENA (${boss.maxHp} HP)! STOMP OR USE FIRE 🔥`, `⚠️ БОСС-СТРАЖ (${boss.maxHp} ХП)! ПРЫГАЙ СВЕРХУ ИЛИ СТРЕЛЯЙ 🔥`);
         addSign(END_COL - 1.5, 3.2, '🏆 TOUCH TROPHY TO OPEN GATES', '🏆 ВОЗЬМИ КУБОК, ЧТОБЫ ОТКРЫТЬ ВРАТА');
 
         if (stageNum === 1) {
@@ -2300,16 +2302,46 @@
           enemies.push({ type: 'pig', x: 172 * TILE, y: FLOOR_Y - 36, w: 36, h: 32, vx: -95, dead: false, hitTimer: 0, state: 'walk' });
           addMarioPipe(178, 3);
 
-          // SECTION 5 (Cols 190..238): Checkpoint 2 & Springboard Star #3
+          // SECTION 5 (Cols 190..260): Checkpoint 2 & Floating Canopy Bridges
           addCheckpoint(190);
-          addGroundSpan(190, 238);
+          addGroundSpan(190, 260);
           trampolines.push({ x: 200 * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
           enemies.push({ type: 'mush', x: 210 * TILE, y: FLOOR_Y - 36, w: 32, h: 32, vx: -80, dead: false, hitTimer: 0, state: 'walk' });
-          secretStars.push({ id: 3, x: 216 * TILE, y: FLOOR_Y - 7 * TILE, w: 32, h: 32, collected: false });
           addMarioPipe(220, 2);
           enemies.push({ type: 'snail', x: 226 * TILE, y: FLOOR_Y - 32, w: 34, h: 28, vx: -55, dead: false, hitTimer: 0, state: 'walk' });
           addTile(230, 3, 'crate1', 'heart');
           addTile(232, 3, 'crate3', 'fire');
+
+          // SECTION 6 (Cols 260..370): The Great Vertical Climbing Tower (Height up to 9 tiles!)
+          addCheckpoint(260);
+          addGroundSpan(260, 310);
+          // Vertical Tower Columns & Ledges
+          for (let r = 1; r <= 8; r++) { addTile(272, r, 'brick'); addTile(288, r, 'brick'); }
+          oneWayBridges.push({ x: 273 * TILE, y: FLOOR_Y - 3 * TILE, w: 6 * TILE, h: 16 });
+          oneWayBridges.push({ x: 280 * TILE, y: FLOOR_Y - 5.5 * TILE, w: 7 * TILE, h: 16 });
+          oneWayBridges.push({ x: 274 * TILE, y: FLOOR_Y - 8 * TILE, w: 12 * TILE, h: 16 });
+          trampolines.push({ x: 270 * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          addFruitArc(275, 9.2, 5, 'kiwi');
+          enemies.push({ type: 'bird', x: 280 * TILE, y: FLOOR_Y - 8.5 * TILE, baseX: 280 * TILE, baseY: FLOOR_Y - 8.5 * TILE, w: 34, h: 30, vx: -90, dead: false, hitTimer: 0, state: 'walk' });
+          movingPlats.push({ x: 295 * TILE, y: FLOOR_Y - 3 * TILE, baseX: 295 * TILE, baseY: FLOOR_Y - 3 * TILE, w: 3 * TILE, h: 18, rangeX: 0, rangeY: 110, speed: 2.0, prevX: 295 * TILE, prevY: FLOOR_Y - 3 * TILE });
+          addGroundSpan(316, 370);
+          addMarioPipe(330, 3, true, 84, 1);
+          enemies.push({ type: 'pig', x: 344 * TILE, y: FLOOR_Y - 36, w: 36, h: 32, vx: -100, dead: false, hitTimer: 0, state: 'walk' });
+          enemies.push({ type: 'mush', x: 356 * TILE, y: FLOOR_Y - 36, w: 32, h: 32, vx: -80, dead: false, hitTimer: 0, state: 'walk' });
+
+          // SECTION 7 (Cols 370..485): Checkpoint 3 & High Speedrun Skyway to Star #3
+          addCheckpoint(370);
+          addGroundSpan(374, 420);
+          movingPlats.push({ x: 422 * TILE, y: FLOOR_Y - 2 * TILE, baseX: 422 * TILE, baseY: FLOOR_Y - 2 * TILE, w: 3 * TILE, h: 18, rangeX: 90, rangeY: 0, speed: 2.2, prevX: 422 * TILE, prevY: FLOOR_Y - 2 * TILE });
+          addGroundSpan(430, 485);
+          trampolines.push({ x: 436 * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          oneWayBridges.push({ x: 440 * TILE, y: FLOOR_Y - 6.5 * TILE, w: 18 * TILE, h: 16 });
+          secretStars.push({ id: 3, x: 448 * TILE, y: FLOOR_Y - 7.5 * TILE, w: 32, h: 32, collected: false });
+          addFruitArc(442, 7.8, 6, 'melon');
+          addMarioPipe(460, 2);
+          enemies.push({ type: 'snail', x: 468 * TILE, y: FLOOR_Y - 32, w: 34, h: 28, vx: -65, dead: false, hitTimer: 0, state: 'walk' });
+          addTile(476, 3, 'crate1', 'heart');
+          addTile(478, 3, 'crate3', 'fire');
         } else if (stageNum === 2) {
           // ===================================================================
           // WORLD 1-2: UNDERGROUND MINES (15 Living Creatures + Falling Stalactites)
@@ -2720,7 +2752,7 @@
         hero.onGround = true;
         hero.jumpsLeft = hero.maxJumps;
           bounceCombo = 0;
-        hero.invuln = 1.2;
+        hero.invuln = atCheckpoint ? 3.0 : 2.5;
         hero.appearTimer = 0.35;
         hero.disappearing = false;
         hero.disappearTimer = 0;
@@ -3046,6 +3078,21 @@
           return;
         }
 
+        // Overcharge Turbo Mechanics
+        if (turboTimer > 0) {
+          turboTimer -= dt;
+          if (Math.random() < 0.35) {
+            debris.push({
+              x: hero.x + (Math.random() - 0.5) * 12,
+              y: hero.y + (Math.random() - 0.5) * 8,
+              vx: -hero.vx * 0.25,
+              vy: (Math.random() - 0.5) * 30,
+              imgKey: 'dust',
+              frameIdx: Math.floor(Math.random() * 4),
+              life: 0.22
+            });
+          }
+        }
         if (jumpBuffer > 0) jumpBuffer -= dt;
         if (hero.invuln > 0) hero.invuln -= dt;
         if (hero.hitAnimTimer > 0) hero.hitAnimTimer -= dt;
@@ -3625,7 +3672,17 @@
             runFruits++;
             save.fruits++;
             runScore += 100;
-            sfx('fruit');
+            overchargeGauge++;
+            if (overchargeGauge >= 10) {
+              overchargeGauge = 0;
+              turboTimer = 5.0;
+              triggerScreenShake(5, 0.22);
+              sfx('powerup');
+              addPopup(hero.x, hero.y - 24, lang === 'ru' ? '⚡ ТУРБО-ПЕРЕГРУЗКА! ⚡' : '⚡ OVERCHARGE TURBO! ⚡', '#06b6d4');
+            } else {
+              sfx('fruit');
+              addPopup(f.x, f.y - 12, `+100 🔋 (${overchargeGauge}/10)`, '#38bdf8');
+            }
             updateHud();
           }
         });
@@ -3760,6 +3817,14 @@
               hero.vy = -340;
               sfx('stomp');
               addPopup(en.x, en.y - 12, I18N[lang].popShellKick, '#38bdf8');
+            } else if (turboTimer > 0 && !en.dead) {
+              en.dead = true;
+              en.hitTimer = 0.35;
+              runKills++;
+              addScore(300);
+              triggerScreenShake(4, 0.15);
+              sfx('stomp');
+              addPopup(en.x, en.y - 14, lang === 'ru' ? '⚡ ТУРБО-УДАР!' : '⚡ TURBO SMASH!', '#06b6d4');
             } else if (stomp) {
               hero.vy = isUnderwater ? -380 : -500;
               hero.jumpsLeft = hero.maxJumps;
@@ -4509,7 +4574,34 @@
             }
             return;
           }
-          drawSpriteFrame(f.kind, fFrame, 17, 32, 32, f.x, f.y, 38, 38, false);
+          // Animated Cyber Energy Battery (No fruits!)
+          const bob = Math.sin(clock * 5 + f.x * 0.08) * 3.5;
+          const bx = f.x + 8;
+          const by = f.y + 4 + bob;
+          ctx.save();
+          // Outer Glow
+          ctx.shadowColor = '#06b6d4';
+          ctx.shadowBlur = 8;
+          // Battery brass terminal (+)
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(bx + 7, by - 3, 6, 4);
+          // Battery main body
+          ctx.fillStyle = '#0f172a';
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.roundRect ? ctx.roundRect(bx, by, 20, 28, 4) : ctx.rect(bx, by, 20, 28);
+          ctx.fill();
+          ctx.stroke();
+          // Glowing plasma core
+          const chargeH = 8 + Math.sin(clock * 8 + f.x) * 4;
+          ctx.fillStyle = '#06b6d4';
+          ctx.fillRect(bx + 3, by + 26 - chargeH, 14, chargeH);
+          // Lightning bolt symbol ⚡
+          ctx.font = '900 12px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#fef08a';
+          ctx.fillText('⚡', bx + 4, by + 18);
+          ctx.restore();
         });
 
         // 8. Emerging Powerups (Heart & Fire Orb)
@@ -4968,6 +5060,28 @@
 
         // 11. Playable Hero (With Mario crouch, duck squish, pipe rim clipping & portal entry!)
         const blink = state !== 'celebrating' && hero.invuln > 0 && Math.floor(hero.invuln * 16) % 2 === 0;
+        // 3-Second Visual Cyber Energy Shield
+        if (hero.invuln > 0 && state === 'playing') {
+          ctx.save();
+          const shieldPulse = Math.sin(clock * 14) * 3;
+          const cx = hero.x + hero.w / 2;
+          const cy = hero.y + hero.h / 2;
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = '#0284c7';
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, hero.w * 0.72 + shieldPulse, hero.h * 0.72 + shieldPulse, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.18)';
+          ctx.fill();
+          // Floating shield countdown timer tag
+          ctx.font = '900 11.5px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#bae6fd';
+          ctx.textAlign = 'center';
+          ctx.fillText(`🛡️ ${hero.invuln.toFixed(1)}s`, cx, hero.y - 10);
+          ctx.restore();
+        }
         if (hero.appearTimer > 0) {
           drawSpriteFrame('appear', (0.35 - hero.appearTimer) * 20, 7, 96, 96, hero.x - 24, hero.y - 20, 84, 84, false);
         } else if (!blink) {
@@ -5147,7 +5261,8 @@
       function updateHud() {
         const heartsStr = '❤️'.repeat(Math.max(0, hero.hp)) + (hero.hasFire ? ' 🔥' : '') + (hero.hasDrone ? ' 🤖' : '');
         document.getElementById('hud-hp').textContent = `${heartsStr} ${Math.max(0, hero.hp)}/${hero.maxHp}`;
-        document.getElementById('hud-fruits').textContent = `🍎 ${save.fruits}`;
+        const turboTxt = turboTimer > 0 ? `⚡ TURBO ${turboTimer.toFixed(1)}s` : `🔋 ${save.fruits} (${overchargeGauge}/10)`;
+        document.getElementById('hud-fruits').textContent = turboTxt;
         const scoreEl = document.getElementById('hud-score');
         if (scoreEl) scoreEl.textContent = `🏆 ${runScore}`;
         document.getElementById('hud-stage').textContent = I18N[lang].world(currentStage);
@@ -5514,6 +5629,10 @@
         get hero() { return hero; },
         get boss() { return boss; },
         get shockwaves() { return shockwaves; },
+        get overchargeGauge() { return overchargeGauge; },
+        set overchargeGauge(v) { overchargeGauge = v; },
+        get turboTimer() { return turboTimer; },
+        set turboTimer(v) { turboTimer = v; },
         get bounceCombo() { return bounceCombo; },
         triggerScreenShake(amp, dur) { triggerScreenShake(amp, dur); },
         get inSecretRoom() { return inSecretRoom; },
