@@ -641,6 +641,17 @@
         <h2 class="title-main" id="txt-pause-title">PAUSED</h2>
         <div class="cta-row">
           <button class="cta-btn green" id="btn-resume" type="button">▶ RESUME</button>
+        <div style="margin: 12px 0 6px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 10px; width: 100%;">
+          <div style="font-size: 11px; font-weight: 800; color: #38bdf8; margin-bottom: 8px; letter-spacing: 0.5px; text-align: center;">🌌 ТЕСТ ТАЙНЫХ МИРОВ (1–6):</div>
+          <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+            <button type="button" class="cta-btn slate warp-secret-btn" data-world="1" style="padding: 6px 10px; font-size: 11px;">1. Изумруд</button>
+            <button type="button" class="cta-btn slate warp-secret-btn" data-world="2" style="padding: 6px 10px; font-size: 11px;">2. Аметист</button>
+            <button type="button" class="cta-btn slate warp-secret-btn" data-world="3" style="padding: 6px 10px; font-size: 11px;">3. Атлантида</button>
+            <button type="button" class="cta-btn slate warp-secret-btn" data-world="4" style="padding: 6px 10px; font-size: 11px;">4. Кибер</button>
+            <button type="button" class="cta-btn slate warp-secret-btn" data-world="5" style="padding: 6px 10px; font-size: 11px;">5. Магма</button>
+            <button type="button" class="cta-btn slate warp-secret-btn" data-world="6" style="padding: 6px 10px; font-size: 11px;">6. Квант</button>
+          </div>
+        </div>
           <button class="cta-btn slate" id="btn-restart" type="button">↻ RESTART STAGE</button>
           <button class="cta-btn slate" id="btn-menu" type="button">🏠 MAIN MENU</button>
         </div>
@@ -949,7 +960,6 @@
         'plant_idle', 'plant_attack', 'plant_bullet', 'plant_hit',
         'bat_fly', 'bat_hit',
         'chicken_run', 'chicken_hit',
-        'ghost_idle', 'ghost_hit',
         'rock_head_idle', 'rock_head_blink', 'rock_head_hit',
         'fan_on'
       ];
@@ -2021,7 +2031,7 @@
           // Bouncy mushroom pads and floating canopies
           trampolines.push({ x: (VAULT_START + 8) * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
           // Floating Ghost guarding secret star
-          enemies.push({ type: 'ghost', x: (VAULT_START + 16) * TILE, y: FLOOR_Y - 7 * TILE, baseX: (VAULT_START + 16) * TILE, baseY: FLOOR_Y - 7 * TILE, rangeX: 90, w: 36, h: 30, vx: -50, dead: false, hitTimer: 0 });
+          enemies.push({ type: 'bat', x: (VAULT_START + 16) * TILE, y: FLOOR_Y - 7.5 * TILE, baseX: (VAULT_START + 16) * TILE, baseY: FLOOR_Y - 7.5 * TILE, rangeX: 95, w: 40, h: 28, vx: -75, dead: false, hitTimer: 0 });
           trampolines.push({ x: (VAULT_START + 22) * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
           oneWayBridges.push({ x: (VAULT_START + 11) * TILE, y: FLOOR_Y - 4.2 * TILE, w: 6 * TILE, h: 16 });
           oneWayBridges.push({ x: (VAULT_START + 16) * TILE, y: FLOOR_Y - 7.5 * TILE, w: 5 * TILE, h: 16 });
@@ -2437,13 +2447,14 @@
           // SECTION 6 (Cols 260..370): Sweeping Aerial Canopy & Secret Cracked Wall Grotto
           addCheckpoint(260);
           addGroundSpan(260, 292);
-          // Secret Breakable Cracked Wall at Col 282 (can be smashed with Turbo, head bump, or fireballs!)
-          addTile(282, 1, 'cracked_brick');
-          addTile(282, 2, 'cracked_brick');
-          addTile(282, 3, 'cracked_brick');
-          // Secret hidden alcove behind cracked wall (big battery stash!)
-          addFruitArc(284, 1.8, 5, 'pineapple');
-          addTile(287, 2, 'crate3', 'fire');
+          // Smooth Highway - Main road is 100% unobstructed for high-speed sprint!
+          addFruitArc(280, 1.8, 5, 'pineapple');
+          // Secret Lower Alcove under the aerial bridge with breakable cracked cache!
+          addTile(286, 1, 'cracked_brick');
+          addTile(286, 2, 'cracked_brick');
+          // Hidden Treasure Cache behind cracked bricks
+          addTile(289, 2, 'crate3', 'fire');
+          addTile(290, 2, 'crate1', 'heart');
 
           // Smooth Aerial Jumping Bridges (No impossible walls!)
           trampolines.push({ x: 268 * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
@@ -2851,7 +2862,7 @@
           enemies.push({ type: 'mush', x: 262 * TILE, y: FLOOR_Y - 36, w: 32, h: 32, vx: -105, dead: false, hitTimer: 0, state: 'walk' });
           dartTraps.push({ col: 268, x: 268 * TILE, y: FLOOR_Y - 3 * TILE, dir: -1, cd: 0, maxCd: 2.0 });
           addMarioPipe(278, 2);
-          enemies.push({ type: 'ghost', x: 284 * TILE, y: FLOOR_Y - 4.5 * TILE, baseX: 284 * TILE, baseY: FLOOR_Y - 4.5 * TILE, rangeX: 90, w: 36, h: 30, vx: -60, dead: false, hitTimer: 0 });
+          enemies.push({ type: 'bat', x: 284 * TILE, y: FLOOR_Y - 4.5 * TILE, baseX: 284 * TILE, baseY: FLOOR_Y - 4.5 * TILE, rangeX: 95, w: 40, h: 28, vx: -85, dead: false, hitTimer: 0 });
 
           // SECTION 7 (Cols 292..385): Ancient Sarcophagus Gauntlet
           movingPlats.push({ x: 288 * TILE, y: FLOOR_Y - 2 * TILE, baseX: 288 * TILE, baseY: FLOOR_Y - 2 * TILE, w: 3 * TILE, h: 18, rangeX: 65, rangeY: 0, speed: 2.3, prevX: 288 * TILE, prevY: FLOOR_Y - 2 * TILE });
@@ -4134,10 +4145,7 @@
             en.x += en.vx * dt;
             en.y = en.baseY + Math.sin(clock * 4.5 + en.baseX) * 28;
             if (Math.abs(en.x - en.baseX) > 120) en.vx = -en.vx;
-          } else if (en.type === 'ghost') {
-            en.x += en.vx * dt;
-            en.y = en.baseY + Math.sin(clock * 2.5 + en.baseX) * 16;
-            if (Math.abs(en.x - en.baseX) > 100) en.vx = -en.vx;
+
           } else if (en.type === 'plant' && !en.dead) {
             en.shootCd = (en.shootCd || 2.2) - dt;
             if (en.state === 'attack') {
@@ -5340,14 +5348,7 @@
             const spr = en.dead ? 'chicken_hit' : 'chicken_run';
             const totalF = en.dead ? 5 : 14;
             drawSpriteFrame(spr, eFrame * 1.3, totalF, 32, 34, en.x - 4, en.y - 4, 44, 44, flip);
-          } else if (en.type === 'ghost') {
-            // Authentic Pixel Adventure Floating Ghost (44x30 frame)
-            const spr = en.dead ? 'ghost_hit' : 'ghost_idle';
-            const totalF = en.dead ? 5 : 10;
-            ctx.save();
-            ctx.globalAlpha = 0.85;
-            drawSpriteFrame(spr, eFrame, totalF, 44, 30, en.x - 4, en.y - 4, 46, 36, flip);
-            ctx.restore();
+
           } else if (en.type === 'jelly') {
             // Bioluminescent Abyssal Jellyfish
             drawJellyfish(en);
@@ -6308,6 +6309,34 @@
             btn.disabled = true;
             updateHud();
           }
+        });
+      });
+
+      document.querySelectorAll('.warp-secret-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const w = parseInt(btn.getAttribute('data-world'), 10) || 1;
+          hideAllModals();
+          currentStage = w;
+          buildStage(w);
+          spawnHero(false);
+          // Warp directly into this world's secret dimension!
+          inSecretRoom = true;
+          hero.x = 654 * TILE;
+          hero.y = FLOOR_Y - hero.h - 8;
+          camX = hero.x - 200;
+          state = 'playing';
+          setGameplay(true);
+          updateHud();
+          const names = {
+            1: '✨ 1. ИЗУМРУДНЫЙ ГРОТ ✨',
+            2: '✨ 2. АМЕТИСТОВЫЕ КОПИ ✨',
+            3: '✨ 3. ЗАТОНУВШАЯ АТЛАНТИДА ✨',
+            4: '✨ 4. СОЛНЕЧНАЯ КИБЕР-ЦИТАДЕЛЬ ✨',
+            5: '✨ 5. ИНФЕРНО-МАГМАТИЧЕСКИЙ СКЛЕП ✨',
+            6: '✨ 6. КВАНТОВАЯ ГИПЕР-МАТРИЦА ✨'
+          };
+          addPopup(hero.x, hero.y - 30, names[w], '#38bdf8');
+          triggerScreenShake(4, 0.2);
         });
       });
 
