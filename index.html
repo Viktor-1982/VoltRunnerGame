@@ -1931,7 +1931,7 @@
         const pipeH = 80;
         const pipeY = FLOOR_Y - pipeH;
 
-        // 1. Overworld entrance pipe (No signpost or label so it remains a true hidden secret!)
+        // 1. Overworld Entrance Pipe (lead player underground)
         const overworldEntrance = {
           col: entranceCol,
           x: pipeX,
@@ -1946,11 +1946,11 @@
         allPipes.push(overworldEntrance);
         solidBlocks.push({ x: pipeX + 2, y: pipeY, w: 48, h: pipeH, kind: 'pipe', bump: 0, hitTimer: 0 });
 
-        // 2. Secret Vault chamber isolated at Cols 320..342 (well beyond main stage end Col 280 so it NEVER blocks the road!)
-        const VAULT_START = 320;
-        const VAULT_END = 342;
+        // 2. Secret Vault Chamber isolated at Cols 650..690 (well beyond main stage end Col 520 so it NEVER blocks the road!)
+        const VAULT_START = 650;
+        const VAULT_END = 688;
         addGroundSpan(VAULT_START, VAULT_END);
-        for (let r = 1; r <= 10; r++) {
+        for (let r = 1; r <= 11; r++) {
           addTile(VAULT_START - 1, r, 'steel');
           addTile(VAULT_END + 1, r, 'steel');
         }
@@ -1981,7 +1981,7 @@
           isWarp: true,
           isExit: true,
           standTimer: 0,
-          prompt: '🚀 ВЫХОД [ВНИЗ ⬇]'
+          prompt: lang === 'ru' ? '🚀 ВЫХОД [ВНИЗ ⬇]' : '🚀 EXIT [DOWN ⬇]'
         };
         allPipes.push(vaultDeparture);
         solidBlocks.push({ x: (VAULT_END - 2) * TILE + 2, y: FLOOR_Y - 80, w: 48, h: 80, kind: 'pipe', bump: 0, hitTimer: 0 });
@@ -2004,24 +2004,128 @@
         overworldEntrance.targetPipe = vaultArrival;
         vaultDeparture.targetPipe = overworldReturn;
 
-        // Vault bonus loot & Star #1
-        secretStars.push({
-          id: starId,
-          x: (VAULT_START + 11) * TILE + 6,
-          y: FLOOR_Y - 4.5 * TILE,
-          w: 32,
-          h: 32,
-          collected: false
-        });
-        addFruitArc(VAULT_START + 5, 3.5, 4, 'pineapple');
-        addFruitArc(VAULT_START + 13, 3.5, 4, 'melon');
-        oneWayBridges.push({ x: (VAULT_START + 8) * TILE, y: FLOOR_Y - 3 * TILE, w: TILE * 6, h: 16 });
-        addTile(VAULT_START + 9, 5, 'crate3', 'fire');
-        addTile(VAULT_START + 11, 5, 'crate1', 'heart');
-        addTile(VAULT_START + 13, 5, 'crate1', 'fruits');
-        trampolines.push({ x: (VAULT_START + 6) * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
-        treasureChests.push({ x: (VAULT_START + 16) * TILE, y: FLOOR_Y - 30, w: 38, h: 30, opened: false, bounceTimer: 0 });
-        wonderFlowers.push({ x: (VAULT_START + 10) * TILE + 8, y: FLOOR_Y - 26, sung: false, animTimer: 0, color: '#f472b6' });
+        // =========================================================================
+        // UNIQUE THEMED ARCHITECTURE & RARE ARTIFACTS PER SECRET WORLD
+        // =========================================================================
+        if (currentStage === 1) {
+          // --- WORLD 1: SUNKEN EMERALD CANOPY GROTTO (Изумрудный Грот) ---
+          secretStars.push({ id: starId, x: (VAULT_START + 18) * TILE, y: FLOOR_Y - 8.5 * TILE, w: 32, h: 32, collected: false });
+          // Bouncy mushroom pads and floating canopies
+          trampolines.push({ x: (VAULT_START + 8) * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          trampolines.push({ x: (VAULT_START + 22) * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          oneWayBridges.push({ x: (VAULT_START + 11) * TILE, y: FLOOR_Y - 4.2 * TILE, w: 6 * TILE, h: 16 });
+          oneWayBridges.push({ x: (VAULT_START + 16) * TILE, y: FLOOR_Y - 7.5 * TILE, w: 5 * TILE, h: 16 });
+          oneWayBridges.push({ x: (VAULT_START + 24) * TILE, y: FLOOR_Y - 5 * TILE, w: 5 * TILE, h: 16 });
+          // Bouncy rainbow bubble drifting mid-air
+          rainbowBubbles.push({ x: (VAULT_START + 14) * TILE, baseY: FLOOR_Y - 5.5 * TILE, y: FLOOR_Y - 5.5 * TILE, r: 24, popped: false, respawnTimer: 0, phase: 0 });
+          // Singing wonder sunflower & bonus chest
+          wonderFlowers.push({ x: (VAULT_START + 13) * TILE, y: FLOOR_Y - 4.2 * TILE - 26, sung: false, animTimer: 0, color: '#4ade80' });
+          treasureChests.push({ x: (VAULT_START + 26) * TILE, y: FLOOR_Y - 5 * TILE - 30, opened: false, bounceTimer: 0 });
+          // Battery arcs
+          addFruitArc(VAULT_START + 6, 3.5, 5, 'pineapple');
+          addFruitArc(VAULT_START + 16, 8.8, 5, 'melon');
+          addFruitArc(VAULT_START + 28, 3.0, 4, 'apple');
+          addTile(VAULT_START + 12, 6, 'crate3', 'fire');
+          addTile(VAULT_START + 20, 6, 'crate1', 'heart');
+
+        } else if (currentStage === 2) {
+          // --- WORLD 2: AMETHYST CRYSTAL CAVERNS (Аметистовые Копи) ---
+          secretStars.push({ id: starId, x: (VAULT_START + 17) * TILE, y: FLOOR_Y - 7.8 * TILE, w: 32, h: 32, collected: false });
+          // Crystal pedestals and hanging stalactites
+          addTile(VAULT_START + 7, 2, 'steel');
+          addTile(VAULT_START + 8, 3, 'steel');
+          addTile(VAULT_START + 9, 4, 'steel');
+          oneWayBridges.push({ x: (VAULT_START + 12) * TILE, y: FLOOR_Y - 5.5 * TILE, w: 5 * TILE, h: 16 });
+          oneWayBridges.push({ x: (VAULT_START + 21) * TILE, y: FLOOR_Y - 5.5 * TILE, w: 6 * TILE, h: 16 });
+          trampolines.push({ x: (VAULT_START + 14) * TILE, y: FLOOR_Y - 5.5 * TILE - 38, w: 42, h: 38, animTimer: 0 });
+          // Hanging crystal stalactites that shake and fall
+          stalactites.push({ col: VAULT_START + 13, x: (VAULT_START + 13) * TILE + 8, y: FLOOR_Y - 9 * TILE, startY: FLOOR_Y - 9 * TILE, w: 24, h: 44, vy: 0, state: 'idle', shakeTimer: 0 });
+          stalactites.push({ col: VAULT_START + 20, x: (VAULT_START + 20) * TILE + 8, y: FLOOR_Y - 9 * TILE, startY: FLOOR_Y - 9 * TILE, w: 24, h: 44, vy: 0, state: 'idle', shakeTimer: 0 });
+          // Crystal chest & powerup crates
+          treasureChests.push({ x: (VAULT_START + 24) * TILE, y: FLOOR_Y - 30, opened: false, bounceTimer: 0 });
+          addFruitArc(VAULT_START + 10, 4.2, 5, 'kiwi');
+          addFruitArc(VAULT_START + 17, 8.5, 4, 'melon');
+          addFruitArc(VAULT_START + 25, 4.0, 5, 'apple');
+          addTile(VAULT_START + 16, 5, 'crate3', 'fire');
+          addTile(VAULT_START + 18, 5, 'crate1', 'heart');
+
+        } else if (currentStage === 3) {
+          // --- WORLD 3: SUNKEN ATLANTIS VAULT (Затонувшая Атлантида) ---
+          secretStars.push({ id: starId, x: (VAULT_START + 16) * TILE, y: FLOOR_Y - 8.2 * TILE, w: 32, h: 32, collected: false });
+          // Sunken pillars and buoyant water geysers
+          for (let r = 1; r <= 5; r++) {
+            addTile(VAULT_START + 10, r, 'brick');
+            addTile(VAULT_START + 22, r, 'brick');
+          }
+          oneWayBridges.push({ x: (VAULT_START + 12) * TILE, y: FLOOR_Y - 4 * TILE, w: 8 * TILE, h: 16 });
+          oneWayBridges.push({ x: (VAULT_START + 14) * TILE, y: FLOOR_Y - 7.5 * TILE, w: 5 * TILE, h: 16 });
+          // Bubble bouncy pads
+          rainbowBubbles.push({ x: (VAULT_START + 8) * TILE, baseY: FLOOR_Y - 3.5 * TILE, y: FLOOR_Y - 3.5 * TILE, r: 24, popped: false, respawnTimer: 0, phase: 1.2 });
+          rainbowBubbles.push({ x: (VAULT_START + 24) * TILE, baseY: FLOOR_Y - 3.5 * TILE, y: FLOOR_Y - 3.5 * TILE, r: 24, popped: false, respawnTimer: 0, phase: 2.5 });
+          // Ancient sunken treasure chest & helper drone
+          treasureChests.push({ x: (VAULT_START + 15) * TILE, y: FLOOR_Y - 30, opened: false, bounceTimer: 0 });
+          droneOrbs.push({ x: (VAULT_START + 16) * TILE + 8, y: FLOOR_Y - 5 * TILE, collected: false });
+          addFruitArc(VAULT_START + 6, 3.2, 5, 'pineapple');
+          addFruitArc(VAULT_START + 14, 8.5, 5, 'kiwi');
+          addFruitArc(VAULT_START + 25, 4.0, 4, 'melon');
+          addTile(VAULT_START + 14, 5, 'crate1', 'heart');
+
+        } else if (currentStage === 4) {
+          // --- WORLD 4: SOLAR CYBER FOUNDRY (Солнечная Кибер-Цитадель) ---
+          secretStars.push({ id: starId, x: (VAULT_START + 24) * TILE, y: FLOOR_Y - 6.5 * TILE, w: 32, h: 32, collected: false });
+          // High-speed cyber conveyor belts launching player
+          conveyors.push({ x: (VAULT_START + 6) * TILE, y: FLOOR_Y - 2 * TILE, w: 6 * TILE, speed: 220 });
+          addTile(VAULT_START + 6, 2, 'steel');
+          addTile(VAULT_START + 11, 2, 'steel');
+          trampolines.push({ x: (VAULT_START + 13) * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          // Security Cyber Switch & Forcefield guarding Star #1
+          cyberSwitches.push({ x: (VAULT_START + 9) * TILE, y: FLOOR_Y - 2 * TILE - 14, w: 32, h: 14, pressed: false, linkId: 'vault_gate_4' });
+          forcefields.push({ x: (VAULT_START + 22) * TILE, y: FLOOR_Y - 7.5 * TILE, w: 16, h: 4.5 * TILE, active: true, linkId: 'vault_gate_4', animTimer: 0 });
+          oneWayBridges.push({ x: (VAULT_START + 17) * TILE, y: FLOOR_Y - 5.5 * TILE, w: 8 * TILE, h: 16 });
+          treasureChests.push({ x: (VAULT_START + 25) * TILE, y: FLOOR_Y - 30, opened: false, bounceTimer: 0 });
+          droneOrbs.push({ x: (VAULT_START + 19) * TILE, y: FLOOR_Y - 7 * TILE, collected: false });
+          addFruitArc(VAULT_START + 7, 3.2, 5, 'apple');
+          addFruitArc(VAULT_START + 15, 6.2, 5, 'melon');
+          addTile(VAULT_START + 18, 6.5, 'crate3', 'fire');
+
+        } else if (currentStage === 5) {
+          // --- WORLD 5: VOLCANIC MAGMA CHAMBER (Инферно-Магматический Склеп) ---
+          secretStars.push({ id: starId, x: (VAULT_START + 18) * TILE, y: FLOOR_Y - 8.2 * TILE, w: 32, h: 32, collected: false });
+          // Basalt columns, rotating firebar hazard, and breakable cracked wall
+          addTile(VAULT_START + 8, 1, 'cracked_brick');
+          addTile(VAULT_START + 8, 2, 'cracked_brick');
+          addTile(VAULT_START + 8, 3, 'cracked_brick');
+          // Hidden chamber inside cracked wall
+          addFruitArc(VAULT_START + 10, 2.2, 4, 'pineapple');
+          addTile(VAULT_START + 12, 2, 'crate3', 'fire');
+          // Rotating central firebar challenge
+          firebars.push({ cx: (VAULT_START + 18) * TILE, cy: FLOOR_Y - 4.5 * TILE, angle: 0, speed: 2.2, len: 4 });
+          oneWayBridges.push({ x: (VAULT_START + 14) * TILE, y: FLOOR_Y - 6.5 * TILE, w: 8 * TILE, h: 16 });
+          trampolines.push({ x: (VAULT_START + 16) * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          treasureChests.push({ x: (VAULT_START + 26) * TILE, y: FLOOR_Y - 30, opened: false, bounceTimer: 0 });
+          addFruitArc(VAULT_START + 15, 8.8, 5, 'kiwi');
+          addTile(VAULT_START + 17, 7.5, 'crate1', 'heart');
+
+        } else {
+          // --- WORLD 6: QUANTUM HYPER-GRID MATRIX (Квантовая Гипер-Матрица) ---
+          secretStars.push({ id: starId, x: (VAULT_START + 19) * TILE, y: FLOOR_Y - 9.5 * TILE, w: 32, h: 32, collected: false });
+          // Futuristic anti-gravity bounce pads & ascending cyber staircase
+          trampolines.push({ x: (VAULT_START + 7) * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          trampolines.push({ x: (VAULT_START + 24) * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          addTile(VAULT_START + 11, 3, 'steel');
+          addTile(VAULT_START + 13, 5, 'steel');
+          addTile(VAULT_START + 15, 7, 'steel');
+          oneWayBridges.push({ x: (VAULT_START + 17) * TILE, y: FLOOR_Y - 8.5 * TILE, w: 5 * TILE, h: 16 });
+          rainbowBubbles.push({ x: (VAULT_START + 19) * TILE, baseY: FLOOR_Y - 5.5 * TILE, y: FLOOR_Y - 5.5 * TILE, r: 24, popped: false, respawnTimer: 0, phase: 0.5 });
+          // Double supply chests & helper drone
+          treasureChests.push({ x: (VAULT_START + 12) * TILE, y: FLOOR_Y - 3 * TILE - 30, opened: false, bounceTimer: 0 });
+          treasureChests.push({ x: (VAULT_START + 26) * TILE, y: FLOOR_Y - 30, opened: false, bounceTimer: 0 });
+          droneOrbs.push({ x: (VAULT_START + 18) * TILE, y: FLOOR_Y - 4 * TILE, collected: false });
+          addFruitArc(VAULT_START + 8, 4.0, 5, 'melon');
+          addFruitArc(VAULT_START + 17, 9.8, 5, 'pineapple');
+          addTile(VAULT_START + 14, 6, 'crate3', 'fire');
+          addTile(VAULT_START + 20, 6, 'crate1', 'heart');
+        }
       }
 
       function addMarioPipe(col, hBlocks = 2, isWarp = false, warpTargetCol = null, starId = null) {
@@ -2312,19 +2416,28 @@
           addTile(230, 3, 'crate1', 'heart');
           addTile(232, 3, 'crate3', 'fire');
 
-          // SECTION 6 (Cols 260..370): The Great Vertical Climbing Tower (Height up to 9 tiles!)
+          // SECTION 6 (Cols 260..370): Sweeping Aerial Canopy & Secret Cracked Wall Grotto
           addCheckpoint(260);
-          addGroundSpan(260, 310);
-          // Vertical Tower Columns & Ledges
-          for (let r = 1; r <= 8; r++) { addTile(272, r, 'brick'); addTile(288, r, 'brick'); }
-          oneWayBridges.push({ x: 273 * TILE, y: FLOOR_Y - 3 * TILE, w: 6 * TILE, h: 16 });
-          oneWayBridges.push({ x: 280 * TILE, y: FLOOR_Y - 5.5 * TILE, w: 7 * TILE, h: 16 });
-          oneWayBridges.push({ x: 274 * TILE, y: FLOOR_Y - 8 * TILE, w: 12 * TILE, h: 16 });
-          trampolines.push({ x: 270 * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
-          addFruitArc(275, 9.2, 5, 'kiwi');
-          enemies.push({ type: 'bird', x: 280 * TILE, y: FLOOR_Y - 8.5 * TILE, baseX: 280 * TILE, baseY: FLOOR_Y - 8.5 * TILE, w: 34, h: 30, vx: -90, dead: false, hitTimer: 0, state: 'walk' });
-          movingPlats.push({ x: 295 * TILE, y: FLOOR_Y - 3 * TILE, baseX: 295 * TILE, baseY: FLOOR_Y - 3 * TILE, w: 3 * TILE, h: 18, rangeX: 0, rangeY: 110, speed: 2.0, prevX: 295 * TILE, prevY: FLOOR_Y - 3 * TILE });
-          addGroundSpan(316, 370);
+          addGroundSpan(260, 292);
+          // Secret Breakable Cracked Wall at Col 282 (can be smashed with Turbo, head bump, or fireballs!)
+          addTile(282, 1, 'cracked_brick');
+          addTile(282, 2, 'cracked_brick');
+          addTile(282, 3, 'cracked_brick');
+          // Secret hidden alcove behind cracked wall (big battery stash!)
+          addFruitArc(284, 1.8, 5, 'pineapple');
+          addTile(287, 2, 'crate3', 'fire');
+
+          // Smooth Aerial Jumping Bridges (No impossible walls!)
+          trampolines.push({ x: 268 * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          oneWayBridges.push({ x: 272 * TILE, y: FLOOR_Y - 3.8 * TILE, w: 6 * TILE, h: 16 });
+          oneWayBridges.push({ x: 280 * TILE, y: FLOOR_Y - 6.2 * TILE, w: 7 * TILE, h: 16 });
+          oneWayBridges.push({ x: 289 * TILE, y: FLOOR_Y - 4.5 * TILE, w: 6 * TILE, h: 16 });
+          addFruitArc(281, 7.5, 5, 'kiwi');
+          enemies.push({ type: 'bird', x: 284 * TILE, y: FLOOR_Y - 7.5 * TILE, baseX: 284 * TILE, baseY: FLOOR_Y - 7.5 * TILE, w: 34, h: 30, vx: -85, dead: false, hitTimer: 0, state: 'walk' });
+
+          // Smooth horizontal elevator bridging the chasm into Section 6b
+          movingPlats.push({ x: 295 * TILE, y: FLOOR_Y - 2.2 * TILE, baseX: 295 * TILE, baseY: FLOOR_Y - 2.2 * TILE, w: 3.5 * TILE, h: 18, rangeX: 75, rangeY: 0, speed: 2.2, prevX: 295 * TILE, prevY: FLOOR_Y - 2.2 * TILE });
+          addGroundSpan(305, 370);
           addMarioPipe(330, 3, true, 84, 1);
           enemies.push({ type: 'pig', x: 344 * TILE, y: FLOOR_Y - 36, w: 36, h: 32, vx: -100, dead: false, hitTimer: 0, state: 'walk' });
           enemies.push({ type: 'mush', x: 356 * TILE, y: FLOOR_Y - 36, w: 32, h: 32, vx: -80, dead: false, hitTimer: 0, state: 'walk' });
@@ -2351,6 +2464,12 @@
           for (let c = 10; c <= 32; c++) addTile(c, 5.5, 'steel');
           addTile(6, 3, 'crate1', 'heart');
           addTile(8, 3, 'crate3', 'fire');
+          addFruitArc(18, 2.5, 4, 'apple');
+          addFruitArc(60, 3.0, 5, 'melon');
+          addFruitArc(142, 3.5, 4, 'apple');
+          addFruitArc(212, 3.2, 5, 'kiwi');
+          addFruitArc(285, 3.5, 5, 'melon');
+          addFruitArc(360, 3.2, 5, 'apple');
           [16, 24].forEach((col) => {
             stalactites.push({ col, x: col * TILE + 8, y: FLOOR_Y - 5.5 * TILE + 32, startY: FLOOR_Y - 5.5 * TILE + 32, w: 24, h: 44, vy: 0, state: 'idle', shakeTimer: 0 });
           });
@@ -2422,6 +2541,12 @@
           addGroundSpan(0, 36);
           addFruitArc(5, 2, 4, 'pineapple');
           addTile(9, 3, 'crate1', 'heart');
+          addFruitArc(22, 3.0, 4, 'pineapple');
+          addFruitArc(102, 3.5, 5, 'melon');
+          addFruitArc(150, 3.2, 4, 'pineapple');
+          addFruitArc(215, 3.5, 5, 'apple');
+          addFruitArc(285, 3.8, 5, 'pineapple');
+          addFruitArc(365, 3.2, 5, 'melon');
           addTile(11, 3, 'crate3', 'fire');
           addMarioPipe(14, 1);
           enemies.push({ type: 'mush', x: 18 * TILE, y: FLOOR_Y - 36, w: 32, h: 32, vx: -65, dead: false, hitTimer: 0, state: 'walk' });
@@ -2791,6 +2916,7 @@
       function breakCrateOrBrick(b) {
         sfx('box');
         const isBox3 = b.kind === 'crate3';
+        const isCracked = b.kind === 'cracked_brick';
         const breakKey = isBox3 ? 'box3_break' : 'box1_break';
         const vels = [[-130, -340], [130, -340], [-95, -200], [95, -200]];
         vels.forEach(([vx, vy], idx) => {
@@ -2882,6 +3008,12 @@
           const b = solidBlocks[i];
           if (b.x > ent.x + ent.w + 56 || b.x + b.w < ent.x - 56) continue;
           if (overlap(ent, b)) {
+            if (ent === hero && turboTimer > 0 && b.kind === 'cracked_brick') {
+              breakCrateOrBrick(b);
+              triggerScreenShake(6, 0.22);
+              addPopup(b.x, b.y - 14, lang === 'ru' ? '⚡ СТЕНА ПРОБИТА! +300' : '⚡ WALL SMASHED! +300', '#38bdf8');
+              continue;
+            }
             if (ent.vx > 0) {
               ent.x = b.x - ent.w;
               ent.vx = isEnemy ? -Math.abs(ent.vx) : 0;
@@ -3079,19 +3211,39 @@
         }
 
         // Overcharge Turbo Mechanics
+        if (!hero.trail) hero.trail = [];
         if (turboTimer > 0) {
           turboTimer -= dt;
-          if (Math.random() < 0.35) {
-            debris.push({
-              x: hero.x + (Math.random() - 0.5) * 12,
-              y: hero.y + (Math.random() - 0.5) * 8,
-              vx: -hero.vx * 0.25,
-              vy: (Math.random() - 0.5) * 30,
-              imgKey: 'dust',
-              frameIdx: Math.floor(Math.random() * 4),
-              life: 0.22
+          // Record ghost afterimage trail positions
+          if (Math.abs(hero.vx) > 30 || Math.abs(hero.vy) > 30) {
+            hero.trail.unshift({
+              x: hero.x,
+              y: hero.y,
+              dir: hero.dir,
+              squat: hero.squat,
+              alpha: 0.75
             });
+            if (hero.trail.length > 7) hero.trail.pop();
           }
+        } else if (hero.trail && hero.trail.length > 0) {
+          hero.trail.shift();
+        }
+        if (hero.trail) {
+          for (let i = hero.trail.length - 1; i >= 0; i--) {
+            hero.trail[i].alpha -= dt * 3.5;
+            if (hero.trail[i].alpha <= 0) hero.trail.splice(i, 1);
+          }
+        }
+        if (turboTimer > 0 && Math.random() < 0.45) {
+          debris.push({
+            x: hero.x + (Math.random() - 0.5) * 12,
+            y: hero.y + (Math.random() - 0.5) * 8,
+            vx: -hero.vx * 0.25,
+            vy: (Math.random() - 0.5) * 30,
+            imgKey: 'dust',
+            frameIdx: Math.floor(Math.random() * 4),
+            life: 0.22
+          });
         }
         if (jumpBuffer > 0) jumpBuffer -= dt;
         if (hero.invuln > 0) hero.invuln -= dt;
@@ -3137,7 +3289,20 @@
               hero.onGround = true;
               pipeAnim.active = false;
               secretCooldown = 1.0;
-              addPopup(hero.x, hero.y - 14, pipeAnim.isExit ? I18N[lang].popSecretExit : I18N[lang].popSecretEnter, '#f59e0b');
+              if (pipeAnim.isExit) {
+                addPopup(hero.x, hero.y - 14, I18N[lang].popSecretExit, '#f59e0b');
+              } else {
+                const worldNames = {
+                  1: lang === 'ru' ? '✨ ТАЙНЫЙ МИР 1: ИЗУМРУДНЫЙ ГРОТ ✨' : '✨ SECRET REALM 1: EMERALD GROTTO ✨',
+                  2: lang === 'ru' ? '✨ ТАЙНЫЙ МИР 2: АМЕТИСТОВЫЕ КОПИ ✨' : '✨ SECRET REALM 2: AMETHYST CRYSTAL CAVERNS ✨',
+                  3: lang === 'ru' ? '✨ ТАЙНЫЙ МИР 3: ЗАТОНУВШАЯ АТЛАНТИДА ✨' : '✨ SECRET REALM 3: SUNKEN ATLANTIS VAULT ✨',
+                  4: lang === 'ru' ? '✨ ТАЙНЫЙ МИР 4: СОЛНЕЧНАЯ КИБЕР-ЦИТАДЕЛЬ ✨' : '✨ SECRET REALM 4: SOLAR CYBER FOUNDRY ✨',
+                  5: lang === 'ru' ? '✨ ТАЙНЫЙ МИР 5: ИНФЕРНО-МАГМАТИЧЕСКИЙ СКЛЕП ✨' : '✨ SECRET REALM 5: VOLCANIC MAGMA CHAMBER ✨',
+                  6: lang === 'ru' ? '✨ ТАЙНЫЙ МИР 6: КВАНТОВАЯ ГИПЕР-МАТРИЦА ✨' : '✨ SECRET REALM 6: QUANTUM HYPER-GRID MATRIX ✨'
+                };
+                addPopup(hero.x, hero.y - 28, worldNames[currentStage] || '✨ ТАЙНЫЙ МИР! ✨', '#38bdf8');
+                triggerScreenShake(4, 0.2);
+              }
             }
           }
 
@@ -3543,8 +3708,10 @@
 
         if (isUnderwater) {
           // World 1-3 True Underwater Swimming Physics!
-          const waterMaxSpeed = 220;
-          hero.vx += (moveDir * waterMaxSpeed - hero.vx) * Math.min(1, 9 * dt);
+          const baseWaterMax = 220;
+          const waterMaxSpeed = turboTimer > 0 ? 370 : baseWaterMax;
+          const waterAccel = turboTimer > 0 ? 22 : 9;
+          hero.vx += (moveDir * waterMaxSpeed - hero.vx) * Math.min(1, waterAccel * dt);
 
           // Buoyancy: hero floats gently, dives faster when holding DOWN
           const waterGrav = keys.down ? 750 : 380;
@@ -3553,27 +3720,28 @@
           // Upward swim stroke on jump!
           if (jumpBuffer > 0) {
             jumpBuffer = 0;
-            hero.vy = -390;
+            hero.vy = turboTimer > 0 ? -450 : -390;
             hero.onGround = false;
             hero.coyote = 0;
             sfx('swim');
             // Trailing bubble stream
-            for (let b = 0; b < 4; b++) {
+            for (let b = 0; b < (turboTimer > 0 ? 8 : 4); b++) {
               bubbles.push({
                 x: hero.x + 8 + Math.random() * 16,
                 y: hero.y + hero.h - 4,
-                vx: (Math.random() - 0.5) * 50,
-                vy: -60 - Math.random() * 60,
-                r: 2.5 + Math.random() * 3,
+                vx: (Math.random() - 0.5) * 80,
+                vy: -80 - Math.random() * 80,
+                r: 2.5 + Math.random() * 3.5,
                 life: 1.2,
                 maxLife: 1.2
               });
             }
           }
         } else {
-          // Terrestrial Platforming Physics
-          const maxSpeed = hero.squat ? 130 : 300;
-          const accel = hero.onGround ? 19 : 13;
+          // Terrestrial Platforming Physics (+63% SPEED RUSH & INSTANT HYPER-RESPONSIVENESS IN TURBO!)
+          const baseMaxSpeed = hero.squat ? 130 : 300;
+          const maxSpeed = turboTimer > 0 ? (hero.squat ? 220 : 490) : baseMaxSpeed;
+          const accel = turboTimer > 0 ? 36 : (hero.onGround ? 19 : 13);
           hero.vx += (moveDir * maxSpeed - hero.vx) * Math.min(1, accel * dt);
 
           const baseGrav = (hero.vy < 0 && keys.up) ? 1120 : 1980;
@@ -3623,8 +3791,8 @@
         });
 
         moveWithSolidTiles(hero, dt, false, false);
-        const minStageX = inSecretRoom ? (320 * TILE) : 8;
-        const maxStageX = inSecretRoom ? (342 * TILE) : (state === 'celebrating' ? portalObj.x + 48 : trophyObj.x + 16);
+        const minStageX = inSecretRoom ? (650 * TILE) : 8;
+        const maxStageX = inSecretRoom ? (675 * TILE) : (state === 'celebrating' ? portalObj.x + 48 : trophyObj.x + 16);
         if (hero.x < minStageX) {
           hero.x = minStageX;
           if (hero.vx < 0) hero.vx = 0;
@@ -3676,9 +3844,24 @@
             if (overchargeGauge >= 10) {
               overchargeGauge = 0;
               turboTimer = 5.0;
-              triggerScreenShake(5, 0.22);
               sfx('powerup');
-              addPopup(hero.x, hero.y - 24, lang === 'ru' ? '⚡ ТУРБО-ПЕРЕГРУЗКА! ⚡' : '⚡ OVERCHARGE TURBO! ⚡', '#06b6d4');
+              sfx('fire');
+              triggerScreenShake(7, 0.35);
+              addPopup(hero.x, hero.y - 26, lang === 'ru' ? '⚡ СВЕРХЗАРЯД! ТУРБО х1.6! ⚡' : '⚡ OVERCHARGE TURBO x1.6! ⚡', '#38bdf8');
+              // Electric explosion burst of cyan sparks!
+              for (let k = 0; k < 22; k++) {
+                const angle = (k / 22) * Math.PI * 2;
+                const spd = 220 + Math.random() * 160;
+                debris.push({
+                  x: hero.x + hero.w / 2,
+                  y: hero.y + hero.h / 2,
+                  vx: Math.cos(angle) * spd,
+                  vy: Math.sin(angle) * spd,
+                  imgKey: 'dust',
+                  frameIdx: k % 4,
+                  life: 0.55
+                });
+              }
             } else {
               sfx('fruit');
               addPopup(f.x, f.y - 12, `+100 🔋 (${overchargeGauge}/10)`, '#38bdf8');
@@ -4086,43 +4269,278 @@
       /* =========================================================================
        * 9. AUTHENTIC PIXEL ADVENTURE SPRITE RENDERER
        * ========================================================================= */
-      function drawTiledBackground(vw) {
-        if (inSecretRoom) {
-          ctx.fillStyle = '#0b0f19';
+      function drawSecretWorldBackground(vw) {
+        ctx.save();
+        if (currentStage === 1) {
+          // 1. Sunken Emerald Canopy Grotto: Emerald aurora & floating luminous spores
+          const grad = ctx.createLinearGradient(0, 0, 0, VIRTUAL_H);
+          grad.addColorStop(0, '#022c22');
+          grad.addColorStop(0.55, '#064e3b');
+          grad.addColorStop(1, '#047857');
+          ctx.fillStyle = grad;
           ctx.fillRect(0, 0, vw, VIRTUAL_H);
-          ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
-          ctx.lineWidth = 1;
-          const gridOffX = Math.floor((camX * 0.3) % 44);
-          for (let x = -gridOffX; x < vw + 44; x += 44) {
+
+          // Giant bioluminescent tree silhouette arches
+          ctx.fillStyle = 'rgba(6, 78, 59, 0.45)';
+          const bOff = (camX * 0.12) % 320;
+          for (let bx = -bOff; bx <= vw + 320; bx += 160) {
+            ctx.beginPath();
+            ctx.arc(bx + 80, VIRTUAL_H, 110, Math.PI, 0);
+            ctx.fill();
+          }
+
+          // Floating luminous spores
+          for (let i = 0; i < 22; i++) {
+            const sx = (i * 73 + clock * 24) % vw;
+            const sy = (i * 47 - clock * 32 + (Math.sin(clock * 2 + i) * 30)) % VIRTUAL_H;
+            const posSy = (sy + VIRTUAL_H) % VIRTUAL_H;
+            ctx.fillStyle = (i % 2 === 0) ? '#4ade80' : '#86efac';
+            ctx.shadowColor = '#4ade80';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(sx, posSy, 2.5 + (i % 3), 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+        } else if (currentStage === 2) {
+          // 2. Amethyst Crystal Caverns: Deep violet abyss & sparkling crystal prisms
+          const grad = ctx.createLinearGradient(0, 0, 0, VIRTUAL_H);
+          grad.addColorStop(0, '#1e1035');
+          grad.addColorStop(0.6, '#3b0764');
+          grad.addColorStop(1, '#581c87');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, vw, VIRTUAL_H);
+
+          // Giant crystal shards in background
+          ctx.fillStyle = 'rgba(88, 28, 135, 0.35)';
+          const cOff = (camX * 0.1) % 260;
+          for (let cx = -cOff; cx <= vw + 260; cx += 130) {
+            ctx.beginPath();
+            ctx.moveTo(cx, VIRTUAL_H);
+            ctx.lineTo(cx + 40, VIRTUAL_H - 180);
+            ctx.lineTo(cx + 80, VIRTUAL_H);
+            ctx.closePath();
+            ctx.fill();
+          }
+
+          // Sparkling purple crystal dust
+          for (let i = 0; i < 24; i++) {
+            const cx = (i * 61 + Math.sin(clock * 1.5 + i) * 20) % vw;
+            const cy = (i * 39 + Math.cos(clock * 2.2 + i) * 25) % VIRTUAL_H;
+            ctx.fillStyle = (i % 2 === 0) ? '#c084fc' : '#e879f9';
+            ctx.shadowColor = '#c084fc';
+            ctx.shadowBlur = 10;
+            ctx.fillRect((cx + vw) % vw, (cy + VIRTUAL_H) % VIRTUAL_H, 3, 3);
+          }
+
+        } else if (currentStage === 3) {
+          // 3. Sunken Atlantis Vault: Bioluminescent cyan abyss & glowing sun shafts
+          const grad = ctx.createLinearGradient(0, 0, 0, VIRTUAL_H);
+          grad.addColorStop(0, '#020617');
+          grad.addColorStop(0.5, '#083344');
+          grad.addColorStop(1, '#0e7490');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, vw, VIRTUAL_H);
+
+          // Water surface sunbeams filtering down
+          ctx.save();
+          ctx.globalAlpha = 0.22;
+          ctx.fillStyle = '#67e8f9';
+          for (let b = 0; b < 6; b++) {
+            const bx = ((b * 160 + clock * 18) % (vw + 200)) - 100;
+            ctx.beginPath();
+            ctx.moveTo(bx, 0);
+            ctx.lineTo(bx + 70, 0);
+            ctx.lineTo(bx + 140, VIRTUAL_H);
+            ctx.lineTo(bx + 40, VIRTUAL_H);
+            ctx.closePath();
+            ctx.fill();
+          }
+          ctx.restore();
+
+          // Drifting pearl bubbles
+          for (let i = 0; i < 18; i++) {
+            const bx = (i * 83 + Math.sin(clock * 3 + i) * 16) % vw;
+            const by = (VIRTUAL_H - ((clock * 45 + i * 40) % VIRTUAL_H));
+            ctx.strokeStyle = '#a5f3fc';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc((bx + vw) % vw, by, 3.5 + (i % 3), 0, Math.PI * 2);
+            ctx.stroke();
+          }
+
+        } else if (currentStage === 4) {
+          // 4. Solar Cyber Foundry: Molten amber grid & animated circuits
+          const grad = ctx.createLinearGradient(0, 0, 0, VIRTUAL_H);
+          grad.addColorStop(0, '#451a03');
+          grad.addColorStop(0.55, '#78350f');
+          grad.addColorStop(1, '#b45309');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, vw, VIRTUAL_H);
+
+          // Digital cyber wireframe grid
+          ctx.strokeStyle = 'rgba(251, 191, 36, 0.25)';
+          ctx.lineWidth = 1.2;
+          const gOff = (camX * 0.25) % 40;
+          for (let x = -gOff; x <= vw + 40; x += 40) {
             ctx.beginPath();
             ctx.moveTo(x, 0);
             ctx.lineTo(x, VIRTUAL_H);
             ctx.stroke();
           }
-          for (let y = 0; y < VIRTUAL_H; y += 44) {
+          for (let y = 0; y < VIRTUAL_H; y += 40) {
             ctx.beginPath();
             ctx.moveTo(0, y);
             ctx.lineTo(vw, y);
             ctx.stroke();
           }
+
+          // Pulsing energy nodes
+          for (let i = 0; i < 15; i++) {
+            const ex = (i * 97) % vw;
+            const ey = (i * 63) % VIRTUAL_H;
+            ctx.fillStyle = '#fde047';
+            ctx.shadowColor = '#eab308';
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.arc(ex, ey, 3 + Math.sin(clock * 6 + i) * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+        } else if (currentStage === 5) {
+          // 5. Volcanic Magma Chamber: Fiery obsidian glow & rising embers
+          const grad = ctx.createLinearGradient(0, 0, 0, VIRTUAL_H);
+          grad.addColorStop(0, '#260707');
+          grad.addColorStop(0.5, '#450a0a');
+          grad.addColorStop(1, '#7f1d1d');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, vw, VIRTUAL_H);
+
+          // Molten lava floor reflection
+          const lavaGrad = ctx.createLinearGradient(0, VIRTUAL_H - 70, 0, VIRTUAL_H);
+          lavaGrad.addColorStop(0, 'rgba(239, 68, 68, 0)');
+          lavaGrad.addColorStop(1, 'rgba(239, 68, 68, 0.45)');
+          ctx.fillStyle = lavaGrad;
+          ctx.fillRect(0, VIRTUAL_H - 70, vw, 70);
+
+          // Rising fire embers
+          for (let i = 0; i < 28; i++) {
+            const ex = (i * 59 + Math.sin(clock * 3.5 + i) * 22) % vw;
+            const ey = (VIRTUAL_H - ((clock * 65 + i * 35) % VIRTUAL_H));
+            ctx.fillStyle = (i % 2 === 0) ? '#f97316' : '#ef4444';
+            ctx.shadowColor = '#f97316';
+            ctx.shadowBlur = 9;
+            ctx.beginPath();
+            ctx.arc((ex + vw) % vw, ey, 2 + (i % 2.5), 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+        } else {
+          // 6. Quantum Synthwave Matrix: Neon synthwave cyberspace horizon
+          const grad = ctx.createLinearGradient(0, 0, 0, VIRTUAL_H);
+          grad.addColorStop(0, '#0f051d');
+          grad.addColorStop(0.6, '#2e1065');
+          grad.addColorStop(1, '#4c1d95');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, vw, VIRTUAL_H);
+
+          // Glowing retro sun on horizon
+          const sunGrad = ctx.createRadialGradient(vw / 2, VIRTUAL_H * 0.42, 10, vw / 2, VIRTUAL_H * 0.42, 75);
+          sunGrad.addColorStop(0, '#fde047');
+          sunGrad.addColorStop(0.6, '#ec4899');
+          sunGrad.addColorStop(1, 'rgba(236, 72, 153, 0)');
+          ctx.fillStyle = sunGrad;
+          ctx.beginPath();
+          ctx.arc(vw / 2, VIRTUAL_H * 0.42, 75, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Perspective synthwave neon grid
+          ctx.strokeStyle = '#a855f7';
+          ctx.lineWidth = 1.5;
+          const pOff = (camX * 0.3) % 48;
+          for (let x = -pOff; x <= vw + 48; x += 48) {
+            ctx.beginPath();
+            ctx.moveTo(x, VIRTUAL_H * 0.48);
+            ctx.lineTo(vw / 2 + (x - vw / 2) * 2.8, VIRTUAL_H);
+            ctx.stroke();
+          }
+          for (let y = VIRTUAL_H * 0.48; y < VIRTUAL_H; y += 18) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(vw, y);
+            ctx.stroke();
+          }
+        }
+        ctx.restore();
+      }
+
+      function drawTiledBackground(vw) {
+        if (inSecretRoom) {
+          drawSecretWorldBackground(vw);
           return;
         }
 
+        // 1a. Far Horizon Atmospheric Sky Gradient
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, VIRTUAL_H);
+        if (currentStage === 3) {
+          skyGrad.addColorStop(0, '#042f2e');
+          skyGrad.addColorStop(1, '#0f172a');
+        } else if (currentStage === 5) {
+          skyGrad.addColorStop(0, '#450a0a');
+          skyGrad.addColorStop(1, '#18181b');
+        } else {
+          skyGrad.addColorStop(0, '#0f172a');
+          skyGrad.addColorStop(1, '#1e293b');
+        }
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, vw, VIRTUAL_H);
+
+        // 1b. Layer 1 Parallax: Distant Mountain / Megacity Silhouettes (Speed 0.08x)
+        ctx.save();
+        ctx.fillStyle = currentStage === 3 ? 'rgba(6, 78, 59, 0.35)' : 'rgba(30, 41, 59, 0.45)';
+        const mOff = (camX * 0.08) % 360;
+        ctx.beginPath();
+        ctx.moveTo(0, VIRTUAL_H);
+        for (let mx = -mOff; mx <= vw + 360; mx += 180) {
+          ctx.lineTo(mx + 60, VIRTUAL_H - 180);
+          ctx.lineTo(mx + 120, VIRTUAL_H - 120);
+          ctx.lineTo(mx + 180, VIRTUAL_H - 220);
+        }
+        ctx.lineTo(vw, VIRTUAL_H);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        // 1c. Layer 2 Parallax: Mid Hills & Cloud Silhouettes (Speed 0.18x)
+        ctx.save();
+        ctx.fillStyle = currentStage === 3 ? 'rgba(13, 148, 136, 0.25)' : 'rgba(51, 65, 85, 0.40)';
+        const hOff = (camX * 0.18) % 240;
+        ctx.beginPath();
+        ctx.moveTo(0, VIRTUAL_H);
+        for (let hx = -hOff; hx <= vw + 240; hx += 120) {
+          ctx.quadraticCurveTo(hx + 60, VIRTUAL_H - 110, hx + 120, VIRTUAL_H - 45);
+        }
+        ctx.lineTo(vw, VIRTUAL_H);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        // 1d. Layer 3 Parallax: Pixel Frog Themed Pattern Overlay (Speed 0.32x with subtle opacity)
         const bgKeys = ['bg_green', 'bg_yellow', 'bg_blue', 'bg_pink', 'bg_purple', 'bg_blue'];
         const key = bgKeys[(currentStage - 1) % bgKeys.length] || 'bg_green';
         const bgImg = IMG[key];
         if (bgImg && bgImg.complete && bgImg.naturalWidth) {
+          ctx.save();
+          ctx.globalAlpha = 0.55;
           const tileSize = 64;
-          const offsetX = Math.floor((camX * 0.2) % tileSize);
-          const offsetY = Math.floor((clock * 18) % tileSize);
+          const offsetX = Math.floor((camX * 0.32) % tileSize);
+          const offsetY = Math.floor((clock * 14) % tileSize);
           for (let x = -tileSize; x < vw + tileSize; x += tileSize) {
             for (let y = -tileSize; y < VIRTUAL_H + tileSize; y += tileSize) {
               ctx.drawImage(bgImg, x - offsetX, y + offsetY, tileSize, tileSize);
             }
           }
-        } else {
-          ctx.fillStyle = '#1e293b';
-          ctx.fillRect(0, 0, vw, VIRTUAL_H);
+          ctx.restore();
         }
       }
 
@@ -4291,6 +4709,22 @@
             ctx.drawImage(ter, 272, 64, 16, 16, b.x, by, b.w, b.h);
           } else if (b.kind === 'steel' && ter && ter.complete) {
             ctx.drawImage(ter, 208, 80, 32, 32, b.x, by, b.w, b.h);
+          } else if (b.kind === 'cracked_brick' && ter && ter.complete) {
+            ctx.drawImage(ter, 272, 80, 32, 32, b.x, by, b.w, b.h);
+            // Glowing cyan fissure cracks indicating secret breakable wall!
+            ctx.save();
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.8;
+            ctx.shadowColor = '#0284c7';
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.moveTo(b.x + 6, by + 4);
+            ctx.lineTo(b.x + 18, by + 18);
+            ctx.lineTo(b.x + 36, by + 14);
+            ctx.moveTo(b.x + 18, by + 18);
+            ctx.lineTo(b.x + 24, by + 38);
+            ctx.stroke();
+            ctx.restore();
           } else if (b.kind === 'gold' && ter && ter.complete) {
             ctx.drawImage(ter, 288, 144, 32, 32, b.x, by, b.w, b.h);
           } else if (b.kind === 'crate1') {
@@ -5137,6 +5571,24 @@
               ctx.stroke();
             }
 
+            // Render Neon Ghost Afterimage Trails during Overcharge Turbo!
+            if (hero.trail && hero.trail.length > 0) {
+              hero.trail.forEach((tr, idx) => {
+                if (tr.alpha <= 0) return;
+                ctx.save();
+                ctx.globalAlpha = tr.alpha * 0.55;
+                ctx.shadowColor = (idx % 2 === 0) ? '#38bdf8' : '#ec4899';
+                ctx.shadowBlur = 10;
+                const tFlip = tr.dir < 0;
+                if (tr.squat) {
+                  ctx.translate(tr.x + hero.w / 2, tr.y + hero.h);
+                  ctx.scale(1.22, 0.64);
+                  ctx.translate(-(tr.x + hero.w / 2), -(tr.y + hero.h));
+                }
+                drawSpriteFrame(sprKey, clock * 18, totalF, 32, 32, tr.x - 7, tr.y - 4, 48, 48, tFlip);
+                ctx.restore();
+              });
+            }
             drawSpriteFrame(sprKey, clock * 18, totalF, 32, 32, hero.x - 7, hero.y - 4, 48, 48, hFlip);
             ctx.restore();
 
@@ -5242,6 +5694,30 @@
         debris.forEach((d) => {
           drawSpriteFrame(d.imgKey, d.frameIdx, d.totalF || 4, d.fw || 28, d.fh || 24, d.x, d.y, d.w || 28, d.h || 24, false);
         });
+
+        // 13b. Hyper-Speed Anime Lines during Overcharge Turbo!
+        if (turboTimer > 0) {
+          ctx.save();
+          ctx.lineWidth = 2.2;
+          for (let i = 0; i < 16; i++) {
+            const ly = (i * 37 + (clock * 440)) % VIRTUAL_H;
+            const lineLen = 90 + (i * 23) % 150;
+            const lx = (i % 2 === 0) ? ((clock * 1200 + i * 90) % (vw + 240)) - 120 : vw - (((clock * 1200 + i * 90) % (vw + 240)) - 120);
+            ctx.strokeStyle = (i % 3 === 0) ? 'rgba(56, 189, 248, 0.85)' : 'rgba(255, 255, 255, 0.7)';
+            ctx.beginPath();
+            ctx.moveTo(lx, ly);
+            ctx.lineTo(lx + (hero.dir >= 0 ? -lineLen : lineLen), ly);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        // 14. Soft Ambient Vignette (Cinematic Warmth & Depth)
+        const vig = ctx.createRadialGradient(vw / 2, VIRTUAL_H / 2, vw * 0.38, vw / 2, VIRTUAL_H / 2, vw * 0.78);
+        vig.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        vig.addColorStop(1, 'rgba(15, 23, 42, 0.40)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, vw, VIRTUAL_H);
 
         // 13. Floating Score & Status Popups
         popups.forEach((pp) => {
@@ -5627,6 +6103,9 @@
       // Expose state for automated QA testing
       window._voltGame = {
         get hero() { return hero; },
+        get fruits() { return fruits; },
+        buildStage(n) { buildStage(n); },
+        startStage(c) { startStage(c); },
         get boss() { return boss; },
         get shockwaves() { return shockwaves; },
         get overchargeGauge() { return overchargeGauge; },
