@@ -944,7 +944,14 @@
         'box3_idle', 'box3_hit', 'box3_break',
         'apple', 'cherries', 'melon', 'pineapple', 'strawberry', 'collected',
         'tramp_idle', 'tramp_jump', 'saw_on', 'spikes', 'plat_brown', 'fire_on',
-        'start_idle', 'flag_out', 'flag_idle', 'flag_none', 'trophy_idle', 'trophy_press'
+        'start_idle', 'flag_out', 'flag_idle', 'flag_none', 'trophy_idle', 'trophy_press',
+        'chameleon_run', 'chameleon_attack', 'chameleon_hit',
+        'plant_idle', 'plant_attack', 'plant_bullet', 'plant_hit',
+        'bat_fly', 'bat_hit',
+        'chicken_run', 'chicken_hit',
+        'ghost_idle', 'ghost_hit',
+        'rock_head_idle', 'rock_head_blink', 'rock_head_hit',
+        'fan_on'
       ];
 
       function preloadAllImages() {
@@ -1869,7 +1876,8 @@
         disappearTimer: 0
       };
 
-      let solidBlocks = [];   // { x, y, w, h, kind: 'grass'|'brick'|'gold'|'steel'|'crate1'|'crate3', reward, bump, hitTimer, colPos }
+      let solidBlocks = [];
+        window._plantBullets = [];   // { x, y, w, h, kind: 'grass'|'brick'|'gold'|'steel'|'crate1'|'crate3', reward, bump, hitTimer, colPos }
       let oneWayBridges = []; // { x, y, w, h }
       let movingPlats = [];   // { x, y, baseX, baseY, w, h, rangeX, rangeY, speed, prevX, prevY }
       let saws = [];          // { x, y, r, baseX, rangeX, speed }
@@ -2012,6 +2020,8 @@
           secretStars.push({ id: starId, x: (VAULT_START + 18) * TILE, y: FLOOR_Y - 8.5 * TILE, w: 32, h: 32, collected: false });
           // Bouncy mushroom pads and floating canopies
           trampolines.push({ x: (VAULT_START + 8) * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          // Floating Ghost guarding secret star
+          enemies.push({ type: 'ghost', x: (VAULT_START + 16) * TILE, y: FLOOR_Y - 7 * TILE, baseX: (VAULT_START + 16) * TILE, baseY: FLOOR_Y - 7 * TILE, rangeX: 90, w: 36, h: 30, vx: -50, dead: false, hitTimer: 0 });
           trampolines.push({ x: (VAULT_START + 22) * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
           oneWayBridges.push({ x: (VAULT_START + 11) * TILE, y: FLOOR_Y - 4.2 * TILE, w: 6 * TILE, h: 16 });
           oneWayBridges.push({ x: (VAULT_START + 16) * TILE, y: FLOOR_Y - 7.5 * TILE, w: 5 * TILE, h: 16 });
@@ -2361,11 +2371,19 @@
           addTile(9, 3, 'brick');
           addTile(10, 3, 'crate3', 'fire');
           addTile(11, 3, 'brick');
+          // NEW AUTHENTIC PIXEL ADVENTURE 2 CREATURES (Right in Section 1!):
+          // 1. Carnivorous Spitting Plant on brick pedestal at Col 10
+          enemies.push({ type: 'plant', x: 10 * TILE + 2, y: FLOOR_Y - 3 * TILE - 42, w: 44, h: 42, vx: -1, dead: false, hitTimer: 0, state: 'idle', shootCd: 1.2 });
           addMarioPipe(14, 1);
+          // 2. Flying Bat swooping above Col 16
+          enemies.push({ type: 'bat', x: 16 * TILE, y: FLOOR_Y - 4.5 * TILE, baseX: 16 * TILE, baseY: FLOOR_Y - 4.5 * TILE, rangeX: 110, w: 40, h: 28, vx: -75, dead: false, hitTimer: 0 });
           enemies.push({ type: 'mush', x: 18 * TILE, y: FLOOR_Y - 36, w: 32, h: 32, vx: -65, dead: false, hitTimer: 0, state: 'walk' });
           addMarioPipe(22, 2);
+          // 3. Chameleon patrolling grass with tongue-whip attack!
+          enemies.push({ type: 'chameleon', x: 23 * TILE, y: FLOOR_Y - 38, w: 52, h: 38, vx: -65, dead: false, hitTimer: 0, state: 'walk' });
           enemies.push({ type: 'snail', x: 26 * TILE, y: FLOOR_Y - 32, w: 34, h: 28, vx: -50, dead: false, hitTimer: 0, state: 'walk' });
-          enemies.push({ type: 'mush', x: 30 * TILE, y: FLOOR_Y - 36, w: 32, h: 32, vx: -70, dead: false, hitTimer: 0, state: 'walk' });
+          // 4. Speedy Chicken running at Col 29
+          enemies.push({ type: 'chicken', x: 29 * TILE, y: FLOOR_Y - 34, w: 32, h: 34, vx: -110, dead: false, hitTimer: 0, state: 'walk' });
 
           // SECTION 2 (Cols 34..86): Stepped pyramid & Mario Warp Pipe
           // High Route A (Cols 50..66): Upper Canopy Runner Bridge with Golden Fruit Arc
@@ -3510,6 +3528,21 @@
           }
         });
 
+        // Plant Bullets Update
+        if (window._plantBullets) {
+          for (let i = window._plantBullets.length - 1; i >= 0; i--) {
+            const pb = window._plantBullets[i];
+            pb.x += pb.vx * dt;
+            pb.life -= dt;
+            if (overlap(hero, { x: pb.x, y: pb.y, w: 16, h: 16 })) {
+              hurtHero();
+              window._plantBullets.splice(i, 1);
+              continue;
+            }
+            if (pb.life <= 0) window._plantBullets.splice(i, 1);
+          }
+        }
+
         // 4. World 1-5: Dart Traps & Flying Poison Darts
         dartTraps.forEach((dtp) => {
           dtp.cd -= dt;
@@ -3929,6 +3962,60 @@
           if (en.type === 'bird') {
             en.x += en.vx * dt;
             if (Math.abs(en.x - en.baseX) > 110) en.vx = -en.vx;
+          } else if (en.type === 'bat') {
+            en.x += en.vx * dt;
+            en.y = en.baseY + Math.sin(clock * 4.5 + en.baseX) * 28;
+            if (Math.abs(en.x - en.baseX) > 120) en.vx = -en.vx;
+          } else if (en.type === 'ghost') {
+            en.x += en.vx * dt;
+            en.y = en.baseY + Math.sin(clock * 2.5 + en.baseX) * 16;
+            if (Math.abs(en.x - en.baseX) > 100) en.vx = -en.vx;
+          } else if (en.type === 'plant' && !en.dead) {
+            en.shootCd = (en.shootCd || 2.2) - dt;
+            if (en.state === 'attack') {
+              en.attackTimer -= dt;
+              if (en.attackTimer <= 0) en.state = 'idle';
+            }
+            if (en.shootCd <= 0 && Math.abs(hero.x - en.x) < 420) {
+              en.shootCd = 2.4;
+              en.state = 'attack';
+              en.attackTimer = 0.6;
+              const shootDir = hero.x < en.x ? -1 : 1;
+              en.vx = shootDir;
+              if (!window._plantBullets) window._plantBullets = [];
+              window._plantBullets.push({
+                x: shootDir < 0 ? en.x - 8 : en.x + en.w + 4,
+                y: en.y + 12,
+                vx: shootDir * 240,
+                vy: 0,
+                life: 2.2
+              });
+              sfx('fire');
+            }
+          } else if (en.type === 'chameleon' && !en.dead) {
+            if (en.state === 'attack') {
+              en.attackTimer -= dt;
+              if (en.attackTimer <= 0) {
+                en.state = 'walk';
+                en.vx = en.baseVx || -65;
+              }
+            } else {
+              const dx = (hero.x + hero.w / 2) - (en.x + en.w / 2);
+              const facingHero = (en.vx > 0 && dx > 0) || (en.vx < 0 && dx < 0);
+              if (facingHero && Math.abs(dx) < 140 && Math.abs((hero.y + hero.h / 2) - (en.y + en.h / 2)) < 36) {
+                en.state = 'attack';
+                en.attackTimer = 0.75;
+                en.baseVx = en.vx;
+                en.vx = 0;
+                sfx('stomp');
+              }
+            }
+            if (en.state !== 'attack') {
+              if (!Number.isFinite(en.vy)) en.vy = 0;
+              if (!Number.isFinite(en.y)) en.y = FLOOR_Y - en.h;
+              en.vy = Math.min(800, en.vy + 1650 * dt);
+              moveWithSolidTiles(en, dt, true, true);
+            }
           } else if (en.type === 'jelly') {
             // Underwater Electric Jellyfish: vertical sine wave bobbing & slow horizontal drift
             en.x += en.vx * dt;
@@ -5065,6 +5152,34 @@
           } else if (en.type === 'bird') {
             if (en.dead) drawSpriteFrame('bird_hit', 0, 5, 32, 32, en.x, en.y, 44, 44, flip);
             else drawSpriteFrame('bird_fly', eFrame, 9, 32, 32, en.x, en.y, 44, 44, flip);
+          } else if (en.type === 'chameleon') {
+            // Authentic Pixel Adventure Chameleon (84x38 frame)
+            const spr = en.dead ? 'chameleon_hit' : (en.state === 'attack' ? 'chameleon_attack' : 'chameleon_run');
+            const totalF = en.dead ? 5 : (en.state === 'attack' ? 10 : 8);
+            drawSpriteFrame(spr, en.state === 'attack' ? ((0.75 - (en.attackTimer || 0)) * 14) : eFrame, totalF, 84, 38, en.x - 22, en.y - 12, 78, 48, flip);
+          } else if (en.type === 'plant') {
+            // Authentic Pixel Adventure Carnivorous Plant (44x42 frame)
+            const spr = en.dead ? 'plant_hit' : (en.state === 'attack' ? 'plant_attack' : 'plant_idle');
+            const totalF = en.dead ? 5 : (en.state === 'attack' ? 8 : 11);
+            drawSpriteFrame(spr, en.state === 'attack' ? ((0.6 - (en.attackTimer || 0)) * 14) : eFrame, totalF, 44, 42, en.x - 4, en.y - 8, 48, 46, flip);
+          } else if (en.type === 'bat') {
+            // Authentic Pixel Adventure Flying Bat (46x30 frame)
+            const spr = en.dead ? 'bat_hit' : 'bat_fly';
+            const totalF = en.dead ? 5 : 7;
+            drawSpriteFrame(spr, eFrame, totalF, 46, 30, en.x - 4, en.y - 4, 48, 36, flip);
+          } else if (en.type === 'chicken') {
+            // Authentic Pixel Adventure Speedy Chicken (32x34 frame)
+            const spr = en.dead ? 'chicken_hit' : 'chicken_run';
+            const totalF = en.dead ? 5 : 14;
+            drawSpriteFrame(spr, eFrame * 1.3, totalF, 32, 34, en.x - 4, en.y - 4, 44, 44, flip);
+          } else if (en.type === 'ghost') {
+            // Authentic Pixel Adventure Floating Ghost (44x30 frame)
+            const spr = en.dead ? 'ghost_hit' : 'ghost_idle';
+            const totalF = en.dead ? 5 : 10;
+            ctx.save();
+            ctx.globalAlpha = 0.85;
+            drawSpriteFrame(spr, eFrame, totalF, 44, 30, en.x - 4, en.y - 4, 46, 36, flip);
+            ctx.restore();
           } else if (en.type === 'jelly') {
             // Bioluminescent Abyssal Jellyfish
             drawJellyfish(en);
@@ -5419,6 +5534,13 @@
           const nx = dtp.dir > 0 ? dtp.x + 24 : dtp.x + 2;
           ctx.fillRect(nx, dtp.y + 12, 6, 8);
         });
+        // 4e. Plant Spat Bullets (Pixel Adventure Plant Bullet)
+        if (window._plantBullets) {
+          window._plantBullets.forEach((pb) => {
+            drawSpriteFrame('plant_bullet', 0, 1, 16, 16, pb.x, pb.y, 16, 16, false);
+          });
+        }
+
         darts.forEach((d) => {
           ctx.fillStyle = '#a855f7';
           ctx.fillRect(d.x, d.y, d.w, d.h);
