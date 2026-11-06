@@ -4552,14 +4552,28 @@
         if (boss && !boss.dead) {
           const bFlip = boss.vx > 0;
           const key = boss.hurtTimer > 0 ? 'rino_hit' : 'rino_run';
-          // Boss Rage Aura in Phase 2 & 3
+          // Boss Rage Aura in Phase 2 & 3: Ground heat flare and rising steam (no wireframe box!)
           if (boss.hp <= Math.ceil(boss.maxHp * 0.67)) {
             ctx.save();
-            ctx.strokeStyle = boss.hp <= 1 ? '#ef4444' : '#f97316';
-            ctx.lineWidth = 2;
-            ctx.shadowColor = boss.hp <= 1 ? '#dc2626' : '#ea580c';
-            ctx.shadowBlur = 12;
-            ctx.strokeRect(boss.x - 4, boss.y - 4, boss.w + 8, boss.h + 8);
+            const flareGrad = ctx.createRadialGradient(
+              boss.x + boss.w / 2, boss.y + boss.h - 4, 10,
+              boss.x + boss.w / 2, boss.y + boss.h - 4, boss.w * 0.7
+            );
+            flareGrad.addColorStop(0, boss.hp <= 1 ? 'rgba(239, 68, 68, 0.45)' : 'rgba(249, 115, 22, 0.35)');
+            flareGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = flareGrad;
+            ctx.beginPath();
+            ctx.ellipse(boss.x + boss.w / 2, boss.y + boss.h - 4, boss.w * 0.65, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            for (let s = 0; s < 4; s++) {
+              const sparkX = boss.x + ((clock * 70 + s * 24) % boss.w);
+              const sparkY = boss.y + boss.h - ((clock * 65 + s * 20) % (boss.h + 10));
+              ctx.fillStyle = boss.hp <= 1 ? '#ef4444' : '#f59e0b';
+              ctx.beginPath();
+              ctx.arc(sparkX, sparkY, 2.5, 0, Math.PI * 2);
+              ctx.fill();
+            }
             ctx.restore();
           }
           const frames = boss.hurtTimer > 0 ? 5 : 6;
