@@ -2552,6 +2552,46 @@
           saws.push({ x: 230 * TILE, y: FLOOR_Y - 2.5 * TILE, baseX: 230 * TILE, rangeX: 50, speed: 2.3, r: 24, rot: 0 });
           addTile(234, 3, 'crate1', 'heart');
           addTile(236, 3, 'crate3', 'fire');
+
+          // SECTION 6 (Cols 240..320): Subterranean Crystal Cavern & Flying Bats
+          addGroundSpan(240, 286);
+          enemies.push({ type: 'bat', x: 248 * TILE, y: FLOOR_Y - 4.5 * TILE, baseX: 248 * TILE, baseY: FLOOR_Y - 4.5 * TILE, rangeX: 95, w: 40, h: 28, vx: -80, dead: false, hitTimer: 0 });
+          for (let c = 250; c <= 280; c++) addTile(c, 5.5, 'steel');
+          stalactites.push({ col: 256, x: 256 * TILE + 8, y: FLOOR_Y - 5.5 * TILE + 32, startY: FLOOR_Y - 5.5 * TILE + 32, w: 24, h: 44, vy: 0, state: 'idle', shakeTimer: 0 });
+          stalactites.push({ col: 272, x: 272 * TILE + 8, y: FLOOR_Y - 5.5 * TILE + 32, startY: FLOOR_Y - 5.5 * TILE + 32, w: 24, h: 44, vy: 0, state: 'idle', shakeTimer: 0 });
+          enemies.push({ type: 'chameleon', x: 265 * TILE, y: FLOOR_Y - 38, w: 52, h: 38, vx: -70, dead: false, hitTimer: 0, state: 'walk' });
+          addMarioPipe(278, 2);
+          addTile(282, 3, 'cracked_brick');
+          addTile(282, 4, 'cracked_brick');
+          addFruitArc(284, 2.5, 4, 'melon');
+
+          // SECTION 7 (Cols 292..385): Deep Geode Quarry & Acid Trenches
+          movingPlats.push({ x: 288 * TILE, y: FLOOR_Y - 2 * TILE, baseX: 288 * TILE, baseY: FLOOR_Y - 2 * TILE, w: 3 * TILE, h: 18, rangeX: 65, rangeY: 0, speed: 2.2, prevX: 288 * TILE, prevY: FLOOR_Y - 2 * TILE });
+          addGroundSpan(294, 345);
+          addCheckpoint(300);
+          enemies.push({ type: 'pig', x: 308 * TILE, y: FLOOR_Y - 36, w: 36, h: 32, vx: -110, dead: false, hitTimer: 0, state: 'walk' });
+          enemies.push({ type: 'plant', x: 320 * TILE, y: FLOOR_Y - 42, w: 44, h: 42, vx: -1, dead: false, hitTimer: 0, state: 'idle', shootCd: 1.5 });
+          trampolines.push({ x: 326 * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          oneWayBridges.push({ x: 328 * TILE, y: FLOOR_Y - 4.5 * TILE, w: 6 * TILE, h: 16 });
+          addFruitArc(330, 6.0, 5, 'kiwi');
+          enemies.push({ type: 'bat', x: 336 * TILE, y: FLOOR_Y - 5 * TILE, baseX: 336 * TILE, baseY: FLOOR_Y - 5 * TILE, rangeX: 100, w: 40, h: 28, vx: -85, dead: false, hitTimer: 0 });
+          addMarioPipe(342, 3);
+
+          // SECTION 8 (Cols 350..485): Magma Mine Core & Approach to Boss Arena
+          movingPlats.push({ x: 348 * TILE, y: FLOOR_Y - 2.5 * TILE, baseX: 348 * TILE, baseY: FLOOR_Y - 2.5 * TILE, w: 3 * TILE, h: 18, rangeX: 0, rangeY: 80, speed: 2.4, prevX: 348 * TILE, prevY: FLOOR_Y - 2.5 * TILE });
+          addGroundSpan(356, 420);
+          addCheckpoint(360);
+          enemies.push({ type: 'chicken', x: 368 * TILE, y: FLOOR_Y - 34, w: 32, h: 34, vx: -120, dead: false, hitTimer: 0, state: 'walk' });
+          enemies.push({ type: 'snail', x: 380 * TILE, y: FLOOR_Y - 32, w: 34, h: 28, vx: -65, dead: false, hitTimer: 0, state: 'walk' });
+          saws.push({ x: 395 * TILE, y: FLOOR_Y - 2.5 * TILE, baseX: 395 * TILE, rangeX: 60, speed: 2.5, r: 26, rot: 0 });
+          addTile(404, 3, 'crate1', 'heart');
+          addTile(406, 3, 'crate3', 'fire');
+          addGroundSpan(426, 485);
+          trampolines.push({ x: 422 * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          enemies.push({ type: 'chameleon', x: 435 * TILE, y: FLOOR_Y - 38, w: 52, h: 38, vx: -75, dead: false, hitTimer: 0, state: 'walk' });
+          enemies.push({ type: 'bat', x: 450 * TILE, y: FLOOR_Y - 4.5 * TILE, baseX: 450 * TILE, baseY: FLOOR_Y - 4.5 * TILE, rangeX: 110, w: 40, h: 28, vx: -90, dead: false, hitTimer: 0 });
+          enemies.push({ type: 'pig', x: 466 * TILE, y: FLOOR_Y - 36, w: 36, h: 32, vx: -115, dead: false, hitTimer: 0, state: 'walk' });
+          addFruitArc(470, 2.5, 5, 'melon');
         } else if (stageNum === 3) {
           // ===================================================================
           // WORLD 1-3: UNDERWATER ABYSS (18 Living Creatures — Jellyfish, Fish, Sea Snails & Crabs!)
@@ -2613,6 +2653,36 @@
           enemies.push({ type: 'snail', x: 230 * TILE, y: FLOOR_Y - 32, w: 34, h: 28, vx: -50, dead: false, hitTimer: 0, state: 'walk' });
           addTile(232, 3, 'crate1', 'heart');
           addTile(234, 3, 'crate3', 'fire');
+
+          // SECTION 6 (Cols 240..320): Abyssal Sunken Shipwreck & Coral Gardens
+          addGroundSpan(240, 285);
+          enemies.push({ type: 'fish', x: 246 * TILE, y: FLOOR_Y - 3.5 * TILE, baseX: 246 * TILE, baseY: FLOOR_Y - 3.5 * TILE, w: 36, h: 26, vx: -85, dead: false, hitTimer: 0, state: 'walk' });
+          enemies.push({ type: 'jelly', x: 258 * TILE, y: FLOOR_Y - 4.5 * TILE, baseX: 258 * TILE, baseY: FLOOR_Y - 4.5 * TILE, w: 36, h: 36, vx: -50, dead: false, hitTimer: 0, state: 'walk' });
+          oneWayBridges.push({ x: 262 * TILE, y: FLOOR_Y - 4.5 * TILE, w: 6 * TILE, h: 16 });
+          addFruitArc(264, 6.2, 5, 'pineapple');
+          addMarioPipe(275, 2);
+          enemies.push({ type: 'plant', x: 282 * TILE, y: FLOOR_Y - 42, w: 44, h: 42, vx: -1, dead: false, hitTimer: 0, state: 'idle', shootCd: 1.6 });
+
+          // SECTION 7 (Cols 290..385): Deep Ocean Trench & Current Geysers
+          addGroundSpan(290, 345);
+          addCheckpoint(295);
+          enemies.push({ type: 'fish', x: 304 * TILE, y: FLOOR_Y - 4.0 * TILE, baseX: 304 * TILE, baseY: FLOOR_Y - 4.0 * TILE, w: 36, h: 26, vx: -90, dead: false, hitTimer: 0, state: 'walk' });
+          enemies.push({ type: 'jelly', x: 318 * TILE, y: FLOOR_Y - 5.0 * TILE, baseX: 318 * TILE, baseY: FLOOR_Y - 5.0 * TILE, w: 36, h: 36, vx: -55, dead: false, hitTimer: 0, state: 'walk' });
+          rainbowBubbles.push({ x: 326 * TILE, baseY: FLOOR_Y - 4 * TILE, y: FLOOR_Y - 4 * TILE, r: 24, popped: false, respawnTimer: 0, phase: 0.8 });
+          addTile(332, 3, 'crate1', 'heart');
+          addTile(334, 3, 'crate3', 'fire');
+          addMarioPipe(340, 3);
+
+          // SECTION 8 (Cols 350..485): Sunken Citadel Gates Approach to Titan
+          addGroundSpan(352, 415);
+          addCheckpoint(358);
+          enemies.push({ type: 'fish', x: 370 * TILE, y: FLOOR_Y - 3.5 * TILE, baseX: 370 * TILE, baseY: FLOOR_Y - 3.5 * TILE, w: 36, h: 26, vx: -95, dead: false, hitTimer: 0, state: 'walk' });
+          enemies.push({ type: 'snail', x: 384 * TILE, y: FLOOR_Y - 32, w: 34, h: 28, vx: -55, dead: false, hitTimer: 0, state: 'walk' });
+          addFruitArc(395, 3.5, 5, 'melon');
+          addGroundSpan(422, 485);
+          enemies.push({ type: 'jelly', x: 436 * TILE, y: FLOOR_Y - 4.5 * TILE, baseX: 436 * TILE, baseY: FLOOR_Y - 4.5 * TILE, w: 36, h: 36, vx: -60, dead: false, hitTimer: 0, state: 'walk' });
+          enemies.push({ type: 'fish', x: 452 * TILE, y: FLOOR_Y - 4.0 * TILE, baseX: 452 * TILE, baseY: FLOOR_Y - 4.0 * TILE, w: 36, h: 26, vx: -95, dead: false, hitTimer: 0, state: 'walk' });
+          enemies.push({ type: 'plant', x: 468 * TILE, y: FLOOR_Y - 42, w: 44, h: 42, vx: -1, dead: false, hitTimer: 0, state: 'idle', shootCd: 1.8 });
         } else if (stageNum === 4) {
           // ===================================================================
           // WORLD 1-4: SKY ISLANDS (20 Living Creatures + Dissolving Clouds)
@@ -2675,6 +2745,43 @@
           secretStars.push({ id: 3, x: 226 * TILE, y: FLOOR_Y - 7 * TILE, w: 32, h: 32, collected: false });
           addMarioPipe(228, 2);
           enemies.push({ type: 'bird', x: 235 * TILE, y: FLOOR_Y - 4.5 * TILE, baseX: 235 * TILE, baseY: FLOOR_Y - 4.5 * TILE, w: 34, h: 30, vx: -115, dead: false, hitTimer: 0, state: 'walk' });
+
+          // SECTION 6 (Cols 240..320): High Cloud Archipelagos
+          const skyIsles2 = [
+            [240, 248], [256, 264], [272, 280], [290, 298], [308, 318],
+            [326, 336], [346, 356], [366, 376], [388, 398], [408, 418],
+            [428, 438], [448, 458], [466, 485]
+          ];
+          skyIsles2.forEach(([cs, ce]) => addGroundSpan(cs, ce));
+          const cloudGaps2 = [
+            [249, 255], [265, 271], [281, 289], [299, 307], [319, 325],
+            [337, 345], [357, 365], [377, 387], [399, 407], [419, 427],
+            [439, 447], [459, 465]
+          ];
+          cloudGaps2.forEach(([cs, ce]) => {
+            const w = (ce - cs + 1) * TILE;
+            cloudPlats.push({ x: cs * TILE, y: FLOOR_Y, w, h: 18, stepped: false, shakeTimer: 0, dissolveTimer: 0, dissolved: false, respawnTimer: 0 });
+          });
+          enemies.push({ type: 'bird', x: 260 * TILE, y: FLOOR_Y - 4.5 * TILE, baseX: 260 * TILE, baseY: FLOOR_Y - 4.5 * TILE, w: 34, h: 30, vx: -115, dead: false, hitTimer: 0, state: 'walk' });
+          addMarioPipe(276, 2);
+          enemies.push({ type: 'chameleon', x: 294 * TILE, y: FLOOR_Y - 38, w: 52, h: 38, vx: -75, dead: false, hitTimer: 0, state: 'walk' });
+
+          // SECTION 7 (Cols 320..400): Wind Current Skyway
+          addCheckpoint(330);
+          trampolines.push({ x: 334 * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          oneWayBridges.push({ x: 340 * TILE, y: FLOOR_Y - 5.5 * TILE, w: 8 * TILE, h: 16 });
+          addFruitArc(342, 7.0, 5, 'kiwi');
+          enemies.push({ type: 'chicken', x: 350 * TILE, y: FLOOR_Y - 34, w: 32, h: 34, vx: -125, dead: false, hitTimer: 0, state: 'walk' });
+          addMarioPipe(370, 3);
+          enemies.push({ type: 'bat', x: 382 * TILE, y: FLOOR_Y - 4.5 * TILE, baseX: 382 * TILE, baseY: FLOOR_Y - 4.5 * TILE, rangeX: 110, w: 40, h: 28, vx: -95, dead: false, hitTimer: 0 });
+
+          // SECTION 8 (Cols 400..485): Stratosphere Apex
+          addCheckpoint(410);
+          addTile(414, 3, 'crate1', 'heart');
+          addTile(416, 3, 'crate3', 'fire');
+          enemies.push({ type: 'pig', x: 432 * TILE, y: FLOOR_Y - 36, w: 36, h: 32, vx: -120, dead: false, hitTimer: 0, state: 'walk' });
+          enemies.push({ type: 'plant', x: 452 * TILE, y: FLOOR_Y - 42, w: 44, h: 42, vx: -1, dead: false, hitTimer: 0, state: 'idle', shootCd: 1.7 });
+          enemies.push({ type: 'bird', x: 472 * TILE, y: FLOOR_Y - 4.5 * TILE, baseX: 472 * TILE, baseY: FLOOR_Y - 4.5 * TILE, w: 34, h: 30, vx: -120, dead: false, hitTimer: 0, state: 'walk' });
         } else if (stageNum === 5) {
           // ===================================================================
           // WORLD 1-5: ABANDONED RUINS (23 Living Creatures + Firebars & Dart Traps)
@@ -2737,6 +2844,36 @@
           enemies.push({ type: 'snail', x: 232 * TILE, y: FLOOR_Y - 32, w: 34, h: 28, vx: -70, dead: false, hitTimer: 0, state: 'walk' });
           addTile(234, 3, 'crate1', 'heart');
           addTile(236, 3, 'crate3', 'fire');
+
+          // SECTION 6 (Cols 240..320): Catacombs Fire Chamber
+          addGroundSpan(240, 286);
+          firebars.push({ cx: 254 * TILE, cy: FLOOR_Y - 2.5 * TILE, len: 4, angle: 0, speed: 2.4 });
+          enemies.push({ type: 'mush', x: 262 * TILE, y: FLOOR_Y - 36, w: 32, h: 32, vx: -105, dead: false, hitTimer: 0, state: 'walk' });
+          dartTraps.push({ col: 268, x: 268 * TILE, y: FLOOR_Y - 3 * TILE, dir: -1, cd: 0, maxCd: 2.0 });
+          addMarioPipe(278, 2);
+          enemies.push({ type: 'ghost', x: 284 * TILE, y: FLOOR_Y - 4.5 * TILE, baseX: 284 * TILE, baseY: FLOOR_Y - 4.5 * TILE, rangeX: 90, w: 36, h: 30, vx: -60, dead: false, hitTimer: 0 });
+
+          // SECTION 7 (Cols 292..385): Ancient Sarcophagus Gauntlet
+          movingPlats.push({ x: 288 * TILE, y: FLOOR_Y - 2 * TILE, baseX: 288 * TILE, baseY: FLOOR_Y - 2 * TILE, w: 3 * TILE, h: 18, rangeX: 65, rangeY: 0, speed: 2.3, prevX: 288 * TILE, prevY: FLOOR_Y - 2 * TILE });
+          addGroundSpan(294, 345);
+          addCheckpoint(300);
+          enemies.push({ type: 'pig', x: 308 * TILE, y: FLOOR_Y - 36, w: 36, h: 32, vx: -125, dead: false, hitTimer: 0, state: 'walk' });
+          firebars.push({ cx: 318 * TILE, cy: FLOOR_Y - 2.5 * TILE, len: 4, angle: Math.PI / 2, speed: 2.5 });
+          enemies.push({ type: 'plant', x: 328 * TILE, y: FLOOR_Y - 42, w: 44, h: 42, vx: -1, dead: false, hitTimer: 0, state: 'idle', shootCd: 1.6 });
+          addMarioPipe(340, 3);
+
+          // SECTION 8 (Cols 350..485): Magma Altar Approach to Guardian
+          movingPlats.push({ x: 348 * TILE, y: FLOOR_Y - 2 * TILE, baseX: 348 * TILE, baseY: FLOOR_Y - 2 * TILE, w: 3 * TILE, h: 18, rangeX: 0, rangeY: 85, speed: 2.4, prevX: 348 * TILE, prevY: FLOOR_Y - 2 * TILE });
+          addGroundSpan(356, 420);
+          addCheckpoint(360);
+          addTile(364, 3, 'crate1', 'heart');
+          addTile(366, 3, 'crate3', 'fire');
+          enemies.push({ type: 'chicken', x: 376 * TILE, y: FLOOR_Y - 34, w: 32, h: 34, vx: -130, dead: false, hitTimer: 0, state: 'walk' });
+          firebars.push({ cx: 390 * TILE, cy: FLOOR_Y - 2.5 * TILE, len: 4, angle: 0, speed: 2.6 });
+          addGroundSpan(426, 485);
+          enemies.push({ type: 'chameleon', x: 440 * TILE, y: FLOOR_Y - 38, w: 52, h: 38, vx: -80, dead: false, hitTimer: 0, state: 'walk' });
+          enemies.push({ type: 'bat', x: 456 * TILE, y: FLOOR_Y - 4.5 * TILE, baseX: 456 * TILE, baseY: FLOOR_Y - 4.5 * TILE, rangeX: 110, w: 40, h: 28, vx: -95, dead: false, hitTimer: 0 });
+          enemies.push({ type: 'pig', x: 470 * TILE, y: FLOOR_Y - 36, w: 36, h: 32, vx: -130, dead: false, hitTimer: 0, state: 'walk' });
         } else {
           // ===================================================================
           // WORLD 1-6: CYBER CITADEL (26 Living Creatures + Lasers, Conveyors & Forcefields)
@@ -2815,6 +2952,37 @@
           enemies.push({ type: 'bird', x: 232 * TILE, y: FLOOR_Y - 4.2 * TILE, baseX: 232 * TILE, baseY: FLOOR_Y - 4.2 * TILE, w: 34, h: 30, vx: -145, dead: false, hitTimer: 0, state: 'walk' });
           addTile(234, 3, 'crate1', 'heart');
           addTile(236, 3, 'crate3', 'fire');
+
+          // SECTION 6 (Cols 240..320): High-Speed Cyber Conveyors & Laser Gauntlet
+          conveyors.push({ x: 240 * TILE, y: FLOOR_Y, w: 12 * TILE, h: TILE, speed: 160 });
+          addGroundSpan(240, 286);
+          laserGrids.push({ col: 252, x: 252 * TILE, y: FLOOR_Y - 110, w: 16, h: 110, state: 'on', timer: 0, onTime: 1.5, offTime: 1.5 });
+          enemies.push({ type: 'pig', x: 260 * TILE, y: FLOOR_Y - 36, w: 36, h: 32, vx: -145, dead: false, hitTimer: 0, state: 'walk' });
+          addMarioPipe(276, 2);
+          enemies.push({ type: 'chameleon', x: 282 * TILE, y: FLOOR_Y - 38, w: 52, h: 38, vx: -80, dead: false, hitTimer: 0, state: 'walk' });
+
+          // SECTION 7 (Cols 292..385): Terminal Gate #3 & CPU Superstructure
+          movingPlats.push({ x: 288 * TILE, y: FLOOR_Y - 2 * TILE, baseX: 288 * TILE, baseY: FLOOR_Y - 2 * TILE, w: 3 * TILE, h: 18, rangeX: 75, rangeY: 0, speed: 2.6, prevX: 288 * TILE, prevY: FLOOR_Y - 2 * TILE });
+          addGroundSpan(294, 345);
+          addCheckpoint(300);
+          addTile(304, 6, 'steel');
+          forcefields.push({ col: 304, x: 304 * TILE, y: FLOOR_Y - 220, w: 16, h: 220, switchId: 3, active: true });
+          cyberSwitches.push({ col: 298, x: 298 * TILE + 8, y: FLOOR_Y - 20, w: 28, h: 20, switchId: 3, pressed: false });
+          enemies.push({ type: 'plant', x: 320 * TILE, y: FLOOR_Y - 42, w: 44, h: 42, vx: -1, dead: false, hitTimer: 0, state: 'idle', shootCd: 1.5 });
+          addMarioPipe(338, 3);
+
+          // SECTION 8 (Cols 350..485): Apex Mainframe Core to Titan Boss
+          conveyors.push({ x: 350 * TILE, y: FLOOR_Y, w: 14 * TILE, h: TILE, speed: -150 });
+          addGroundSpan(350, 420);
+          addCheckpoint(360);
+          addTile(364, 3, 'crate1', 'heart');
+          addTile(366, 3, 'crate3', 'fire');
+          laserGrids.push({ col: 380, x: 380 * TILE, y: FLOOR_Y - 110, w: 16, h: 110, state: 'on', timer: 0.5, onTime: 1.5, offTime: 1.5 });
+          enemies.push({ type: 'chicken', x: 395 * TILE, y: FLOOR_Y - 34, w: 32, h: 34, vx: -140, dead: false, hitTimer: 0, state: 'walk' });
+          addGroundSpan(426, 485);
+          trampolines.push({ x: 422 * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
+          enemies.push({ type: 'chameleon', x: 442 * TILE, y: FLOOR_Y - 38, w: 52, h: 38, vx: -85, dead: false, hitTimer: 0, state: 'walk' });
+          enemies.push({ type: 'pig', x: 468 * TILE, y: FLOOR_Y - 36, w: 36, h: 32, vx: -150, dead: false, hitTimer: 0, state: 'walk' });
         }
 
         // ===================================================================
@@ -3825,7 +3993,7 @@
 
         moveWithSolidTiles(hero, dt, false, false);
         const minStageX = inSecretRoom ? (650 * TILE) : 8;
-        const maxStageX = inSecretRoom ? (675 * TILE) : (state === 'celebrating' ? portalObj.x + 48 : trophyObj.x + 16);
+        const maxStageX = inSecretRoom ? (688 * TILE) : (state === 'celebrating' ? portalObj.x + 48 : trophyObj.x + 16);
         if (hero.x < minStageX) {
           hero.x = minStageX;
           if (hero.vx < 0) hero.vx = 0;
