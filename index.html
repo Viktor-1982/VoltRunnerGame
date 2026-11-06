@@ -1117,6 +1117,23 @@
             g.gain.linearRampToValueAtTime(0.001, t + steps.length * stepDur + 0.02);
             osc.start(t);
             osc.stop(t + steps.length * stepDur + 0.02);
+          } else if (type === 'shockwave') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(160, t);
+            osc.frequency.exponentialRampToValueAtTime(45, t + 0.22);
+            g.gain.setValueAtTime(0.18, t);
+            g.gain.linearRampToValueAtTime(0.001, t + 0.23);
+            osc.start(t);
+            osc.stop(t + 0.23);
+          } else if (type === 'combo') {
+            osc.type = 'triangle';
+            const pitch = 440 * Math.pow(1.22, Math.min(6, (bounceCombo || 1)));
+            osc.frequency.setValueAtTime(pitch, t);
+            osc.frequency.exponentialRampToValueAtTime(pitch * 1.45, t + 0.12);
+            g.gain.setValueAtTime(0.15, t);
+            g.gain.linearRampToValueAtTime(0.001, t + 0.13);
+            osc.start(t);
+            osc.stop(t + 0.13);
           } else if (type === 'swim') {
             osc.type = 'sine';
             osc.frequency.setValueAtTime(260, t);
@@ -1856,7 +1873,16 @@
       let oneWayBridges = []; // { x, y, w, h }
       let movingPlats = [];   // { x, y, baseX, baseY, w, h, rangeX, rangeY, speed, prevX, prevY }
       let saws = [];          // { x, y, r, baseX, rangeX, speed }
-      let trampolines = [];   // { x, y, w, h, animTimer }
+      let trampolines = [];
+      function triggerScreenShake(amp = 6, dur = 0.22) {
+        screenShakeAmp = Math.max(screenShakeAmp, amp);
+        screenShakeTime = Math.max(screenShakeTime, dur);
+      }
+      let shockwaves = [];   // Boss ground shockwaves { x, y, vx, w, h, life, stageNum }
+      let screenShakeTime = 0;
+      let screenShakeAmp = 0;
+      let hitStop = 0;
+      let bounceCombo = 0;   // { x, y, w, h, animTimer }
       let stalactites = [];   // { col, x, y, startY, w: 24, h: 44, vy: 0, state: 'idle'|'shake'|'falling'|'broken', shakeTimer: 0 }
       let bubbles = [];       // { x, y, vx, vy, r, life, maxLife }
       let cloudPlats = [];    // { x, y, w, h, stepped: false, shakeTimer: 0, dissolveTimer: 0, dissolved: false, respawnTimer: 0 }
@@ -2202,6 +2228,7 @@
           y: FLOOR_Y - 60,
           w: 80,
           h: 60,
+          baseSpeed: bossSpeedByStage[stageNum] || 120,
           vx: bossSpeedByStage[stageNum] || 120,
           vy: 0,
           jumpCd: 1.8,
@@ -2235,6 +2262,10 @@
           enemies.push({ type: 'mush', x: 30 * TILE, y: FLOOR_Y - 36, w: 32, h: 32, vx: -70, dead: false, hitTimer: 0, state: 'walk' });
 
           // SECTION 2 (Cols 34..86): Stepped pyramid & Mario Warp Pipe
+          // High Route A (Cols 50..66): Upper Canopy Runner Bridge with Golden Fruit Arc
+          oneWayBridges.push({ x: 50 * TILE, y: FLOOR_Y - 6.5 * TILE, w: 16 * TILE, h: 16 });
+          addFruitArc(52, 7.8, 6, 'kiwi');
+          trampolines.push({ x: 49 * TILE, y: FLOOR_Y - 38, w: 42, h: 38, animTimer: 0 });
           addGroundSpan(34, 86);
           const pyrSteps = [1, 2, 3, 4, 3, 2, 1];
           pyrSteps.forEach((h, idx) => {
@@ -2688,6 +2719,7 @@
         hero.dir = 1;
         hero.onGround = true;
         hero.jumpsLeft = hero.maxJumps;
+          bounceCombo = 0;
         hero.invuln = 1.2;
         hero.appearTimer = 0.35;
         hero.disappearing = false;
@@ -3731,7 +3763,16 @@
             } else if (stomp) {
               hero.vy = isUnderwater ? -380 : -500;
               hero.jumpsLeft = hero.maxJumps;
-              sfx('stomp');
+              bounceCombo++;
+              triggerScreenShake(3.5, 0.12);
+              if (bounceCombo >= 2) {
+                const mult = Math.min(8, Math.pow(2, bounceCombo - 1));
+                addScore(150 * mult);
+                sfx('combo');
+                addPopup(hero.x, hero.y - 18, `🔥 COMBO x${mult}!`, '#f59e0b');
+              } else {
+                sfx('stomp');
+              }
               if (en.type === 'snail' && (en.state === 'walk' || en.state === 'shell_spin')) {
                 en.state = 'shell_idle';
                 en.vx = 0;
@@ -3758,35 +3799,54 @@
           if (!Number.isFinite(boss.vy)) boss.vy = 0;
           if (!Number.isFinite(boss.jumpCd)) boss.jumpCd = 1.8;
 
-          if (Math.abs(hero.x - boss.x) < 760) {
+          if (Math.abs(hero.x - boss.x) < 780) {
             bossBanner.style.display = 'block';
             document.getElementById('boss-name').textContent = I18N[lang].bossName(boss.isHeavy, boss.stageNum);
             document.getElementById('boss-hp-txt').textContent = I18N[lang].bossHp(boss.hp, boss.maxHp);
             document.getElementById('boss-bar-fill').style.width = `${Math.max(0, (boss.hp / boss.maxHp) * 100)}%`;
 
             if (boss.hurtTimer > 0) boss.hurtTimer -= dt;
+
+            // Multi-Phase Enrage Scaling
+            const isEnraged = boss.hp <= Math.ceil(boss.maxHp * 0.67);
+            const isDesperate = boss.hp <= 1;
+            const phaseMult = isDesperate ? 1.42 : (isEnraged ? 1.22 : 1.0);
+            const baseSpd = (boss.baseSpeed || 120) * phaseMult;
+
+            boss.vx = Math.sign(boss.vx || 1) * baseSpd;
             boss.x += boss.vx * dt;
-            if (boss.x <= boss.minX) { boss.x = boss.minX; boss.vx = Math.abs(boss.vx); }
-            if (boss.x >= boss.maxX) { boss.x = boss.maxX; boss.vx = -Math.abs(boss.vx); }
+            if (boss.x <= boss.minX) { boss.x = boss.minX; boss.vx = Math.abs(baseSpd); }
+            if (boss.x >= boss.maxX) { boss.x = boss.maxX; boss.vx = -Math.abs(baseSpd); }
 
             boss.jumpCd -= dt;
             if (boss.jumpCd <= 0 && boss.y >= FLOOR_Y - boss.h - 2) {
-              boss.vy = isUnderwater ? -420 : -530;
-              boss.jumpCd = 2.0;
+              boss.vy = isUnderwater ? -450 : (isDesperate ? -580 : -530);
+              boss.jumpCd = isDesperate ? 1.35 : (isEnraged ? 1.65 : 2.1);
             }
             boss.vy += (isUnderwater ? 920 : 1450) * dt;
             boss.y += boss.vy * dt;
             if (boss.y >= FLOOR_Y - boss.h) {
+              const prevVy = boss.vy;
               boss.y = FLOOR_Y - boss.h;
               boss.vy = 0;
+              // Ground Slam Shockwaves in Phase 2 & 3!
+              if (prevVy > 140 && isEnraged) {
+                triggerScreenShake(isDesperate ? 9 : 6.5, 0.24);
+                sfx('shockwave');
+                shockwaves.push({ x: boss.x - 14, y: FLOOR_Y - 26, vx: -210, w: 26, h: 26, life: 1.8, stageNum: boss.stageNum });
+                shockwaves.push({ x: boss.x + boss.w + 14, y: FLOOR_Y - 26, vx: 210, w: 26, h: 26, life: 1.8, stageNum: boss.stageNum });
+                addPopup(boss.x + boss.w / 2, boss.y - 18, isDesperate ? (lang === 'ru' ? '⚡ ЯРОСТНЫЙ УДАР!' : '⚡ RAGE SLAM!') : (lang === 'ru' ? '⚡ УДАР О ЗЕМЛЮ!' : '⚡ GROUND SLAM!'), '#f43f5e');
+              }
             }
 
             if (overlap(hero, boss)) {
               const stompBoss = (isUnderwater ? hero.vy >= -50 : hero.vy > 0) && (hero.y + hero.h - Math.max(0, hero.vy) * dt) <= boss.y + 34;
               if (stompBoss && boss.hurtTimer <= 0) {
                 boss.hp -= 1;
-                boss.hurtTimer = 0.55;
-                hero.vy = isUnderwater ? -420 : -550;
+                boss.hurtTimer = 0.6;
+                hero.vy = isUnderwater ? -440 : -560;
+                hitStop = 0.06;
+                triggerScreenShake(8, 0.28);
                 sfx('stomp');
                 addPopup(boss.x, boss.y - 14, I18N[lang].popBossHit(boss.hp), '#fde047');
                 if (boss.hp <= 0) {
@@ -3794,11 +3854,13 @@
                   bossBanner.style.display = 'none';
                   runKills++;
                   addScore(1500);
+                  triggerScreenShake(12, 0.45);
                   sfx('powerup');
                   addPopup(boss.x, boss.y - 20, I18N[lang].popTrophyUnlock, '#4ade80');
                 }
               } else if (boss.hurtTimer <= 0) {
                 hurtHero();
+                triggerScreenShake(6, 0.22);
               }
             }
           } else {
@@ -3806,6 +3868,21 @@
           }
         } else if (bossBanner) {
           bossBanner.style.display = 'none';
+        }
+
+        // Shockwaves Update
+        for (let i = shockwaves.length - 1; i >= 0; i--) {
+          const sw = shockwaves[i];
+          sw.life -= dt;
+          sw.x += sw.vx * dt;
+          if (sw.life <= 0) {
+            shockwaves.splice(i, 1);
+            continue;
+          }
+          if (overlap(hero, sw) && hero.invuln <= 0) {
+            hurtHero();
+            triggerScreenShake(5, 0.18);
+          }
         }
 
         // Fireballs Update
@@ -4104,7 +4181,13 @@
         // 1. Scrolling Pixel Adventure Tiled Background
         drawTiledBackground(vw);
 
-        ctx.translate(-Math.floor(camX), 0);
+        let shakeX = 0, shakeY = 0;
+        if (screenShakeTime > 0) {
+          screenShakeTime -= (1/60);
+          shakeX = (Math.random() - 0.5) * screenShakeAmp;
+          shakeY = (Math.random() - 0.5) * screenShakeAmp;
+        }
+        ctx.translate(-Math.floor(camX) + Math.round(shakeX), Math.round(shakeY));
 
         // 1b. Start Pad & Bilingual In-World Signposts
         drawSpriteFrame('start_idle', 0, 1, 64, 64, startPadObj.x, startPadObj.y, startPadObj.w, startPadObj.h, false);
@@ -4469,6 +4552,16 @@
         if (boss && !boss.dead) {
           const bFlip = boss.vx > 0;
           const key = boss.hurtTimer > 0 ? 'rino_hit' : 'rino_run';
+          // Boss Rage Aura in Phase 2 & 3
+          if (boss.hp <= Math.ceil(boss.maxHp * 0.67)) {
+            ctx.save();
+            ctx.strokeStyle = boss.hp <= 1 ? '#ef4444' : '#f97316';
+            ctx.lineWidth = 2;
+            ctx.shadowColor = boss.hp <= 1 ? '#dc2626' : '#ea580c';
+            ctx.shadowBlur = 12;
+            ctx.strokeRect(boss.x - 4, boss.y - 4, boss.w + 8, boss.h + 8);
+            ctx.restore();
+          }
           const frames = boss.hurtTimer > 0 ? 5 : 6;
           const drawW = boss.isHeavy ? 110 : 90;
           const drawH = boss.isHeavy ? 82 : 68;
@@ -4499,6 +4592,32 @@
           ctx.fill();
           ctx.restore();
         }
+
+        // 10c. Shockwaves (Boss ground slam energy)
+        shockwaves.forEach((sw) => {
+          ctx.save();
+          const pulse = Math.sin(clock * 24) * 3;
+          const dir = Math.sign(sw.vx || 1);
+          ctx.fillStyle = '#f59e0b';
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          const tipX = sw.x + (dir > 0 ? sw.w : 0) + dir * 6;
+          const backX = sw.x + (dir > 0 ? 0 : sw.w);
+          ctx.moveTo(tipX, sw.y + sw.h / 2);
+          ctx.lineTo(backX, sw.y - pulse);
+          ctx.lineTo(backX + (dir > 0 ? 6 : -6), sw.y + sw.h / 2);
+          ctx.lineTo(backX, sw.y + sw.h + pulse);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          // Outer plasma glow
+          ctx.fillStyle = 'rgba(239, 68, 68, 0.32)';
+          ctx.beginPath();
+          ctx.arc(sw.x + sw.w / 2, sw.y + sw.h / 2, 16 + pulse, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
 
         // 10b. Draw World-Exclusive Hazards & Fairy-Tale Interactive Features
         // Musical Wonder Flowers
@@ -5379,6 +5498,10 @@
       // Expose state for automated QA testing
       window._voltGame = {
         get hero() { return hero; },
+        get boss() { return boss; },
+        get shockwaves() { return shockwaves; },
+        get bounceCombo() { return bounceCombo; },
+        triggerScreenShake(amp, dur) { triggerScreenShake(amp, dur); },
         get inSecretRoom() { return inSecretRoom; },
         set inSecretRoom(v) { inSecretRoom = v; },
         get keys() { return keys; },
