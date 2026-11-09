@@ -3071,23 +3071,24 @@
           addTile(525, r, 'steel');
         }
 
-        // Progressive Boss Setup across Stages 1..6 (HP scales 3 -> 6, Speed scales 105 -> 175)
-        const bossHpByStage = [0, 3, 3, 4, 4, 5, 6];
-        const bossSpeedByStage = [0, 105, 120, 132, 146, 160, 175];
+        // Progressive Boss Setup across Stages 1..6 (HP scales 6 -> 12, Speed scales 125 -> 190)
+        const bossHpByStage = [0, 6, 7, 8, 9, 10, 12];
+        const bossSpeedByStage = [0, 125, 138, 148, 162, 175, 190];
         boss = {
           x: 498 * TILE,
           y: FLOOR_Y - 60,
           w: 80,
           h: 60,
-          baseSpeed: bossSpeedByStage[stageNum] || 120,
-          vx: bossSpeedByStage[stageNum] || 120,
+          baseSpeed: bossSpeedByStage[stageNum] || 135,
+          vx: bossSpeedByStage[stageNum] || 135,
           vy: 0,
-          jumpCd: 1.8,
-          attackCd: 2.4,
+          jumpCd: 1.45,
+          attackCd: 1.8,
           attackCycle: 0,
           attacks: [],
-          hp: bossHpByStage[stageNum] || 3,
-          maxHp: bossHpByStage[stageNum] || 3,
+          hp: bossHpByStage[stageNum] || 6,
+          maxHp: bossHpByStage[stageNum] || 6,
+          fireSubHits: 0,
           dead: false,
           hurtTimer: 0,
           minX: 490 * TILE,
@@ -4000,12 +4001,12 @@
           });
         });
 
-        // 3c. Boss Arena Counter-Shock Plasma Core (kick/dash into Boss to stun & deal double damage!)
+        // 3c. Boss Arena Counter-Shock Plasma Core (placed on the far-right high platform behind the Boss!)
         bossCores.push({
-          x: 491 * TILE + 24,
-          y: FLOOR_Y - 3.2 * TILE - 28,
-          baseX: 491 * TILE + 24,
-          baseY: FLOOR_Y - 3.2 * TILE - 28,
+          x: 507.5 * TILE,
+          y: FLOOR_Y - 3.3 * TILE - 32,
+          baseX: 507.5 * TILE,
+          baseY: FLOOR_Y - 3.3 * TILE - 32,
           w: 28,
           h: 28,
           state: 'idle',
@@ -4209,17 +4210,20 @@
 
       function spawnHero(retrying) {
         const upg = save.upgrades || {};
-        const baseMaxHp = 2 + (upg.maxHp ? 1 : 0);
+        const isMaskTitan = (save.heroId || 'vg') === 'md';
+        const baseMaxHp = 2 + (upg.maxHp ? 1 : 0) + (isMaskTitan ? 1 : 0);
         if (superStartArmed) {
-          hero.maxHp = Math.max(3, baseMaxHp);
+          hero.maxHp = Math.min(4, Math.max(3, baseMaxHp + 1));
           hero.hp = hero.maxHp;
           hero.hasFire = true;
+          hero.superFire = true;
           hero.hasDrone = true;
           superStartArmed = false;
         } else if (!retrying) {
           hero.maxHp = baseMaxHp;
           hero.hp = baseMaxHp;
           hero.hasFire = Boolean(upg.startFire);
+          hero.superFire = false;
           hero.hasDrone = Boolean(upg.startDrone);
         } else {
           hero.maxHp = Math.max(hero.maxHp || baseMaxHp, baseMaxHp);
@@ -4350,7 +4354,11 @@
         }
         sfx('hurt');
         hero.hp -= 1;
-        hero.hasFire = false;
+        if (hero.superFire) {
+          hero.superFire = false;
+        } else if (!save.upgrades?.startFire) {
+          hero.hasFire = false;
+        }
         hero.invuln = 1.6;
         hero.hitAnimTimer = 0.45;
         hero.vy = -340;
@@ -5313,24 +5321,33 @@
           if (fo.collected) return;
           if (Math.hypot((hero.x + hero.w / 2) - fo.x, (hero.y + hero.h / 2) - fo.y) < 34) {
             fo.collected = true;
+            const alreadyHadDrone = hero.hasDrone;
             hero.hasDrone = true;
             sfx('drone');
             addScore(300);
-            addPopup(fo.x - 16, fo.y - 18, lang === 'ru' ? '🤖 ДРОН-ПОМОЩНИК!' : '🤖 HELPER DRONE!', '#38bdf8');
+            if (alreadyHadDrone) {
+              hero.hp = Math.min(hero.maxHp, hero.hp + 1);
+              turboTimer = Math.max(turboTimer, 2.8);
+              addPopup(fo.x - 20, fo.y - 18, lang === 'ru' ? '🤖 ФОРСАЖ ДРОНА! +⚡ТУРБО' : '🤖 DRONE OVERDRIVE! +⚡TURBO', '#facc15');
+            } else {
+              addPopup(fo.x - 16, fo.y - 18, lang === 'ru' ? '🤖 ДРОН-ПОМОЩНИК!' : '🤖 HELPER DRONE!', '#38bdf8');
+            }
             updateHud();
           }
         });
 
-        // Only pull batteries when Magnet upgrade or Helper Drone is active, within a tight radius
+        // Synergistic battery pull: Helper Drone (72px) + Magnet Upgrade (105px) stack into Super-Magnet (150px)!
         if (hero.hasDrone || save.upgrades?.magnet) {
+          const pullRadius = (hero.hasDrone && save.upgrades?.magnet) ? 150 : (save.upgrades?.magnet ? 105 : 72);
+          const pullSpeed = (hero.hasDrone && save.upgrades?.magnet) ? 310 : (save.upgrades?.magnet ? 235 : 185);
           fruits.forEach((f) => {
             if (f.collected) return;
             const dx = (hero.x + hero.w / 2) - (f.x + 18);
             const dy = (hero.y + hero.h / 2) - (f.y + 18);
             const d = Math.hypot(dx, dy);
-            if (d > 8 && d < 76) {
-              f.x += (dx / d) * 195 * dt;
-              f.y += (dy / d) * 195 * dt;
+            if (d > 8 && d < pullRadius) {
+              f.x += (dx / d) * pullSpeed * dt;
+              f.y += (dy / d) * pullSpeed * dt;
             }
           });
         }
@@ -5352,16 +5369,18 @@
           fireRequested = false;
           if (hero.hasFire && hero.fireCd <= 0) {
             const isCyberGuy = (save.heroId || 'vg') === 'vg';
-            hero.fireCd = isCyberGuy ? 0.18 : 0.26;
+            const isSuperShot = Boolean(hero.superFire || (isCyberGuy && save.upgrades?.startFire));
+            hero.fireCd = isSuperShot ? 0.16 : (isCyberGuy ? 0.19 : 0.26);
             sfx('fire');
             fireballs.push({
               x: hero.dir > 0 ? hero.x + hero.w + 4 : hero.x - 10,
               y: hero.y + 18,
-              vx: hero.dir * (isCyberGuy ? 610 : 540),
+              vx: hero.dir * (isSuperShot ? 660 : (isCyberGuy ? 610 : 540)),
               vy: 100,
-              r: 8,
+              r: isSuperShot ? 10 : 8,
+              superShot: isSuperShot,
               friendly: true,
-              bounces: 4
+              bounces: isSuperShot ? 5 : 4
             });
           } else if (!hero.hasFire) {
             if (hero.dashCd <= 0 && hero.dashTimer <= 0) {
@@ -5375,10 +5394,11 @@
         if (dashRequested) {
           dashRequested = false;
           if (hero.dashCd <= 0 && hero.dashTimer <= 0 && !pipeAnim.active) {
-            hero.dashTimer = 0.18;
-            hero.dashCd = 1.4;
+            const isMaskTitan = (save.heroId || 'vg') === 'md';
+            hero.dashTimer = isMaskTitan ? 0.22 : 0.18;
+            hero.dashCd = isMaskTitan ? 0.9 : 1.4;
             hero.groundSlam = false;
-            hero.vx = hero.dir * 620;
+            hero.vx = hero.dir * (isMaskTitan ? 670 : 620);
             if (currentStage !== 3 && hero.vy > 0) hero.vy = 0;
             sfx('jump');
             addPopup(hero.x, hero.y - 14, lang === 'ru' ? '⚡ ВОЛЬТ-РЫВОК!' : '⚡ VOLT DASH!', '#38bdf8');
@@ -5561,7 +5581,7 @@
           }
         });
 
-        // Powerups Collection (Hearts & Fireballs — with generous pickup magnet!)
+        // Powerups Collection (Hearts & Fireballs — with generous pickup magnet & upgrade stacking!)
         for (let i = powerups.length - 1; i >= 0; i--) {
           const p = powerups[i];
           p.vy = Math.min(700, p.vy + 1300 * dt);
@@ -5571,20 +5591,32 @@
             sfx('powerup');
             addScore(500);
             if (p.kind === 'heart') {
+              const wasFull4 = hero.hp >= 4;
               hero.maxHp = Math.min(4, Math.max(hero.maxHp, hero.hp + 1));
               hero.hp = Math.min(4, hero.hp + 1);
-              addPopup(p.x, p.y - 12, I18N[lang].popHeart, '#ff4d6d');
+              if (wasFull4) {
+                turboTimer = Math.max(turboTimer, 3.0);
+                addPopup(p.x, p.y - 12, lang === 'ru' ? '❤️ МАКС ХП! +⚡ТУРБО!' : '❤️ MAX HP! +⚡TURBO!', '#ff4d6d');
+              } else {
+                addPopup(p.x, p.y - 12, I18N[lang].popHeart, '#ff4d6d');
+              }
             } else {
+              const alreadyHadFire = hero.hasFire;
               hero.hasFire = true;
               hero.hp = Math.max(hero.hp, 2);
-              addPopup(p.x, p.y - 12, I18N[lang].popFire, '#f97316');
+              if (alreadyHadFire) {
+                hero.superFire = true;
+                addPopup(p.x, p.y - 12, lang === 'ru' ? '🔥🔥 МЕГА-ПЛАЗМА! (ПРОБИВАЕТ БРОНЮ)' : '🔥🔥 MEGA-PLASMA! (ARMOR PIERCE)', '#facc15');
+              } else {
+                addPopup(p.x, p.y - 12, I18N[lang].popFire, '#f97316');
+              }
             }
             updateHud();
             powerups.splice(i, 1);
           }
         }
 
-        // Mid-Stage Checkpoints Activation (2 Checkpoints per stage!)
+        // Mid-Stage Checkpoints Activation (2 Checkpoints per stage — acts as a Nano-Repair Station!)
         checkpoints.forEach((cp) => {
           if (cp.state === 'none' && Math.abs((hero.x + hero.w / 2) - (cp.x + 42)) < 44) {
             cp.state = 'unfurl';
@@ -5592,6 +5624,10 @@
             if (checkpoint?.stage !== currentStage || cp.x + 12 > checkpoint.x) {
               checkpoint = { stage: currentStage, x: cp.x + 12 };
             }
+            if (hero.hp < hero.maxHp) hero.hp = Math.min(hero.maxHp, hero.hp + 1);
+            if (save.upgrades?.startDrone) hero.hasDrone = true;
+            if (save.upgrades?.startFire) hero.hasFire = true;
+            updateHud();
             sfx('powerup');
             addPopup(cp.x, cp.y - 10, I18N[lang].popCheckpoint, '#4ade80');
           }
@@ -5744,20 +5780,28 @@
               }
             });
 
-            if (boss && !boss.dead && boss.hurtTimer <= 0 && overlap(en, boss)) {
-              boss.hp -= 1;
-              boss.hurtTimer = 0.5;
+            if (boss && !boss.dead && overlap(en, boss)) {
               en.vx = -en.vx;
-              sfx('stomp');
-              addPopup(boss.x, boss.y - 14, I18N[lang].popShellBoss(boss.hp), '#38bdf8');
-              if (boss.hp <= 0) {
-                boss.dead = true;
-              boss.attacks = [];
-              shockwaves = [];
-                runKills++;
-                addScore(1500);
-                sfx('powerup');
-                addPopup(boss.x, boss.y - 20, I18N[lang].popTrophyUnlock, '#4ade80');
+              en.x += Math.sign(en.vx || 1) * 10;
+              if (boss.hurtTimer > 0 && !(boss.stunTimer > 0)) {
+                boss.hurtTimer = 0;
+                sfx('box');
+                addPopup(boss.x, boss.y - 14, lang === 'ru' ? '🐚 ПАНЦИРЬ СБИЛ ЩИТ!' : '🐚 SHELL SHATTERED SHIELD!', '#38bdf8');
+              } else {
+                boss.hp -= 1;
+                boss.fireSubHits = 0;
+                boss.hurtTimer = 0.5;
+                sfx('stomp');
+                addPopup(boss.x, boss.y - 14, I18N[lang].popShellBoss(boss.hp), '#38bdf8');
+                if (boss.hp <= 0) {
+                  boss.dead = true;
+                  boss.attacks = [];
+                  shockwaves = [];
+                  runKills++;
+                  addScore(1500);
+                  sfx('powerup');
+                  addPopup(boss.x, boss.y - 20, I18N[lang].popTrophyUnlock, '#4ade80');
+                }
               }
             }
           }
@@ -5878,25 +5922,37 @@
               const prevVy = boss.vy;
               boss.y = FLOOR_Y - boss.h;
               boss.vy = 0;
-              // Ground Slam Shockwaves in Phase 2 & 3!
-              if (prevVy > 140 && isEnraged && boss.stageNum === 1) {
+              // Ground Slam Shockwaves across all land stages when landing from a high jump!
+              if (prevVy > 140 && isEnraged && !isUnderwater) {
                 triggerScreenShake(isDesperate ? 9 : 6.5, 0.24);
                 sfx('shockwave');
-                shockwaves.push({ x: boss.x - 14, y: FLOOR_Y - 26, vx: -210, w: 26, h: 26, life: 1.8, stageNum: boss.stageNum });
-                shockwaves.push({ x: boss.x + boss.w + 14, y: FLOOR_Y - 26, vx: 210, w: 26, h: 26, life: 1.8, stageNum: boss.stageNum });
+                const swSpd = isDesperate ? 245 : 210;
+                shockwaves.push({ x: boss.x - 14, y: FLOOR_Y - 26, vx: -swSpd, w: 26, h: 26, life: 1.8, stageNum: boss.stageNum });
+                shockwaves.push({ x: boss.x + boss.w + 14, y: FLOOR_Y - 26, vx: swSpd, w: 26, h: 26, life: 1.8, stageNum: boss.stageNum });
                 addPopup(boss.x + boss.w / 2, boss.y - 18, isDesperate ? (lang === 'ru' ? '⚡ ЯРОСТНЫЙ УДАР!' : '⚡ RAGE SLAM!') : (lang === 'ru' ? '⚡ УДАР О ЗЕМЛЮ!' : '⚡ GROUND SLAM!'), '#f43f5e');
               }
             }
 
             if (overlap(hero, boss)) {
               const stompBoss = (isUnderwater ? hero.vy >= -50 : hero.vy > 0) && (hero.y + hero.h - Math.max(0, hero.vy) * dt) <= boss.y + 34;
-              if (stompBoss && boss.hurtTimer <= 0) {
-                boss.hp -= 1;
-                boss.hurtTimer = 0.6;
+              const isRamHero = (save.heroId || 'vg') === 'md' || turboTimer > 0;
+              if ((stompBoss || hero.groundSlam) && boss.hurtTimer <= 0) {
+                const isSlamHit = Boolean(hero.groundSlam);
+                hero.groundSlam = false;
+                const stompDmg = isSlamHit ? Math.min(boss.hp, 2) : 1;
+                boss.hp -= stompDmg;
+                boss.fireSubHits = 0;
+                boss.hurtTimer = (boss.stunTimer > 0) ? 0.25 : 0.95;
+                boss.attackCd = Math.min(boss.attackCd, 1.15);
+                if (boss.y >= FLOOR_Y - boss.h - 2 && !(boss.stunTimer > 0)) {
+                  boss.vy = isUnderwater ? -380 : -490;
+                }
                 hero.vy = isUnderwater ? -440 : -560;
+                hero.jumpsLeft = hero.maxJumps;
                 hitStop = 0.06;
-                triggerScreenShake(8, 0.28);
+                triggerScreenShake(isSlamHit ? 10 : 8, 0.28);
                 sfx('stomp');
+                if (isSlamHit) unlockAchievement('first_slam');
                 addPopup(boss.x, boss.y - 14, I18N[lang].popBossHit(boss.hp), '#fde047');
                 if (boss.hp <= 0) {
                   boss.dead = true;
@@ -5909,7 +5965,30 @@
                   sfx('powerup');
                   addPopup(boss.x, boss.y - 20, I18N[lang].popTrophyUnlock, '#4ade80');
                 }
-              } else if (boss.hurtTimer <= 0) {
+              } else if (hero.dashTimer > 0 && isRamHero && boss.hurtTimer <= 0) {
+                boss.hp -= 1;
+                boss.fireSubHits = 0;
+                boss.hurtTimer = (boss.stunTimer > 0) ? 0.25 : 0.95;
+                hero.dashTimer = 0;
+                hero.vx = -hero.dir * 320;
+                hero.vy = -340;
+                hero.invuln = Math.max(hero.invuln, 0.5);
+                triggerScreenShake(9, 0.26);
+                sfx('stomp');
+                unlockAchievement('dash_breaker');
+                addPopup(boss.x, boss.y - 14, lang === 'ru' ? `🛡️ БРОНЕ-ТАРАН! (${boss.hp} HP)` : `🛡️ TITAN RAM! (${boss.hp} HP)`, '#38bdf8');
+                if (boss.hp <= 0) {
+                  boss.dead = true;
+                  boss.attacks = [];
+                  shockwaves = [];
+                  bossBanner.style.display = 'none';
+                  runKills++;
+                  addScore(1500);
+                  triggerScreenShake(12, 0.45);
+                  sfx('powerup');
+                  addPopup(boss.x, boss.y - 20, I18N[lang].popTrophyUnlock, '#4ade80');
+                }
+              } else if (hero.dashTimer <= 0 && boss.hurtTimer <= 0 && !(boss.stunTimer > 0)) {
                 hurtHero();
                 triggerScreenShake(6, 0.22);
               }
@@ -5942,7 +6021,7 @@
             bc.y = bc.baseY + Math.sin(clock * 4) * 5;
             if (overlap(hero, bc)) {
               bc.state = 'launched';
-              const targetX = boss ? (boss.x + boss.w / 2) : (bc.x + 200);
+              const targetX = boss ? (boss.x + boss.w / 2) : (bc.x - 200);
               bc.vx = (targetX >= bc.x ? 1 : -1) * 620;
               sfx('fire');
               triggerScreenShake(4, 0.14);
@@ -5956,16 +6035,18 @@
               if (overlap(bc, boss)) {
                 const dmg = Math.min(boss.hp, 2);
                 boss.hp -= dmg;
-                boss.hurtTimer = 0.65;
-                boss.stunTimer = 2.2;
+                boss.fireSubHits = 0;
+                // Stun disables Boss shield & armor so player can immediately combo with shots or stomps!
+                boss.hurtTimer = 0.12;
+                boss.stunTimer = 1.65;
                 boss.attacks = [];
                 bc.state = 'respawn';
-                bc.respawnTimer = 5.0;
+                bc.respawnTimer = 10.5;
                 sfx('combo');
                 sfx('stomp');
                 triggerScreenShake(10, 0.32);
                 unlockAchievement('boss_stunner');
-                addPopup(boss.x, boss.y - 24, lang === 'ru' ? `⚡ БОСС ОГЛУШЕН! -${dmg} HP!` : `⚡ BOSS STUNNED! -${dmg} HP!`, '#38bdf8');
+                addPopup(boss.x, boss.y - 24, lang === 'ru' ? `⚡ БРОНЯ СБИТА! ОГЛУШЕН -${dmg} HP!` : `⚡ ARMOR BROKEN! STUNNED -${dmg} HP!`, '#38bdf8');
                 if (boss.hp <= 0) {
                   boss.dead = true;
                   boss.attacks = [];
@@ -5980,7 +6061,7 @@
             }
             if (Math.abs(bc.x - bc.baseX) > 900) {
               bc.state = 'respawn';
-              bc.respawnTimer = 4.0;
+              bc.respawnTimer = 8.0;
             }
           }
         });
@@ -6040,21 +6121,43 @@
             }
           });
 
-          if (boss && !boss.dead && boss.hurtTimer <= 0 &&
+          if (boss && !boss.dead &&
               f.x > boss.x && f.x < boss.x + boss.w && f.y > boss.y && f.y < boss.y + boss.h) {
-            boss.hp -= 1;
-            boss.hurtTimer = 0.35;
             f.bounces = -1;
-            sfx('stomp');
-            addPopup(boss.x, boss.y - 14, I18N[lang].popFireBossHit(boss.hp), '#f97316');
-            if (boss.hp <= 0) {
-              boss.dead = true;
-              boss.attacks = [];
-              shockwaves = [];
-              runKills++;
-              addScore(1500);
-              sfx('powerup');
-              addPopup(boss.x, boss.y - 20, I18N[lang].popTrophyUnlock, '#4ade80');
+            const armorBypassed = Boolean(f.superShot || (boss.stunTimer > 0));
+            if (boss.hurtTimer > 0 && !(boss.stunTimer > 0)) {
+              sfx('box');
+              addPopup(boss.x + 8, boss.y - 16, lang === 'ru' ? '🛡️ ЭНЕРГО-ЩИТ!' : '🛡️ SHIELDED!', '#38bdf8');
+            } else if (!armorBypassed && boss.hp > 1 && (boss.fireSubHits || 0) < 1) {
+              boss.fireSubHits = 1;
+              boss.hurtTimer = 0.42;
+              boss.vx = (hero.x < boss.x ? -1 : 1) * Math.abs(boss.vx || boss.baseSpeed || 135);
+              if (boss.y >= FLOOR_Y - boss.h - 2 && !(boss.stunTimer > 0)) {
+                boss.vy = isUnderwater ? -350 : -460;
+              }
+              sfx('box');
+              triggerScreenShake(4, 0.14);
+              addPopup(boss.x, boss.y - 14, lang === 'ru' ? '🛡️ БРОНЯ ТРЕСНУЛА! (1/2)' : '🛡️ ARMOR CRACKED! (1/2)', '#fbbf24');
+            } else if (boss.hurtTimer <= 0) {
+              boss.hp -= 1;
+              boss.fireSubHits = 0;
+              boss.hurtTimer = (boss.stunTimer > 0) ? 0.24 : 1.1;
+              boss.attackCd = Math.min(boss.attackCd, 1.1);
+              if (boss.y >= FLOOR_Y - boss.h - 2 && !(boss.stunTimer > 0)) {
+                boss.vy = isUnderwater ? -380 : -480;
+              }
+              sfx('stomp');
+              triggerScreenShake(6, 0.2);
+              addPopup(boss.x, boss.y - 14, I18N[lang].popFireBossHit(boss.hp), '#f97316');
+              if (boss.hp <= 0) {
+                boss.dead = true;
+                boss.attacks = [];
+                shockwaves = [];
+                runKills++;
+                addScore(1500);
+                sfx('powerup');
+                addPopup(boss.x, boss.y - 20, I18N[lang].popTrophyUnlock, '#4ade80');
+              }
             }
           }
 
@@ -7618,6 +7721,15 @@
             ctx.fillStyle = '#22d3ee';
             ctx.fillRect(bFlip ? canX + 26 : canX - 4, canY + 2, 8, 6);
           }
+          if (boss.hurtTimer > 0.35 && !(boss.stunTimer > 0)) {
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.85)';
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.14)';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.ellipse(bx + bw / 2, by + bh / 2 - 4, bw * 0.62, bh * 0.68, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
           ctx.restore();
         }
 
@@ -7806,35 +7918,41 @@
           ctx.restore();
         });
 
-        // Biome-Themed 16-Bit Pixel-Art Bouncy Orbs / Bubbles (Bubbles in 1/3/4, Crystal Orbs in 2, Solar Spheres in 5, Plasma Nodes in 6!)
+        // Biome-Themed Bouncy Orbs / Bubbles (Bubbles in 1/3/4, Crystal Orbs in 2, Solar Spheres in 5, Plasma Nodes in 6!)
         rainbowBubbles.forEach((rb) => {
           if (rb.x + 80 < camX - 100 || rb.x > camX + vw + 100) return;
           if (rb.popped) return;
           ctx.save();
-          const bx = Math.round(rb.x);
-          const by = Math.round(rb.y);
-          const outerCol = currentStage === 2 ? '#581c87' : (currentStage === 5 ? '#7c2d12' : '#0f172a');
-          const rimCol = currentStage === 2 ? '#c084fc' : (currentStage === 5 ? '#f97316' : (currentStage === 6 ? '#ec4899' : '#38bdf8'));
-          const bodyCol = currentStage === 2 ? 'rgba(168, 85, 247, 0.72)' : (currentStage === 5 ? 'rgba(251, 146, 60, 0.78)' : (currentStage === 6 ? 'rgba(34, 211, 238, 0.72)' : 'rgba(56, 189, 248, 0.52)'));
-          // Stepped 16-bit Pixel Octagon Sphere (Radius ~20px)
-          ctx.fillStyle = outerCol;
-          ctx.fillRect(bx - 10, by - 20, 20, 40);
-          ctx.fillRect(bx - 16, by - 16, 32, 32);
-          ctx.fillRect(bx - 20, by - 10, 40, 20);
-          ctx.fillStyle = rimCol;
-          ctx.fillRect(bx - 9, by - 18, 18, 36);
-          ctx.fillRect(bx - 14, by - 14, 28, 28);
-          ctx.fillRect(bx - 18, by - 9, 36, 18);
-          ctx.fillStyle = bodyCol;
-          ctx.fillRect(bx - 7, by - 15, 14, 30);
-          ctx.fillRect(bx - 12, by - 12, 24, 24);
-          ctx.fillRect(bx - 15, by - 7, 30, 14);
-          // Crisp pixel-art specular highlight & inner core
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(bx - 10, by - 11, 6, 4);
-          ctx.fillRect(bx - 11, by - 9, 4, 6);
-          ctx.fillStyle = '#fef08a';
-          ctx.fillRect(bx - 2, by - 2, 4, 4);
+          const bGrad = ctx.createRadialGradient(rb.x - 6, rb.y - 6, 3, rb.x, rb.y, rb.r);
+          if (currentStage === 2) {
+            bGrad.addColorStop(0, '#f3e8ff');
+            bGrad.addColorStop(0.5, 'rgba(192, 132, 252, 0.55)');
+            bGrad.addColorStop(1, 'rgba(126, 34, 206, 0.9)');
+          } else if (currentStage === 5) {
+            bGrad.addColorStop(0, '#fef08a');
+            bGrad.addColorStop(0.5, 'rgba(251, 146, 60, 0.55)');
+            bGrad.addColorStop(1, 'rgba(234, 88, 12, 0.9)');
+          } else if (currentStage === 6) {
+            bGrad.addColorStop(0, '#ffffff');
+            bGrad.addColorStop(0.5, 'rgba(34, 211, 238, 0.55)');
+            bGrad.addColorStop(1, 'rgba(236, 72, 153, 0.9)');
+          } else {
+            bGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
+            bGrad.addColorStop(0.5, 'rgba(56, 189, 248, 0.32)');
+            bGrad.addColorStop(0.85, 'rgba(244, 114, 182, 0.48)');
+            bGrad.addColorStop(1, 'rgba(250, 204, 21, 0.85)');
+          }
+          ctx.fillStyle = bGrad;
+          ctx.beginPath();
+          ctx.arc(rb.x, rb.y, rb.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = currentStage === 6 ? '#22d3ee' : '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.beginPath();
+          ctx.arc(rb.x - 7, rb.y - 7, 4.5, 0, Math.PI * 2);
+          ctx.fill();
           ctx.restore();
         });
 
@@ -8143,38 +8261,32 @@
           ctx.restore();
         });
 
-        // 10b. 16-Bit Pixel-Art Golden Energy Rings & Active Trial Cells
+        // 10b. Golden Energy Rings & Active Trial Cells
         energyRings.forEach((er) => {
           if (er.state === 'done') return;
           if (er.x + 320 >= camX && er.x - 120 <= camX + vw) {
             ctx.save();
-            const rx = Math.round(er.x);
-            const ry = Math.round(er.y);
-            const pulse = Math.round(Math.sin(clock * 6) * 2);
-            const rh = Math.round(er.r + pulse);
-            const mainCol = er.state === 'active' ? '#38bdf8' : '#facc15';
-            const hiCol = er.state === 'active' ? '#e0f2fe' : '#fef08a';
-            // Stepped 16-bit Pixel Portal Ring (Outer Dark Border -> Main Pixel Frame -> Highlight Core)
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(rx - 8, ry - rh - 2, 16, 8);
-            ctx.fillRect(rx - 8, ry + rh - 6, 16, 8);
-            ctx.fillRect(rx - 14, ry - rh + 4, 8, (rh - 4) * 2);
-            ctx.fillRect(rx + 6, ry - rh + 4, 8, (rh - 4) * 2);
-            ctx.fillStyle = mainCol;
-            ctx.fillRect(rx - 6, ry - rh, 12, 4);
-            ctx.fillRect(rx - 6, ry + rh - 4, 12, 4);
-            ctx.fillRect(rx - 12, ry - rh + 4, 4, (rh - 4) * 2);
-            ctx.fillRect(rx + 8, ry - rh + 4, 4, (rh - 4) * 2);
-            ctx.fillStyle = hiCol;
-            ctx.fillRect(rx - 4, ry - rh + 1, 8, 2);
-            ctx.fillRect(rx - 11, ry - 8, 2, 16);
+            const pulse = Math.sin(clock * 6) * 2.5;
+            ctx.strokeStyle = er.state === 'active' ? '#38bdf8' : '#facc15';
+            ctx.lineWidth = 4.5;
+            ctx.shadowColor = er.state === 'active' ? '#38bdf8' : '#facc15';
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.ellipse(er.x, er.y, 12, er.r + pulse, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.ellipse(er.x, er.y, 10, er.r + pulse - 2, 0, 0, Math.PI * 2);
+            ctx.stroke();
             if (er.state === 'active') {
+              ctx.shadowBlur = 0;
               ctx.font = '900 11.5px "Segoe UI", sans-serif';
               ctx.fillStyle = '#0f172a';
-              ctx.fillRect(rx - 22, ry + rh + 4, 44, 15);
+              ctx.fillRect(er.x - 22, er.y + er.r + 6, 44, 15);
               ctx.fillStyle = '#fef08a';
               ctx.textAlign = 'center';
-              ctx.fillText(`${er.timer.toFixed(1)}s`, rx, ry + rh + 15);
+              ctx.fillText(`${er.timer.toFixed(1)}s`, er.x, er.y + er.r + 17);
             }
             ctx.restore();
           }
@@ -8182,50 +8294,46 @@
             er.cells.forEach((cell, idx) => {
               if (cell.collected) return;
               ctx.save();
-              const cx = Math.round(cell.x);
-              const cy = Math.round(cell.y + Math.sin(clock * 8 + idx) * 4);
-              // Crisp 16-bit Pixel Battery Cell / Gem
-              ctx.fillStyle = '#0f172a';
-              ctx.fillRect(cx - 8, cy - 8, 16, 16);
-              ctx.fillStyle = '#eab308';
-              ctx.fillRect(cx - 6, cy - 6, 12, 12);
-              ctx.fillStyle = '#fef08a';
-              ctx.fillRect(cx - 4, cy - 4, 8, 4);
-              // Pixel lightning bolt inside cell
-              ctx.fillStyle = '#0f172a';
-              ctx.fillRect(cx - 1, cy - 3, 3, 3);
-              ctx.fillRect(cx - 2, cy, 4, 2);
-              ctx.fillRect(cx, cy + 2, 2, 3);
+              const cy = cell.y + Math.sin(clock * 8 + idx) * 4;
+              const cg = ctx.createRadialGradient(cell.x - 2, cy - 2, 1, cell.x, cy, 9);
+              cg.addColorStop(0, '#ffffff');
+              cg.addColorStop(0.55, '#fef08a');
+              cg.addColorStop(1, '#eab308');
+              ctx.fillStyle = cg;
+              ctx.shadowColor = '#facc15';
+              ctx.shadowBlur = 10;
+              ctx.beginPath();
+              ctx.arc(cell.x, cy, 8, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.lineWidth = 1.5;
+              ctx.strokeStyle = '#ca8a04';
+              ctx.stroke();
               ctx.restore();
             });
           }
         });
 
-        // 10c. 16-Bit Pixel-Art Boss Arena Counter-Shock Plasma Cores & Boss Stun Indicator
+        // 10c. Boss Arena Counter-Shock Plasma Cores & Boss Stun Indicator
         bossCores.forEach((bc) => {
           if (bc.state === 'respawn' || (boss && boss.dead)) return;
           if (bc.x + 80 < camX || bc.x - 80 > camX + vw) return;
           ctx.save();
-          const cx = Math.round(bc.x + bc.w / 2);
-          const cy = Math.round(bc.y + bc.h / 2 + Math.sin(clock * 8) * 2);
-          // Stepped 16-Bit Pixel Plasma Core Octagon (No overlapping floating text!)
-          ctx.fillStyle = '#0f172a';
-          ctx.fillRect(cx - 8, cy - 14, 16, 28);
-          ctx.fillRect(cx - 14, cy - 8, 28, 16);
-          ctx.fillRect(cx - 12, cy - 12, 24, 24);
-          ctx.fillStyle = '#0284c7';
-          ctx.fillRect(cx - 6, cy - 12, 12, 24);
-          ctx.fillRect(cx - 12, cy - 6, 24, 12);
-          ctx.fillRect(cx - 10, cy - 10, 20, 20);
-          ctx.fillStyle = '#38bdf8';
-          ctx.fillRect(cx - 8, cy - 8, 16, 16);
-          ctx.fillStyle = '#e0f2fe';
-          ctx.fillRect(cx - 6, cy - 6, 5, 4);
-          // Crisp Pixel Lightning Bolt in Core Center
-          ctx.fillStyle = '#fde047';
-          ctx.fillRect(cx, cy - 6, 4, 4);
-          ctx.fillRect(cx - 3, cy - 2, 6, 3);
-          ctx.fillRect(cx - 1, cy + 1, 4, 5);
+          const cx = bc.x + bc.w / 2;
+          const cy = bc.y + bc.h / 2 + Math.sin(clock * 8) * 3;
+          const pulseR = 13 + Math.sin(clock * 10) * 1.5;
+          const grad = ctx.createRadialGradient(cx - 3, cy - 3, 2, cx, cy, pulseR);
+          grad.addColorStop(0, '#ffffff');
+          grad.addColorStop(0.5, '#38bdf8');
+          grad.addColorStop(1, '#0284c7');
+          ctx.fillStyle = grad;
+          ctx.shadowColor = '#38bdf8';
+          ctx.shadowBlur = 14;
+          ctx.beginPath();
+          ctx.arc(cx, cy, pulseR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = '#e0f2fe';
+          ctx.stroke();
           ctx.restore();
         });
 
@@ -8570,11 +8678,22 @@
       const UPGRADE_COSTS = { maxHp: 80, magnet: 140, startDrone: 220, startFire: 320 };
       const HERO_COSTS = { vg: 0, nf: 100, md: 180, pm: 260 };
 
+      function syncHeroUpgradeLoadout() {
+        const upg = save.upgrades || {};
+        const isMaskTitan = (save.heroId || 'vg') === 'md';
+        const targetMax = 2 + (upg.maxHp ? 1 : 0) + (isMaskTitan ? 1 : 0);
+        hero.maxHp = Math.max(hero.maxHp || targetMax, targetMax);
+        if (state === 'menu') hero.hp = hero.maxHp;
+        if (upg.startDrone) hero.hasDrone = true;
+        if (upg.startFire) hero.hasFire = true;
+      }
+
       function selectOrUnlockHero(hid) {
         if (!save.unlockedHeroes) save.unlockedHeroes = { vg: true, nf: false, md: false, pm: false };
         save.unlockedHeroes.vg = true;
         if (save.unlockedHeroes[hid]) {
           save.heroId = hid;
+          syncHeroUpgradeLoadout();
           writeSave();
           sfx('fruit');
           applyTexts();
@@ -8588,6 +8707,7 @@
         save.fruits -= cost;
         save.unlockedHeroes[hid] = true;
         save.heroId = hid;
+        syncHeroUpgradeLoadout();
         writeSave();
         sfx('powerup');
         applyTexts();
@@ -8608,13 +8728,9 @@
         }
         save.fruits -= cost;
         save.upgrades[key] = true;
+        syncHeroUpgradeLoadout();
         if (key === 'maxHp') {
-          hero.maxHp = Math.max(hero.maxHp, 3);
-          hero.hp = Math.max(hero.hp, 3);
-        } else if (key === 'startDrone') {
-          hero.hasDrone = true;
-        } else if (key === 'startFire') {
-          hero.hasFire = true;
+          hero.hp = hero.maxHp;
         }
         writeSave();
         sfx('powerup');
@@ -9132,9 +9248,12 @@
         if (state !== 'gameover' || reviveUsed) return;
         showRewardedAd(() => {
           reviveUsed = true;
-          hero.maxHp = 3;
-          hero.hp = 3;
+          syncHeroUpgradeLoadout();
+          hero.maxHp = Math.max(3, hero.maxHp);
+          hero.hp = hero.maxHp;
           hero.hasFire = true;
+          hero.superFire = true;
+          hero.hasDrone = true;
           if (hero.y > PIT_Y) {
             recoverFromPit();
           } else {
