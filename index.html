@@ -500,6 +500,14 @@
       color: #0f172a;
     }
 
+    .stage-btn.locked,
+    .stage-btn:disabled {
+      opacity: 0.45;
+      border-color: #475569;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+
     /* ACTION BUTTONS */
     .cta-row {
       display: flex;
@@ -691,6 +699,24 @@
       .stage-btn { min-height: 36px; padding: 5px 6px; }
       .cta-btn { white-space: normal; }
       #hud, .hud-group { gap: 4px; }
+      #touch-layer {
+        left: max(6px, env(safe-area-inset-left));
+        right: max(6px, env(safe-area-inset-right));
+        bottom: max(8px, env(safe-area-inset-bottom));
+      }
+      .pad-cluster { gap: 5px; }
+      .touch-btn {
+        width: clamp(38px, 12.2vw, 48px);
+        height: clamp(38px, 12.2vw, 48px);
+        border-radius: 12px;
+        border-width: 2px;
+        font-size: 16px;
+      }
+      .touch-btn small { font-size: 7.5px; }
+      .touch-btn.jump-btn {
+        width: clamp(42px, 13.5vw, 54px);
+        height: clamp(42px, 13.5vw, 54px);
+      }
     }
     #ach-toast {
       position: fixed;
@@ -1181,10 +1207,13 @@
           if (typeof d.totalScore === 'number') save.totalScore = d.totalScore;
           if (typeof d.bestScore === 'number') save.bestScore = d.bestScore;
           if (typeof d.heroId === 'string') save.heroId = d.heroId;
-          if (typeof d.unlockedStage === 'number') save.unlockedStage = d.unlockedStage;
+          if (typeof d.unlockedStage === 'number' && d.unlockedStage >= 1 && d.unlockedStage <= 6) {
+            save.unlockedStage = d.unlockedStage;
+          }
           if (typeof d.currentStage === 'number' && d.currentStage >= 1 && d.currentStage <= 6) {
-            save.currentStage = d.currentStage;
-            if (restoreStage) currentStage = d.currentStage;
+            const maxSt = Math.max(1, save.unlockedStage || 1);
+            save.currentStage = Math.min(d.currentStage, maxSt);
+            if (restoreStage) currentStage = save.currentStage;
           }
           if (Array.isArray(d.clearedStages)) save.clearedStages = d.clearedStages;
           if (d.stageStars && typeof d.stageStars === 'object') save.stageStars = Object.assign(save.stageStars, d.stageStars);
@@ -1391,30 +1420,41 @@
 
       function startBGM() {
         if (bgmInterval) return;
+        // Biome-adaptive 16-bit Chiptune Arpeggio Counter-Melodies (per world 1..6)
+        const BIOME_ARP = {
+          1: [587.33, 739.99, 880.00, 1174.66, 880.00, 739.99, 659.25, 880.00], // Emerald Forest (Warm D-major / B-minor sparkle)
+          2: [523.25, 622.25, 783.99, 1046.50, 783.99, 622.25, 587.33, 698.46], // Crystal Caverns (Crystalline bell chime)
+          3: [440.00, 523.25, 659.25, 783.99, 987.77, 783.99, 659.25, 523.25],  // Underwater Atlantis (Dreamy liquid arpeggio)
+          4: [659.25, 783.99, 987.77, 1318.51, 1174.66, 987.77, 783.99, 659.25],// Sky Fortress (High-altitude airy synth)
+          5: [440.00, 466.16, 554.37, 659.25, 880.00, 659.25, 554.37, 466.16],  // Ancient Ruins (Phrygian dominant desert scale)
+          6: [587.33, 880.00, 1174.66, 587.33, 698.46, 1046.50, 1396.91, 698.46] // Cyber Citadel (High-energy octave synthwave)
+        };
         bgmInterval = setInterval(() => {
           if (isMuted() || state !== 'playing') return;
           const a = getAudio();
           if (!a) return;
           const now = a.currentTime;
-          // Slight pitch shift per stage for atmospheric variety
-          const stageMult = currentStage === 2 ? 1.05946 : (currentStage === 3 ? 1.12246 : (currentStage === 4 ? 0.94387 : 1.0));
+          // Biome transposition & waveform palette per stage
+          const stageMult = currentStage === 2 ? 1.05946 : (currentStage === 3 ? 0.89090 : (currentStage === 4 ? 1.12246 : (currentStage === 5 ? 0.94387 : 1.0)));
           const leadFreq = CYBER_LEAD[bgmStep % CYBER_LEAD.length] * stageMult;
           const bassFreq = CYBER_BASS[bgmStep % CYBER_BASS.length] * stageMult;
+          const arpList = BIOME_ARP[currentStage] || BIOME_ARP[1];
+          const arpFreq = arpList[bgmStep % arpList.length];
           const stepInBar = bgmStep % 8;
           bgmStep++;
 
           try {
-            // 1. Synth Lead (Sawtooth + Lowpass filter envelope)
+            // 1. Biome-Shaped Lead Melody
             if (leadFreq > 0) {
               const osc = a.createOscillator();
               const flt = a.createBiquadFilter();
               const g = a.createGain();
-              osc.type = 'sawtooth';
+              osc.type = (currentStage === 2 || currentStage === 3) ? 'triangle' : (currentStage === 6 ? 'sawtooth' : 'square');
               osc.frequency.setValueAtTime(leadFreq, now);
               flt.type = 'lowpass';
-              flt.frequency.setValueAtTime(1900, now);
-              flt.frequency.exponentialRampToValueAtTime(550, now + 0.12);
-              g.gain.setValueAtTime(0.024, now);
+              flt.frequency.setValueAtTime(currentStage === 3 ? 1150 : 1850, now);
+              flt.frequency.exponentialRampToValueAtTime(480, now + 0.12);
+              g.gain.setValueAtTime(currentStage === 3 ? 0.026 : 0.019, now);
               g.gain.exponentialRampToValueAtTime(0.0008, now + 0.13);
               osc.connect(flt);
               flt.connect(g);
@@ -1423,26 +1463,40 @@
               osc.stop(now + 0.135);
             }
 
-            // 2. Rolling Synthwave Bass
+            // 2. 16-Bit Chiptune Arpeggio Shimmer (Every off-beat or flowing 16th)
+            if (arpFreq > 0 && (stepInBar % 2 === 1 || inSecretRoom)) {
+              const aOsc = a.createOscillator();
+              const ag = a.createGain();
+              aOsc.type = currentStage === 3 ? 'sine' : 'triangle';
+              aOsc.frequency.setValueAtTime(inSecretRoom ? arpFreq * 1.25 : arpFreq, now);
+              ag.gain.setValueAtTime(0.016, now);
+              ag.gain.exponentialRampToValueAtTime(0.0008, now + 0.11);
+              aOsc.connect(ag);
+              ag.connect(a.destination);
+              aOsc.start(now);
+              aOsc.stop(now + 0.115);
+            }
+
+            // 3. Rolling Synthwave Bass
             const bOsc = a.createOscillator();
             const bg = a.createGain();
-            bOsc.type = 'triangle';
+            bOsc.type = currentStage === 6 ? 'sawtooth' : 'triangle';
             bOsc.frequency.setValueAtTime(bassFreq, now);
-            bg.gain.setValueAtTime(0.042, now);
+            bg.gain.setValueAtTime(currentStage === 6 ? 0.028 : 0.040, now);
             bg.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
             bOsc.connect(bg);
             bg.connect(a.destination);
             bOsc.start(now);
             bOsc.stop(now + 0.125);
 
-            // 3. Electronic Kick / Snare Pulse on beats 0 and 4
+            // 4. Soft Chiptune Percussion Pulse on beats 0 and 4
             if (stepInBar === 0 || stepInBar === 4) {
               const kOsc = a.createOscillator();
               const kg = a.createGain();
               kOsc.type = 'sine';
-              kOsc.frequency.setValueAtTime(stepInBar === 0 ? 115 : 175, now);
+              kOsc.frequency.setValueAtTime(stepInBar === 0 ? 110 : 165, now);
               kOsc.frequency.exponentialRampToValueAtTime(32, now + 0.08);
-              kg.gain.setValueAtTime(0.048, now);
+              kg.gain.setValueAtTime(0.044, now);
               kg.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
               kOsc.connect(kg);
               kg.connect(a.destination);
@@ -1722,14 +1776,19 @@
           canvas.focus();
           onDone();
         };
-        const safetyTimer = setTimeout(finish, 4000);
+        // 4000ms fallback only if adStarted never fires (e.g. blocked SDK / dead network).
+        // As soon as adStarted fires, clear the pre-start timer so an active video ad is never cut short!
+        const preStartTimer = setTimeout(finish, 4000);
         try {
           window.CrazyGames.SDK.ad.requestAd('midgame', {
-            adStarted: () => { if (!settled) { adPlaying = true; syncMuteUI(); } },
-            adFinished: () => { clearTimeout(safetyTimer); finish(); },
-            adError: () => { clearTimeout(safetyTimer); finish(); }
+            adStarted: () => {
+              clearTimeout(preStartTimer);
+              if (!settled) { adPlaying = true; syncMuteUI(); }
+            },
+            adFinished: () => { clearTimeout(preStartTimer); finish(); },
+            adError: () => { clearTimeout(preStartTimer); finish(); }
           });
-        } catch (e) { clearTimeout(safetyTimer); finish(); }
+        } catch (e) { clearTimeout(preStartTimer); finish(); }
       }
 
       function showRewardedAd(onReward) {
@@ -1894,7 +1953,8 @@
             selectOrUnlockHero(nextId);
             updateMenuFocusUI();
           } else if (menuRow === 1) {
-            currentStage = ((currentStage - 1 + d + 6) % 6) + 1;
+            const maxUnlocked = Math.max(1, save.unlockedStage || 1);
+            currentStage = ((currentStage - 1 + d + maxUnlocked) % maxUnlocked) + 1;
             stageSelectedDuringBoot = true;
             sfx('fruit');
             applyTexts();
@@ -1951,7 +2011,13 @@
         if (state === 'menu' || state === 'paused') {
           const digitMatch = c.match(/^(?:Digit|Numpad)([1-6])$/);
           if (digitMatch) {
-            currentStage = parseInt(digitMatch[1], 10);
+            const reqStage = parseInt(digitMatch[1], 10);
+            const maxUnlocked = Math.max(1, save.unlockedStage || 1);
+            if (reqStage > maxUnlocked) {
+              sfx('hurt');
+              return;
+            }
+            currentStage = reqStage;
             stageSelectedDuringBoot = true;
             sfx('fruit');
             if (state === 'paused') {
@@ -6648,26 +6714,8 @@
         }
         ctx.translate(-Math.floor(camX) + Math.round(shakeX), Math.round(shakeY));
 
-        // 1b. Start Pad & Bilingual In-World Signposts
+        // 1b. Start Pad (Floating world text billboards removed for clean 16-bit visual clarity)
         drawSpriteFrame('start_idle', 0, 1, 64, 64, startPadObj.x, startPadObj.y, startPadObj.w, startPadObj.h, false);
-
-        signs.forEach((sg) => {
-          if (sg.x < camX - 260 || sg.x > camX + vw + 260) return;
-          const label = lang === 'ru' ? sg.ru : sg.en;
-          ctx.font = '900 11.5px "Segoe UI", sans-serif';
-          const tw = ctx.measureText(label).width + 20;
-          const bx = Math.floor(sg.x - tw / 2 + 22);
-          const by = Math.floor(sg.y);
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-          ctx.strokeStyle = '#facc15';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.roundRect(bx, by, tw, 24, 7);
-          ctx.fill();
-          ctx.stroke();
-          ctx.fillStyle = '#fef08a';
-          ctx.fillText(label, bx + 10, by + 16);
-        });
 
         // Muted background landmarks frame the hazards without resembling solid platforms.
         if (!inSecretRoom && (currentStage === 5 || currentStage === 6)) {
@@ -6702,7 +6750,7 @@
           ctx.restore();
         }
 
-        // 2. Solid Blocks & Terrain Tiles (from terrain.png & box1/box3)
+        // 2. Solid Blocks & Biome-Coherent 16-Bit Pixel Terrain Tiles
         const ter = IMG.terrain;
         const biomeOffsetY = currentStage === 2 ? 64 : (currentStage === 3 ? 128 : 0);
 
@@ -6711,48 +6759,145 @@
           const by = Math.floor(b.y + b.bump);
 
           if (b.kind === 'grass' && ter && ter.complete) {
-            const sx = b.colPos === 'left' ? 96 : (b.colPos === 'right' ? 128 : 112);
-            ctx.drawImage(ter, sx, biomeOffsetY, 16, 16, b.x, by, TILE, TILE);
-            for (let ty = by + TILE; ty < by + b.h; ty += TILE) {
-              ctx.drawImage(ter, sx, biomeOffsetY + 16, 16, 16, b.x, ty, TILE, TILE);
-            }
-            // Subtle environmental surface details (swaying grass blades / crystals / pebbles every few tiles)
             const colHash = Math.abs(Math.round(b.x / TILE));
-            if (b.colPos === 'mid' && colHash % 3 === 0) {
-              const sway = Math.sin(clock * 3.2 + colHash) * 1.8;
-              ctx.save();
-              if (currentStage === 2) {
-                // Tiny glowing cave crystal on floor
-                ctx.fillStyle = '#c084fc';
-                ctx.beginPath();
-                ctx.moveTo(b.x + 14, by);
-                ctx.lineTo(b.x + 17, by - 7);
-                ctx.lineTo(b.x + 20, by);
-                ctx.fill();
-              } else if (currentStage === 3) {
-                // Swaying sea kelp blades
-                ctx.strokeStyle = '#2dd4bf';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(b.x + 18, by);
-                ctx.quadraticCurveTo(b.x + 18 + sway, by - 6, b.x + 18 + sway * 1.4, by - 11);
-                ctx.stroke();
-              } else if (currentStage !== 6) {
-                // Swaying emerald grass tufts & tiny wildflower buds
-                ctx.strokeStyle = currentStage === 5 ? '#d97706' : '#4ade80';
-                ctx.lineWidth = 2;
-                for (const gx of [12, 18, 24]) {
-                  ctx.beginPath();
-                  ctx.moveTo(b.x + gx, by + 1);
-                  ctx.lineTo(b.x + gx + sway + (gx - 18) * 0.3, by - 6);
-                  ctx.stroke();
-                }
-                if (colHash % 6 === 0 && currentStage === 1) {
-                  ctx.fillStyle = '#fde047';
-                  ctx.fillRect(b.x + 17 + sway, by - 8, 3, 3);
-                }
+            // Secret Vault 5: Volcanic Magma Basalt & Glowing Lava Crust!
+            if (inSecretRoom && currentStage === 5) {
+              ctx.fillStyle = '#1c1917';
+              ctx.fillRect(b.x, by, TILE, b.h);
+              // Stepped 16-bit basalt blocks
+              ctx.fillStyle = '#292524';
+              ctx.fillRect(b.x + 2, by + 12, 18, 14);
+              ctx.fillRect(b.x + 22, by + 14, 18, 12);
+              ctx.fillRect(b.x + 6, by + 30, 20, 14);
+              ctx.fillRect(b.x + 28, by + 32, 12, 12);
+              // Glowing magma veins between basalt stones
+              ctx.fillStyle = (colHash + Math.floor(clock * 4)) % 2 === 0 ? '#f97316' : '#ef4444';
+              ctx.fillRect(b.x + 20, by + 14, 2, 16);
+              ctx.fillRect(b.x + 8, by + 28, 22, 2);
+              // Crisp pixel-art molten top crust
+              ctx.fillStyle = '#0c0a09';
+              ctx.fillRect(b.x, by, TILE, 3);
+              ctx.fillStyle = '#ea580c';
+              ctx.fillRect(b.x, by + 3, TILE, 5);
+              ctx.fillStyle = '#fde047';
+              for (let px = 2; px < TILE - 4; px += 8) {
+                ctx.fillRect(b.x + px, by + 3, 4, 2);
               }
-              ctx.restore();
+              ctx.fillStyle = '#7c2d12';
+              for (let px = 0; px < TILE; px += 6) {
+                ctx.fillRect(b.x + px, by + 8, 4, (px % 12 === 0) ? 4 : 2);
+              }
+            } else if (currentStage === 6 || (inSecretRoom && (currentStage === 4 || currentStage === 6))) {
+              // Stage 6 & Cyber/Solar Vaults (4 & 6): 16-Bit Cyber Steel Decking & Neon Circuit Trim!
+              const isSolar = inSecretRoom && currentStage === 4;
+              ctx.fillStyle = isSolar ? '#1e1b4b' : '#0f172a';
+              ctx.fillRect(b.x, by, TILE, b.h);
+              // Metallic armor sub-panels
+              ctx.fillStyle = isSolar ? '#312e81' : '#1e293b';
+              ctx.fillRect(b.x + 2, by + 12, TILE - 4, 16);
+              ctx.fillRect(b.x + 2, by + 32, TILE - 4, b.h - 34);
+              // Dark pixel rivets
+              ctx.fillStyle = '#020617';
+              ctx.fillRect(b.x + 5, by + 15, 3, 3);
+              ctx.fillRect(b.x + TILE - 8, by + 15, 3, 3);
+              // Top pixel border & glowing neon bus bar
+              ctx.fillStyle = '#020617';
+              ctx.fillRect(b.x, by, TILE, 2);
+              ctx.fillStyle = isSolar ? '#f59e0b' : '#38bdf8';
+              ctx.fillRect(b.x, by + 2, TILE, 4);
+              ctx.fillStyle = isSolar ? '#fef08a' : '#bae6fd';
+              ctx.fillRect(b.x + 4, by + 2, 14, 2);
+              ctx.fillStyle = '#334155';
+              ctx.fillRect(b.x, by + 6, TILE, 4);
+              // Glowing vertical circuit node
+              if (colHash % 2 === 0) {
+                ctx.fillStyle = isSolar ? '#fbbf24' : ((colHash % 4 === 0) ? '#e879f9' : '#22d3ee');
+                ctx.fillRect(b.x + 20, by + 12, 4, 10);
+                ctx.fillRect(b.x + 14, by + 20, 16, 2);
+              }
+            } else if (currentStage === 5 && !inSecretRoom) {
+              // Stage 5 Overworld: Ancient Desert Temple Sandstone & Golden Pharaoh Trim!
+              ctx.fillStyle = '#78350f';
+              ctx.fillRect(b.x, by, TILE, b.h);
+              // Sandstone ashlar blocks (pixel-stepped masonry)
+              ctx.fillStyle = '#b45309';
+              ctx.fillRect(b.x + 2, by + 12, 19, 14);
+              ctx.fillRect(b.x + 23, by + 12, 19, 14);
+              ctx.fillRect(b.x + 2, by + 28, 10, 14);
+              ctx.fillRect(b.x + 14, by + 28, 20, 14);
+              ctx.fillRect(b.x + 36, by + 28, 6, 14);
+              // Highlight bevels on sandstone bricks
+              ctx.fillStyle = '#d97706';
+              ctx.fillRect(b.x + 2, by + 12, 19, 2);
+              ctx.fillRect(b.x + 23, by + 12, 19, 2);
+              ctx.fillRect(b.x + 14, by + 28, 20, 2);
+              // Top golden desert slab cap
+              ctx.fillStyle = '#451a03';
+              ctx.fillRect(b.x, by, TILE, 2);
+              ctx.fillStyle = '#fbbf24';
+              ctx.fillRect(b.x, by + 2, TILE, 5);
+              ctx.fillStyle = '#fef08a';
+              ctx.fillRect(b.x + 3, by + 2, TILE - 6, 2);
+              ctx.fillStyle = '#92400e';
+              ctx.fillRect(b.x, by + 7, TILE, 3);
+              if (b.colPos === 'mid' && colHash % 4 === 0) {
+                // Tiny pixel desert sandstone ruin tooth on surface
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(b.x + 18, by - 4, 8, 4);
+                ctx.fillStyle = '#78350f';
+                ctx.fillRect(b.x + 18, by - 5, 8, 1);
+              }
+            } else if (currentStage === 4 && !inSecretRoom) {
+              // Stage 4 Overworld: Stratosphere Cloud-Marble & Golden Aether Trim!
+              ctx.fillStyle = '#1e293b';
+              ctx.fillRect(b.x, by, TILE, b.h);
+              ctx.fillStyle = '#334155';
+              ctx.fillRect(b.x + 2, by + 12, 18, 14);
+              ctx.fillRect(b.x + 22, by + 12, 20, 14);
+              ctx.fillRect(b.x + 6, by + 28, 24, 14);
+              // Top cloud-marble & gold trim
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(b.x, by, TILE, 2);
+              ctx.fillStyle = '#f8fafc';
+              ctx.fillRect(b.x, by + 2, TILE, 5);
+              ctx.fillStyle = '#bae6fd';
+              for (let px = 0; px < TILE; px += 8) {
+                ctx.fillRect(b.x + px, by + 7, 6, 3);
+              }
+              ctx.fillStyle = '#facc15';
+              ctx.fillRect(b.x, by + 10, TILE, 2);
+            } else {
+              // Stages 1, 2, 3 (and Vaults 1, 2, 3): Classic Pixel Adventure Terrain Sheet
+              const sx = b.colPos === 'left' ? 96 : (b.colPos === 'right' ? 128 : 112);
+              ctx.drawImage(ter, sx, biomeOffsetY, 16, 16, b.x, by, TILE, TILE);
+              for (let ty = by + TILE; ty < by + b.h; ty += TILE) {
+                ctx.drawImage(ter, sx, biomeOffsetY + 16, 16, 16, b.x, ty, TILE, TILE);
+              }
+              // Subtle environmental surface details (swaying grass blades / crystals / sea kelp)
+              if (b.colPos === 'mid' && colHash % 3 === 0) {
+                const sway = Math.round(Math.sin(clock * 3.2 + colHash) * 1.8);
+                ctx.save();
+                if (currentStage === 2) {
+                  ctx.fillStyle = '#581c87';
+                  ctx.fillRect(b.x + 15, by - 7, 6, 7);
+                  ctx.fillStyle = '#c084fc';
+                  ctx.fillRect(b.x + 16, by - 6, 4, 6);
+                } else if (currentStage === 3) {
+                  ctx.fillStyle = '#14b8a6';
+                  ctx.fillRect(b.x + 17, by - 5, 3, 5);
+                  ctx.fillRect(b.x + 17 + sway, by - 10, 3, 5);
+                } else if (currentStage === 1) {
+                  ctx.fillStyle = '#4ade80';
+                  ctx.fillRect(b.x + 12 + sway, by - 5, 2, 5);
+                  ctx.fillRect(b.x + 18 + sway, by - 6, 2, 6);
+                  ctx.fillRect(b.x + 24 + sway, by - 4, 2, 4);
+                  if (colHash % 6 === 0) {
+                    ctx.fillStyle = '#fde047';
+                    ctx.fillRect(b.x + 17 + sway, by - 8, 3, 3);
+                  }
+                }
+                ctx.restore();
+              }
             }
           } else if (b.kind === 'brick' && ter && ter.complete) {
             ctx.drawImage(ter, 272, 64, 16, 16, b.x, by, b.w, b.h);
@@ -7196,12 +7341,12 @@
           }
         });
 
-        // 10. 6 Visually Distinct World Guardian Bosses!
+        // 10. 6 Visually Distinct 16-Bit Pixel-Art World Guardian Bosses!
         if (boss && !boss.dead) {
           const bFlip = boss.vx > 0;
           const bDir = bFlip ? 1 : -1;
-          const key = boss.hurtTimer > 0 ? 'rino_hit' : 'rino_run';
           const stNum = boss.stageNum || currentStage;
+          const isHurt = boss.hurtTimer > 0 && Math.floor(clock * 24) % 2 === 0;
           if (boss.hp <= Math.ceil(boss.maxHp * 0.67)) {
             ctx.save();
             const flareGrad = ctx.createRadialGradient(
@@ -7216,134 +7361,262 @@
             ctx.fill();
             ctx.restore();
           }
-          const frames = boss.hurtTimer > 0 ? 5 : 6;
-          const drawW = boss.isHeavy ? 110 : 90;
-          const drawH = boss.isHeavy ? 82 : 68;
-          drawSpriteFrame(key, eFrame, frames, 52, 34, boss.x - 8, boss.y - 6, drawW, drawH, bFlip);
 
-          // Stage-Specific Boss Armor, Weapons & Crest!
-          const cx = boss.x + boss.w / 2 + (bFlip ? 6 : -6);
-          const cy = boss.y - 8 + Math.sin(clock * 14) * 2;
+          const bx = Math.round(boss.x);
+          const by = Math.round(boss.y);
+          const bw = boss.w;
+          const bh = boss.h;
+          const cx = Math.round(bx + bw / 2);
+          const bob = Math.round(Math.sin(clock * 10) * 2);
+
           ctx.save();
           if (stNum === 1) {
-            // World 1-1: Forest Behemoth Royal Golden Crown & Emerald Horn
+            // World 1-1: Forest Guardian Behemoth (Pixel Adventure Rhino + Pixel-Art Royal Crown & Emerald Horn!)
+            const key = boss.hurtTimer > 0 ? 'rino_hit' : 'rino_run';
+            const frames = boss.hurtTimer > 0 ? 5 : 6;
+            drawSpriteFrame(key, eFrame, frames, 52, 34, bx - 8, by - 6, 90, 68, bFlip);
+            const crX = cx + (bFlip ? 6 : -6);
+            const crY = by - 8 + bob;
+            // Crisp 16-bit Pixel Crown
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(crX - 14, crY - 12, 28, 14);
             ctx.fillStyle = '#facc15';
-            ctx.strokeStyle = '#854d0e';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(cx - 12, cy);
-            ctx.lineTo(cx - 14, cy - 12);
-            ctx.lineTo(cx - 5, cy - 5);
-            ctx.lineTo(cx, cy - 15);
-            ctx.lineTo(cx + 5, cy - 5);
-            ctx.lineTo(cx + 14, cy - 12);
-            ctx.lineTo(cx + 12, cy);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
+            ctx.fillRect(crX - 12, crY - 6, 24, 6);
+            ctx.fillRect(crX - 12, crY - 10, 4, 4);
+            ctx.fillRect(crX - 2, crY - 12, 4, 6);
+            ctx.fillRect(crX + 8, crY - 10, 4, 4);
             ctx.fillStyle = '#22c55e';
-            ctx.beginPath();
-            ctx.arc(cx, cy - 5, 3, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillRect(crX - 2, crY - 5, 4, 3);
           } else if (stNum === 2) {
-            // World 1-2: Subterranean Drill Colossus (Spinning Titanium Nose Drill & Amethyst Back Spikes!)
-            const noseX = bFlip ? boss.x + boss.w + 4 : boss.x - 4;
-            const noseY = boss.y + boss.h * 0.52;
-            ctx.fillStyle = '#cbd5e1';
-            ctx.strokeStyle = '#334155';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(noseX, noseY - 12);
-            ctx.lineTo(noseX + bDir * 28, noseY + Math.sin(clock * 40) * 2);
-            ctx.lineTo(noseX, noseY + 12);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            // Amethyst dorsal crystal spikes
-            ctx.fillStyle = '#c084fc';
-            ctx.strokeStyle = '#581c87';
+            // World 1-2: Subterranean Crystal Drill Colossus (Armored Crawler Tank + Spinning Titanium Drill + Amethyst Geode Core!)
+            const treadShift = Math.floor(clock * 24) % 8;
+            // 1. Heavy Armored Treads
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(bx + 4, by + bh - 18, bw - 8, 18);
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(bx + 6, by + bh - 16, bw - 12, 14);
+            ctx.fillStyle = '#94a3b8';
+            for (let tx = bx + 8 + treadShift; tx < bx + bw - 12; tx += 12) {
+              ctx.fillRect(tx, by + bh - 14, 6, 10);
+            }
+            // 2. Main Hull Chassis (Stepped 16-bit Pixel Armor)
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(bx + 2, by + 12 + bob, bw - 4, bh - 26);
+            ctx.fillStyle = isHurt ? '#fca5a5' : '#475569';
+            ctx.fillRect(bx + 4, by + 14 + bob, bw - 8, bh - 30);
+            ctx.fillStyle = isHurt ? '#ef4444' : '#64748b';
+            ctx.fillRect(bx + 8, by + 16 + bob, bw - 16, 10);
+            // 3. Dorsal Amethyst Crystal Spikes
             for (let k = -1; k <= 1; k++) {
-              ctx.beginPath();
-              ctx.moveTo(cx + k * 14 - 6, cy + 6);
-              ctx.lineTo(cx + k * 14, cy - 14 - (k === 0 ? 5 : 0));
-              ctx.lineTo(cx + k * 14 + 6, cy + 6);
-              ctx.closePath();
-              ctx.fill();
-              ctx.stroke();
+              const sx = cx + k * 18;
+              const sh = k === 0 ? 18 : 13;
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(sx - 6, by + 12 + bob - sh, 12, sh);
+              ctx.fillStyle = '#a855f7';
+              ctx.fillRect(sx - 4, by + 14 + bob - sh, 8, sh - 2);
+              ctx.fillStyle = '#e879f9';
+              ctx.fillRect(sx - 2, by + 14 + bob - sh, 3, sh - 4);
+            }
+            // 4. Glowing Amethyst Reactor Core & Angry Pixel Visor
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(cx - 10, by + 26 + bob, 20, 16);
+            ctx.fillStyle = '#c084fc';
+            ctx.fillRect(cx - 8, by + 28 + bob, 16, 12);
+            ctx.fillStyle = '#f3e8ff';
+            ctx.fillRect(cx - 4, by + 30 + bob, 6, 6);
+            const eyeX = bFlip ? bx + bw - 22 : bx + 8;
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(eyeX, by + 20 + bob, 12, 6);
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(eyeX + (bFlip ? 6 : 0), by + 21 + bob, 6, 4);
+            // 5. Giant Spinning Stepped Pixel Titanium Nose Drill
+            const drillBaseX = bFlip ? bx + bw - 2 : bx + 2;
+            const drillY = by + 24 + bob;
+            const spin = Math.floor(clock * 28) % 2;
+            for (let s = 0; s < 4; s++) {
+              const segW = 7;
+              const segH = 24 - s * 5;
+              const sx = bFlip ? (drillBaseX + s * segW) : (drillBaseX - (s + 1) * segW);
+              const sy = drillY + Math.floor((24 - segH) / 2);
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(sx - 1, sy - 2, segW + 2, segH + 4);
+              ctx.fillStyle = (s + spin) % 2 === 0 ? '#e2e8f0' : '#94a3b8';
+              ctx.fillRect(sx, sy, segW, segH);
             }
           } else if (stNum === 3) {
-            // World 1-3: Abyssal Leviathan (Bioluminescent Sea Fins & Golden Poseidon Trident Crown!)
-            ctx.fillStyle = 'rgba(6, 182, 212, 0.78)';
-            ctx.strokeStyle = '#67e8f9';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(cx - 22, cy + 8);
-            ctx.quadraticCurveTo(cx - 8, cy - 22, cx + 6, cy + 6);
-            ctx.lineTo(cx + 22, cy - 16);
-            ctx.lineTo(cx + 18, cy + 8);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            // Glowing Trident Prongs
-            ctx.strokeStyle = '#fde047';
-            ctx.lineWidth = 2.5;
-            for (let p of [-8, 0, 8]) {
-              ctx.beginPath();
-              ctx.moveTo(cx + p, cy);
-              ctx.lineTo(cx + p, cy - 14 - (p === 0 ? 4 : 0));
-              ctx.stroke();
+            // World 1-3: Bioluminescent Abyssal Kraken Leviathan (Deep-Sea Mantle, Glowing Eyes, Trident Crown & Animated Pixel Tentacles!)
+            // 1. Waving Pixel-Art Tentacles at Base
+            for (let t = 0; t < 5; t++) {
+              const tx = bx + 8 + t * 15;
+              const wave = Math.round(Math.sin(clock * 9 + t * 1.3) * 4);
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(tx - 2 + wave, by + bh - 22, 12, 22);
+              ctx.fillStyle = isHurt ? '#fca5a5' : '#0891b2';
+              ctx.fillRect(tx + wave, by + bh - 20, 8, 18);
+              ctx.fillStyle = '#67e8f9';
+              ctx.fillRect(tx + 2 + wave, by + bh - 14, 4, 4);
             }
+            // 2. Armored Deep-Sea Leviathan Mantle / Carapace
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(bx + 6, by + 6 + bob, bw - 12, bh - 24);
+            ctx.fillRect(bx + 2, by + 16 + bob, bw - 4, bh - 36);
+            ctx.fillStyle = isHurt ? '#ef4444' : '#0e7490';
+            ctx.fillRect(bx + 8, by + 8 + bob, bw - 16, bh - 28);
+            ctx.fillStyle = isHurt ? '#fca5a5' : '#06b6d4';
+            ctx.fillRect(bx + 4, by + 18 + bob, bw - 8, bh - 40);
+            // Bioluminescent cyan pixel spots on mantle
+            ctx.fillStyle = '#a5f3fc';
+            ctx.fillRect(bx + 14, by + 14 + bob, 6, 6);
+            ctx.fillRect(cx - 3, by + 12 + bob, 6, 6);
+            ctx.fillRect(bx + bw - 20, by + 14 + bob, 6, 6);
+            // 3. Fierce Glowing Abyssal Eyes
+            const eyeOff = bFlip ? 10 : -10;
+            for (const ex of [cx - 14 + eyeOff, cx + 6 + eyeOff]) {
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(ex - 2, by + 26 + bob, 12, 10);
+              ctx.fillStyle = '#fde047';
+              ctx.fillRect(ex, by + 28 + bob, 8, 6);
+              ctx.fillStyle = '#ef4444';
+              ctx.fillRect(ex + (bFlip ? 4 : 0), by + 29 + bob, 4, 4);
+            }
+            // 4. Golden Poseidon Trident Crest
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(cx - 14, by - 12 + bob, 28, 18);
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(cx - 12, by - 2 + bob, 24, 6);
+            ctx.fillRect(cx - 12, by - 10 + bob, 4, 8);
+            ctx.fillRect(cx - 2, by - 14 + bob, 4, 12);
+            ctx.fillRect(cx + 8, by - 10 + bob, 4, 8);
           } else if (stNum === 4) {
-            // World 1-4: Stratosphere Valkyrie Titan (Swept Golden Aero-Wings & Storm Halo!)
-            const wingFlap = Math.sin(clock * 12) * 6;
-            ctx.fillStyle = '#fde047';
-            ctx.strokeStyle = '#ca8a04';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(cx - bDir * 6, cy + 16);
-            ctx.lineTo(cx - bDir * 34, cy - 8 + wingFlap);
-            ctx.lineTo(cx - bDir * 24, cy + 22);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            // Storm Halo
-            ctx.strokeStyle = '#38bdf8';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.ellipse(cx, cy - 10, 16, 5, 0, 0, Math.PI * 2);
-            ctx.stroke();
-          } else if (stNum === 5) {
-            // World 1-5: Pharaoh Magma Sphinx (Gold & Lapis Nemes Headdress + Magma Cobra Uraeus!)
+            // World 1-4: Stratosphere Valkyrie Aero-Titan (Golden-Armored Sky-Mech with Flapping Pixel Wings & Twin Jet Thrusters!)
+            const flap = Math.round(Math.sin(clock * 14) * 6);
+            // 1. Swept Pixel-Art Golden Aero-Wings
+            const wingX = bFlip ? bx - 16 : bx + bw - 12;
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(wingX - 2, by + 8 + flap, 30, 18);
+            ctx.fillRect(wingX + (bFlip ? -8 : 6), by + 2 + flap, 24, 10);
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(wingX, by + 10 + flap, 26, 14);
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(wingX + (bFlip ? -6 : 8), by + 4 + flap, 20, 6);
+            // 2. Hover Thruster Legs & Plasma Exhaust Plumes
+            for (const lx of [bx + 14, bx + bw - 28]) {
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(lx, by + bh - 18, 14, 14);
+              ctx.fillStyle = '#475569';
+              ctx.fillRect(lx + 2, by + bh - 16, 10, 10);
+              ctx.fillStyle = (Math.floor(clock * 20) % 2 === 0) ? '#38bdf8' : '#e0f2fe';
+              ctx.fillRect(lx + 3, by + bh - 4, 8, 6);
+            }
+            // 3. Valkyrie White- & Gold-Plated Chassis
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(bx + 8, by + 8 + bob, bw - 16, bh - 24);
+            ctx.fillStyle = isHurt ? '#fca5a5' : '#f8fafc';
+            ctx.fillRect(bx + 10, by + 10 + bob, bw - 20, bh - 28);
             ctx.fillStyle = '#eab308';
-            ctx.strokeStyle = '#1e3a8a';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.moveTo(cx - 18, cy + 10);
-            ctx.lineTo(cx - 14, cy - 14);
-            ctx.lineTo(cx + 14, cy - 14);
-            ctx.lineTo(cx + 18, cy + 10);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
+            ctx.fillRect(bx + 10, by + 10 + bob, bw - 20, 8);
+            ctx.fillRect(cx - 6, by + 18 + bob, 12, bh - 36);
+            // 4. Cyan Storm Visor & Storm Lance
+            const vX = bFlip ? bx + bw - 26 : bx + 10;
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(vX - 2, by + 20 + bob, 18, 10);
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(vX, by + 22 + bob, 14, 6);
+            // Forward Storm Lance
+            const lanceX = bFlip ? bx + bw - 6 : bx - 18;
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(lanceX - 2, by + 32 + bob, 26, 10);
+            ctx.fillStyle = '#bae6fd';
+            ctx.fillRect(lanceX, by + 34 + bob, 22, 6);
+          } else if (stNum === 5) {
+            // World 1-5: Ancient Pharaoh Magma Sphinx (Stone & Gold Colossus with Royal Nemes Headdress, Solar Disk & Magma Eyes!)
+            // 1. Heavy Stone Lion Paws / Pedestal Base
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(bx + 2, by + bh - 18, bw - 4, 18);
+            ctx.fillStyle = '#b45309';
+            ctx.fillRect(bx + 4, by + bh - 16, bw - 8, 14);
+            ctx.fillStyle = '#fbbf24';
+            for (let px = bx + 8; px < bx + bw - 12; px += 16) {
+              ctx.fillRect(px, by + bh - 10, 10, 8);
+            }
+            // 2. Royal Striped Gold & Lapis Lazuli Nemes Headdress
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(bx + 4, by + 4 + bob, bw - 8, bh - 20);
+            for (let ry = 0; ry < bh - 24; ry += 6) {
+              ctx.fillStyle = (ry / 6) % 2 === 0 ? '#facc15' : '#1d4ed8';
+              ctx.fillRect(bx + 6, by + 6 + bob + ry, bw - 12, 6);
+            }
+            // 3. Carved Sandstone Sphinx Faceplate & Magma Fissure Eyes
+            const faceX = bFlip ? bx + 20 : bx + 10;
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(faceX - 2, by + 14 + bob, bw - 30, bh - 34);
+            ctx.fillStyle = isHurt ? '#fca5a5' : '#d97706';
+            ctx.fillRect(faceX, by + 16 + bob, bw - 34, bh - 38);
+            // Glowing molten magma eyes
+            const eyeX = bFlip ? faceX + bw - 52 : faceX + 6;
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(eyeX - 2, by + 22 + bob, 16, 8);
             ctx.fillStyle = '#ef4444';
-            ctx.beginPath();
-            ctx.arc(cx, cy - 8, 4.5, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillRect(eyeX, by + 23 + bob, 12, 6);
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(eyeX + (bFlip ? 6 : 2), by + 24 + bob, 4, 4);
+            // Pharaoh Golden Beard
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(cx + bDir * 8 - 5, by + bh - 22 + bob, 10, 14);
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(cx + bDir * 8 - 3, by + bh - 20 + bob, 6, 10);
+            // 4. Overhead Solar Uraeus Sun Disk
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(cx - 10, by - 12 + bob, 20, 16);
+            ctx.fillStyle = '#f97316';
+            ctx.fillRect(cx - 8, by - 10 + bob, 16, 12);
+            ctx.fillStyle = '#fde047';
+            ctx.fillRect(cx - 4, by - 8 + bob, 8, 8);
           } else {
-            // World 1-6: Omega Mainframe Mecha (Cybernetic Laser Visor & Twin Shoulder Plasma Cannons!)
-            const visorX = bFlip ? boss.x + boss.w - 22 : boss.x + 4;
-            ctx.fillStyle = '#f43f5e';
-            ctx.shadowColor = '#ec4899';
-            ctx.shadowBlur = 10;
-            ctx.fillRect(visorX, boss.y + 14, 20, 6);
-            // Twin Shoulder Plasma Turrets
+            // World 1-6: Omega Cyber-Mecha MK-6 (Towering Dark-Steel Bipedal Warbot, Neon-Red Laser Visor & Shoulder Plasma Cannons!)
+            const stride = Math.round(Math.sin(clock * 14) * 5);
+            // 1. Articulated Mecha Strider Legs
+            for (const [idx, lx] of [[0, bx + 14], [1, bx + bw - 30]]) {
+              const legOff = idx === 0 ? stride : -stride;
+              ctx.fillStyle = '#020617';
+              ctx.fillRect(lx + legOff, by + bh - 22, 16, 22);
+              ctx.fillStyle = '#334155';
+              ctx.fillRect(lx + 2 + legOff, by + bh - 20, 12, 18);
+              ctx.fillStyle = '#22d3ee';
+              ctx.fillRect(lx + 4 + legOff, by + bh - 14, 8, 4);
+            }
+            // 2. Dark Cyber-Steel Armored Torso & Glowing Magenta Core
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(bx + 6, by + 8 + bob, bw - 12, bh - 28);
+            ctx.fillStyle = isHurt ? '#f43f5e' : '#1e293b';
+            ctx.fillRect(bx + 8, by + 10 + bob, bw - 16, bh - 32);
             ctx.fillStyle = '#334155';
-            ctx.strokeStyle = '#38bdf8';
-            ctx.lineWidth = 2;
-            ctx.fillRect(cx - 16, cy - 8, 22, 10);
-            ctx.strokeRect(cx - 16, cy - 8, 22, 10);
+            ctx.fillRect(bx + 12, by + 12 + bob, bw - 24, 14);
+            // Chest Omega Reactor Core
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(cx - 10, by + 28 + bob, 20, 14);
+            ctx.fillStyle = '#ec4899';
+            ctx.fillRect(cx - 8, by + 30 + bob, 16, 10);
+            ctx.fillStyle = '#fdf2f8';
+            ctx.fillRect(cx - 4, by + 32 + bob, 8, 6);
+            // 3. Scanning Neon-Red Cybernetic Laser Visor
+            const visorX = bFlip ? bx + bw - 32 : bx + 10;
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(visorX - 2, by + 14 + bob, 24, 10);
+            ctx.fillStyle = '#f43f5e';
+            ctx.fillRect(visorX, by + 16 + bob, 20, 6);
+            ctx.fillStyle = '#fef08a';
+            const scanOff = Math.floor((Math.sin(clock * 12) * 0.5 + 0.5) * 14);
+            ctx.fillRect(visorX + scanOff, by + 17 + bob, 5, 4);
+            // 4. Twin Shoulder Plasma Cannons
+            const canX = cx - 18;
+            const canY = by - 6 + bob;
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(canX - 2, canY - 2, 36, 14);
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(canX, canY, 32, 10);
             ctx.fillStyle = '#22d3ee';
-            ctx.fillRect(cx + (bFlip ? 6 : -22), cy - 6, 8, 6);
+            ctx.fillRect(bFlip ? canX + 26 : canX - 4, canY + 2, 8, 6);
           }
           ctx.restore();
         }
@@ -7533,41 +7806,35 @@
           ctx.restore();
         });
 
-        // Biome-Themed Bouncy Orbs / Bubbles (Bubbles in 1/3/4, Crystal Orbs in 2, Solar Spheres in 5, Plasma Nodes in 6!)
+        // Biome-Themed 16-Bit Pixel-Art Bouncy Orbs / Bubbles (Bubbles in 1/3/4, Crystal Orbs in 2, Solar Spheres in 5, Plasma Nodes in 6!)
         rainbowBubbles.forEach((rb) => {
           if (rb.x + 80 < camX - 100 || rb.x > camX + vw + 100) return;
           if (rb.popped) return;
           ctx.save();
-          const bGrad = ctx.createRadialGradient(rb.x - 6, rb.y - 6, 3, rb.x, rb.y, rb.r);
-          if (currentStage === 2) {
-            bGrad.addColorStop(0, '#f3e8ff');
-            bGrad.addColorStop(0.5, 'rgba(192, 132, 252, 0.55)');
-            bGrad.addColorStop(1, 'rgba(126, 34, 206, 0.9)');
-          } else if (currentStage === 5) {
-            bGrad.addColorStop(0, '#fef08a');
-            bGrad.addColorStop(0.5, 'rgba(251, 146, 60, 0.55)');
-            bGrad.addColorStop(1, 'rgba(234, 88, 12, 0.9)');
-          } else if (currentStage === 6) {
-            bGrad.addColorStop(0, '#ffffff');
-            bGrad.addColorStop(0.5, 'rgba(34, 211, 238, 0.55)');
-            bGrad.addColorStop(1, 'rgba(236, 72, 153, 0.9)');
-          } else {
-            bGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
-            bGrad.addColorStop(0.5, 'rgba(56, 189, 248, 0.32)');
-            bGrad.addColorStop(0.85, 'rgba(244, 114, 182, 0.48)');
-            bGrad.addColorStop(1, 'rgba(250, 204, 21, 0.85)');
-          }
-          ctx.fillStyle = bGrad;
-          ctx.beginPath();
-          ctx.arc(rb.x, rb.y, rb.r, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = currentStage === 6 ? '#22d3ee' : '#ffffff';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-          ctx.beginPath();
-          ctx.arc(rb.x - 7, rb.y - 7, 4.5, 0, Math.PI * 2);
-          ctx.fill();
+          const bx = Math.round(rb.x);
+          const by = Math.round(rb.y);
+          const outerCol = currentStage === 2 ? '#581c87' : (currentStage === 5 ? '#7c2d12' : '#0f172a');
+          const rimCol = currentStage === 2 ? '#c084fc' : (currentStage === 5 ? '#f97316' : (currentStage === 6 ? '#ec4899' : '#38bdf8'));
+          const bodyCol = currentStage === 2 ? 'rgba(168, 85, 247, 0.72)' : (currentStage === 5 ? 'rgba(251, 146, 60, 0.78)' : (currentStage === 6 ? 'rgba(34, 211, 238, 0.72)' : 'rgba(56, 189, 248, 0.52)'));
+          // Stepped 16-bit Pixel Octagon Sphere (Radius ~20px)
+          ctx.fillStyle = outerCol;
+          ctx.fillRect(bx - 10, by - 20, 20, 40);
+          ctx.fillRect(bx - 16, by - 16, 32, 32);
+          ctx.fillRect(bx - 20, by - 10, 40, 20);
+          ctx.fillStyle = rimCol;
+          ctx.fillRect(bx - 9, by - 18, 18, 36);
+          ctx.fillRect(bx - 14, by - 14, 28, 28);
+          ctx.fillRect(bx - 18, by - 9, 36, 18);
+          ctx.fillStyle = bodyCol;
+          ctx.fillRect(bx - 7, by - 15, 14, 30);
+          ctx.fillRect(bx - 12, by - 12, 24, 24);
+          ctx.fillRect(bx - 15, by - 7, 30, 14);
+          // Crisp pixel-art specular highlight & inner core
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(bx - 10, by - 11, 6, 4);
+          ctx.fillRect(bx - 11, by - 9, 4, 6);
+          ctx.fillStyle = '#fef08a';
+          ctx.fillRect(bx - 2, by - 2, 4, 4);
           ctx.restore();
         });
 
@@ -7876,29 +8143,38 @@
           ctx.restore();
         });
 
-        // 10b. Golden Energy Rings & Active Trial Cells
+        // 10b. 16-Bit Pixel-Art Golden Energy Rings & Active Trial Cells
         energyRings.forEach((er) => {
           if (er.state === 'done') return;
           if (er.x + 320 >= camX && er.x - 120 <= camX + vw) {
             ctx.save();
-            const pulse = Math.sin(clock * 6) * 2.5;
-            ctx.strokeStyle = er.state === 'active' ? '#38bdf8' : '#facc15';
-            ctx.lineWidth = 4;
-            ctx.shadowColor = er.state === 'active' ? '#38bdf8' : '#facc15';
-            ctx.shadowBlur = 12;
-            ctx.beginPath();
-            ctx.ellipse(er.x, er.y, 14, er.r + pulse, 0, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.strokeStyle = '#fef08a';
-            ctx.lineWidth = 1.8;
-            ctx.beginPath();
-            ctx.ellipse(er.x, er.y, 9, er.r - 4 + pulse, 0, 0, Math.PI * 2);
-            ctx.stroke();
+            const rx = Math.round(er.x);
+            const ry = Math.round(er.y);
+            const pulse = Math.round(Math.sin(clock * 6) * 2);
+            const rh = Math.round(er.r + pulse);
+            const mainCol = er.state === 'active' ? '#38bdf8' : '#facc15';
+            const hiCol = er.state === 'active' ? '#e0f2fe' : '#fef08a';
+            // Stepped 16-bit Pixel Portal Ring (Outer Dark Border -> Main Pixel Frame -> Highlight Core)
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(rx - 8, ry - rh - 2, 16, 8);
+            ctx.fillRect(rx - 8, ry + rh - 6, 16, 8);
+            ctx.fillRect(rx - 14, ry - rh + 4, 8, (rh - 4) * 2);
+            ctx.fillRect(rx + 6, ry - rh + 4, 8, (rh - 4) * 2);
+            ctx.fillStyle = mainCol;
+            ctx.fillRect(rx - 6, ry - rh, 12, 4);
+            ctx.fillRect(rx - 6, ry + rh - 4, 12, 4);
+            ctx.fillRect(rx - 12, ry - rh + 4, 4, (rh - 4) * 2);
+            ctx.fillRect(rx + 8, ry - rh + 4, 4, (rh - 4) * 2);
+            ctx.fillStyle = hiCol;
+            ctx.fillRect(rx - 4, ry - rh + 1, 8, 2);
+            ctx.fillRect(rx - 11, ry - 8, 2, 16);
             if (er.state === 'active') {
-              ctx.font = '900 12px "Segoe UI", sans-serif';
+              ctx.font = '900 11.5px "Segoe UI", sans-serif';
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(rx - 22, ry + rh + 4, 44, 15);
               ctx.fillStyle = '#fef08a';
               ctx.textAlign = 'center';
-              ctx.fillText(`⏱️ ${er.timer.toFixed(1)}s`, er.x, er.y - er.r - 10);
+              ctx.fillText(`${er.timer.toFixed(1)}s`, rx, ry + rh + 15);
             }
             ctx.restore();
           }
@@ -7906,51 +8182,50 @@
             er.cells.forEach((cell, idx) => {
               if (cell.collected) return;
               ctx.save();
-              const bob = Math.sin(clock * 8 + idx) * 4;
-              ctx.fillStyle = '#facc15';
-              ctx.strokeStyle = '#ffffff';
-              ctx.lineWidth = 2;
-              ctx.shadowColor = '#facc15';
-              ctx.shadowBlur = 10;
-              ctx.beginPath();
-              ctx.arc(cell.x, cell.y + bob, 9, 0, Math.PI * 2);
-              ctx.fill();
-              ctx.stroke();
+              const cx = Math.round(cell.x);
+              const cy = Math.round(cell.y + Math.sin(clock * 8 + idx) * 4);
+              // Crisp 16-bit Pixel Battery Cell / Gem
               ctx.fillStyle = '#0f172a';
-              ctx.font = '900 10px sans-serif';
-              ctx.textAlign = 'center';
-              ctx.fillText('⚡', cell.x, cell.y + bob + 3.5);
+              ctx.fillRect(cx - 8, cy - 8, 16, 16);
+              ctx.fillStyle = '#eab308';
+              ctx.fillRect(cx - 6, cy - 6, 12, 12);
+              ctx.fillStyle = '#fef08a';
+              ctx.fillRect(cx - 4, cy - 4, 8, 4);
+              // Pixel lightning bolt inside cell
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(cx - 1, cy - 3, 3, 3);
+              ctx.fillRect(cx - 2, cy, 4, 2);
+              ctx.fillRect(cx, cy + 2, 2, 3);
               ctx.restore();
             });
           }
         });
 
-        // 10c. Boss Arena Counter-Shock Plasma Cores & Boss Stun Indicator
+        // 10c. 16-Bit Pixel-Art Boss Arena Counter-Shock Plasma Cores & Boss Stun Indicator
         bossCores.forEach((bc) => {
           if (bc.state === 'respawn' || (boss && boss.dead)) return;
           if (bc.x + 80 < camX || bc.x - 80 > camX + vw) return;
           ctx.save();
-          const cx = bc.x + bc.w / 2;
-          const cy = bc.y + bc.h / 2;
-          const r = 13 + Math.sin(clock * 10) * 2;
+          const cx = Math.round(bc.x + bc.w / 2);
+          const cy = Math.round(bc.y + bc.h / 2 + Math.sin(clock * 8) * 2);
+          // Stepped 16-Bit Pixel Plasma Core Octagon (No overlapping floating text!)
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(cx - 8, cy - 14, 16, 28);
+          ctx.fillRect(cx - 14, cy - 8, 28, 16);
+          ctx.fillRect(cx - 12, cy - 12, 24, 24);
           ctx.fillStyle = '#0284c7';
-          ctx.strokeStyle = '#e0f2fe';
-          ctx.lineWidth = 2.5;
-          ctx.shadowColor = '#38bdf8';
-          ctx.shadowBlur = 14;
-          ctx.beginPath();
-          ctx.arc(cx, cy, r, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
+          ctx.fillRect(cx - 6, cy - 12, 12, 24);
+          ctx.fillRect(cx - 12, cy - 6, 24, 12);
+          ctx.fillRect(cx - 10, cy - 10, 20, 20);
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(cx - 8, cy - 8, 16, 16);
+          ctx.fillStyle = '#e0f2fe';
+          ctx.fillRect(cx - 6, cy - 6, 5, 4);
+          // Crisp Pixel Lightning Bolt in Core Center
           ctx.fillStyle = '#fde047';
-          ctx.font = '900 13px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('⚡', cx, cy + 4.5);
-          if (bc.state === 'idle') {
-            ctx.font = '900 10px "Segoe UI", sans-serif';
-            ctx.fillStyle = '#7dd3fc';
-            ctx.fillText(lang === 'ru' ? 'УДАРЬ В БОССА!' : 'KICK AT BOSS!', cx, bc.y - 8);
-          }
+          ctx.fillRect(cx, cy - 6, 4, 4);
+          ctx.fillRect(cx - 3, cy - 2, 6, 3);
+          ctx.fillRect(cx - 1, cy + 1, 4, 5);
           ctx.restore();
         });
 
@@ -8379,15 +8654,23 @@
         const row = document.getElementById('stage-buttons');
         if (!row) return;
         row.innerHTML = '';
+        const maxUnlocked = Math.max(1, save.unlockedStage || 1);
+        if (currentStage > maxUnlocked) currentStage = maxUnlocked;
         I18N[lang].stages.forEach((label, idx) => {
           const stNum = idx + 1;
+          const isUnlocked = stNum <= maxUnlocked;
           const btn = document.createElement('button');
           btn.type = 'button';
-          btn.className = 'stage-btn' + (currentStage === stNum ? ' active' : '');
+          btn.disabled = !isUnlocked;
+          btn.className = 'stage-btn' + (currentStage === stNum ? ' active' : '') + (!isUnlocked ? ' locked' : '');
           const stStars = (save.stageStars && save.stageStars[stNum]) ? save.stageStars[stNum].filter(Boolean).length : 0;
           const starBadge = stStars > 0 ? ` (${stStars}/3⭐)` : '';
-          btn.textContent = `${label}${starBadge}`;
+          btn.textContent = isUnlocked ? `${label}${starBadge}` : `🔒 ${label}`;
           btn.addEventListener('click', () => {
+            if (stNum > Math.max(1, save.unlockedStage || 1)) {
+              sfx('hurt');
+              return;
+            }
             currentStage = stNum;
             stageSelectedDuringBoot = true;
             applyTexts();
@@ -8604,6 +8887,8 @@
 
       function startStage(fromCheckpoint = false) {
         if (!gameReady || adPending) return;
+        const maxUnlocked = Math.max(1, save.unlockedStage || 1);
+        if (currentStage > maxUnlocked) currentStage = maxUnlocked;
         getAudio();
         startBGM();
         resetAllInputs();
@@ -8975,7 +9260,10 @@
         set checkpointSaved(v) { if (!v) checkpoint = null; },
         get checkpointX() { return checkpoint?.x ?? 2.5 * TILE; },
         startStage: (st, fromCp = false) => {
-          if (st) currentStage = st;
+          if (st) {
+            currentStage = st;
+            save.unlockedStage = Math.max(save.unlockedStage || 1, st);
+          }
           startStage(fromCp);
         },
         openVictoryModal: () => openVictoryModal(),

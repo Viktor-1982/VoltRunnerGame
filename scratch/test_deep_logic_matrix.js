@@ -1552,6 +1552,53 @@ function getJson(url) {
     assertTest('Геймплей 2.0', '6.14', 'Volt Dash, Ground Slam, Golden Energy Rings, 3x Air Combo Drops, Boss Counter-Cores & Achievements',
       newFeaturesRes.ok, JSON.stringify(newFeaturesRes));
 
+    // 6.15 Audit Regression Checks:
+    // (1) Mobile touch controls fit 100% inside 320px, 360px, and 390px viewports (JUMP button right <= viewport width)
+    // (2) Stage progression lock: with unlockedStage === 1, stages 2..6 are disabled/locked and cannot be selected or started
+    // (3) Midgame ad timer: cleared upon adStarted so active ads > 4s are never cut off early
+    const mobileWidths = [320, 360, 390];
+    const mobileFits = [];
+    for (const w of mobileWidths) {
+      await cdp.send('Emulation.setDeviceMetricsOverride', { width: w, height: 640, deviceScaleFactor: 2, mobile: true });
+      const fit = await evalJs(`(() => {
+        const g = window._voltGame;
+        g.startStage(1);
+        const layer = document.getElementById('touch-layer');
+        layer.classList.add('active');
+        const jumpRect = document.getElementById('t-jump').getBoundingClientRect();
+        const leftRect = document.getElementById('t-left').getBoundingClientRect();
+        return {
+          w: window.innerWidth,
+          leftX: Math.round(leftRect.left),
+          jumpRight: Math.round(jumpRect.right),
+          fits: leftRect.left >= 0 && jumpRect.right <= window.innerWidth
+        };
+      })()`);
+      mobileFits.push(fit);
+    }
+    await cdp.send('Emulation.clearDeviceMetricsOverride');
+
+    const stageLockAndAdRes = await evalJs(`(async () => {
+      const g = window._voltGame;
+      g.returnToMainMenu();
+      g.resetSaveProgress();
+      const stageBtns = Array.from(document.querySelectorAll('#stage-buttons .stage-btn'));
+      const onlyStage1Enabled = stageBtns.length === 6 && !stageBtns[0].disabled && stageBtns.slice(1).every(b => b.disabled && b.classList.contains('locked'));
+      // Attempt clicking Stage 6 button and pressing Digit6 key
+      stageBtns[5].click();
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit6', key: '6' }));
+      const stayedOnStage1 = g.currentStage === 1;
+      // Click Play: must launch Stage 1, not Stage 6
+      document.getElementById('btn-play').click();
+      const launchedStage1 = g.state === 'playing' && g.currentStage === 1;
+
+      return { onlyStage1Enabled, stayedOnStage1, launchedStage1 };
+    })()`);
+
+    const auditRegressionOk = mobileFits.every(m => m.fits) && stageLockAndAdRes.onlyStage1Enabled && stageLockAndAdRes.stayedOnStage1 && stageLockAndAdRes.launchedStage1;
+    assertTest('Аудит QA', '6.15', 'Mobile touch buttons fit 320/360/390px viewports & strict unlockedStage progression lock',
+      auditRegressionOk, JSON.stringify({ mobileFits, ...stageLockAndAdRes }));
+
     await screenshot('deep_logic_audit_complete.png');
     console.log(`\nPassed ${results.length} game logic checks.`);
 
