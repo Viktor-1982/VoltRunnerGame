@@ -2404,6 +2404,9 @@
       let energyRings = [];   // { col, x, y, r: 28, state: 'idle'|'active'|'done', timer: 0, maxTime: 5.5, cells: [] }
       let bossCores = [];     // { x, y, w: 28, h: 28, state: 'idle'|'launched', vx: 0, respawnTimer: 0 }
       let slamRings = [];     // { x, y, r, maxR, life, maxLife }
+      let surfaceProps = [];  // { x, y, tilt: 0, vt: 0, h: 12, variant: 0 }
+      let grindRails = [];    // { x1, y1, x2, y2, stageNum }
+      let crackedCaches = []; // { col, x, y, w: 44, h: 14, broken: false }
 
       let pipeAnim = {
         active: false,
@@ -3024,6 +3027,9 @@
         energyRings = [];
         bossCores = [];
         slamRings = [];
+        surfaceProps = [];
+        grindRails = [];
+        crackedCaches = [];
         inSecretRoom = false;
         secretCooldown = 0;
         pipeAnim = {
@@ -4206,6 +4212,60 @@
         (splitBridgesByStage[stageNum] || []).forEach(([cs, ce, rowAbove]) => {
           oneWayBridges.push({ x: cs * TILE, y: FLOOR_Y - rowAbove * TILE, w: (ce - cs + 1) * TILE, h: 16 });
         });
+
+        // 6. Interactive Tactile Surface Foliage / Crystals / Corals / Neon Sensors along terrain
+        for (let c = 2; c < 484; c += 2) {
+          if (!floorMap.has(c)) continue;
+          const fy = getFloorY(c);
+          if (allPipes.some(p => Math.abs(p.col - c) <= 1)) continue;
+          if (spikes.some(sp => Math.abs(Math.round(sp.x / TILE) - c) <= 1)) continue;
+          surfaceProps.push({
+            x: c * TILE + 12 + ((c * 7) % 20),
+            y: fy,
+            tilt: 0,
+            vt: 0,
+            h: 10 + (c % 3) * 3,
+            variant: c % 3
+          });
+        }
+
+        // 7. Elevated High-Speed Volt Grind Rails (Sky energy cables with bonus battery streams!)
+        const railSpansByStage = {
+          1: [[74, 82], [268, 276]],
+          2: [[76, 84], [266, 274]],
+          3: [[84, 92], [272, 280]],
+          4: [[78, 86], [270, 278]],
+          5: [[74, 82], [268, 276]],
+          6: [[76, 84], [272, 280]]
+        };
+        (railSpansByStage[stageNum] || railSpansByStage[1]).forEach(([c1, c2]) => {
+          const x1 = c1 * TILE;
+          const x2 = c2 * TILE;
+          const y1 = Math.max(120, getFloorY(c1) - 4.2 * TILE);
+          const y2 = Math.max(135, getFloorY(c2) - 3.5 * TILE);
+          grindRails.push({ x1, y1, x2, y2, stageNum });
+        });
+
+        // 8. Slam-Through Secret Floor Caches (Break open with Ground Slam ↓ in mid-air!)
+        const cacheColsByStage = {
+          1: [60, 208],
+          2: [62, 212],
+          3: [88, 224],
+          4: [58, 208],
+          5: [64, 220],
+          6: [62, 214]
+        };
+        (cacheColsByStage[stageNum] || cacheColsByStage[1]).forEach((col) => {
+          if (!floorMap.has(col)) return;
+          crackedCaches.push({
+            col,
+            x: col * TILE,
+            y: getFloorY(col),
+            w: TILE,
+            h: 14,
+            broken: false
+          });
+        });
       }
 
       function spawnHero(retrying) {
@@ -4481,6 +4541,20 @@
                       en.hitTimer = 0.35;
                       runKills++;
                       addScore(300);
+                    }
+                  }
+                });
+                crackedCaches.forEach((cc) => {
+                  if (!cc.broken && Math.abs((hero.x + hero.w / 2) - (cc.x + cc.w / 2)) < 62 && Math.abs(b.y - cc.y) < 24) {
+                    cc.broken = true;
+                    slamHit = true;
+                    ent.vy = -510;
+                    ent.jumpsLeft = ent.maxJumps;
+                    addScore(600);
+                    sfx('powerup');
+                    addPopup(cc.x - 10, cc.y - 24, lang === 'ru' ? '💥 ТАЙНИК ВСКРЫТ! +9 🔋' : '💥 SECRET CACHE! +9 🔋', '#facc15');
+                    for (let i = -1; i <= 1; i++) {
+                      fruits.push({ x: cc.x + 4 + i * 24, y: cc.y - 36 - Math.abs(i) * 8, kind: 'pineapple', bonusVal: 3, collected: false, popTimer: 0 });
                     }
                   }
                 });
@@ -5286,6 +5360,41 @@
           sr.r = sr.maxR * (1 - Math.max(0, sr.life) / sr.maxLife);
           if (sr.life <= 0) slamRings.splice(i, 1);
         }
+
+        // 9d. Tactile Surface Foliage Spring Physics & High-Speed Volt Grind Rails
+        const heroMidX = hero.x + hero.w / 2;
+        const heroFootY = hero.y + hero.h;
+        surfaceProps.forEach((sp) => {
+          if (Math.abs(sp.x - heroMidX) < 340) {
+            if (Math.abs(sp.x - heroMidX) < 24 && Math.abs(sp.y - heroFootY) < 28 && Math.abs(hero.vx) > 25) {
+              sp.vt += Math.sign(hero.vx) * 26 * dt;
+            }
+            sp.vt += (-sp.tilt * 42 - sp.vt * 7.5) * dt;
+            sp.tilt = Math.max(-1.1, Math.min(1.1, sp.tilt + sp.vt));
+          }
+        });
+
+        grindRails.forEach((gr) => {
+          if (heroMidX >= gr.x1 && heroMidX <= gr.x2 && hero.vy >= -20 && !keys.down) {
+            const t = (heroMidX - gr.x1) / Math.max(1, gr.x2 - gr.x1);
+            const railY = gr.y1 + (gr.y2 - gr.y1) * t;
+            if (Math.abs(heroFootY - railY) <= 16) {
+              hero.y = railY - hero.h;
+              hero.vy = 0;
+              hero.vx = Math.max(hero.vx, 455);
+              hero.dir = 1;
+              hero.onGround = true;
+              hero.jumpsLeft = hero.maxJumps;
+              hero.groundSlam = false;
+              if (!gr.sparkTimer || gr.sparkTimer <= 0) {
+                gr.sparkTimer = 0.08;
+                addScore(25);
+              } else {
+                gr.sparkTimer -= dt;
+              }
+            }
+          }
+        });
 
         treasureChests.forEach((tc) => {
           if (tc.bounceTimer > 0) tc.bounceTimer = Math.max(0, tc.bounceTimer - dt);
@@ -6507,7 +6616,7 @@
           return;
         }
 
-        // 1a. Far Horizon Atmospheric Sky Gradient (Original Dark Cozy Palette)
+        // 1a. Far Horizon Atmospheric Sky Gradient
         const skyGrad = ctx.createLinearGradient(0, 0, 0, VIRTUAL_H);
         if (currentStage === 3) {
           skyGrad.addColorStop(0, '#042f2e');
@@ -6518,6 +6627,9 @@
         } else if (currentStage === 2) {
           skyGrad.addColorStop(0, '#0f0720');
           skyGrad.addColorStop(1, '#1e1b4b');
+        } else if (currentStage === 6) {
+          skyGrad.addColorStop(0, '#090d16');
+          skyGrad.addColorStop(1, '#1e1b4b');
         } else {
           skyGrad.addColorStop(0, '#0f172a');
           skyGrad.addColorStop(1, '#1e293b');
@@ -6525,44 +6637,16 @@
         ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, vw, VIRTUAL_H);
 
-        // 1b. Layer 1 Parallax: Smooth Distant Horizon Hills (Speed 0.08x)
-        ctx.save();
-        ctx.fillStyle = currentStage === 3 ? 'rgba(6, 78, 59, 0.30)' : 'rgba(30, 41, 59, 0.38)';
-        const mOff = (camX * 0.08) % 360;
-        ctx.beginPath();
-        ctx.moveTo(0, VIRTUAL_H);
-        for (let mx = -mOff; mx <= vw + 360; mx += 180) {
-          ctx.quadraticCurveTo(mx + 90, VIRTUAL_H - 165, mx + 180, VIRTUAL_H - 85);
-        }
-        ctx.lineTo(vw, VIRTUAL_H);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-
-        // 1c. Layer 2 Parallax: Mid Hills & Cloud Silhouettes (Speed 0.18x)
-        ctx.save();
-        ctx.fillStyle = currentStage === 3 ? 'rgba(13, 148, 136, 0.25)' : 'rgba(51, 65, 85, 0.40)';
-        const hOff = (camX * 0.18) % 240;
-        ctx.beginPath();
-        ctx.moveTo(0, VIRTUAL_H);
-        for (let hx = -hOff; hx <= vw + 240; hx += 120) {
-          ctx.quadraticCurveTo(hx + 60, VIRTUAL_H - 110, hx + 120, VIRTUAL_H - 45);
-        }
-        ctx.lineTo(vw, VIRTUAL_H);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-
-        // 1d. Layer 3 Parallax: Pixel Frog Themed Pattern Overlay (Speed 0.32x with subtle opacity)
+        // 1b. Subtle Upper Sky Pixel Pattern Overlay (drawn BEFORE parallax horizons so landmarks stay crisp!)
         const bgKeys = ['bg_green', 'bg_yellow', 'bg_blue', 'bg_pink', 'bg_purple', 'bg_blue'];
         const key = bgKeys[(currentStage - 1) % bgKeys.length] || 'bg_green';
         const bgImg = IMG[key];
         if (bgImg && bgImg.complete && bgImg.naturalWidth) {
           ctx.save();
-          ctx.globalAlpha = 0.55;
+          ctx.globalAlpha = 0.34;
           const tileSize = 64;
-          const offsetX = Math.floor((camX * 0.32) % tileSize);
-          const offsetY = Math.floor((clock * 14) % tileSize);
+          const offsetX = Math.floor((camX * 0.16) % tileSize);
+          const offsetY = Math.floor((clock * 10) % tileSize);
           for (let x = -tileSize; x < vw + tileSize; x += tileSize) {
             for (let y = -tileSize; y < VIRTUAL_H + tileSize; y += tileSize) {
               ctx.drawImage(bgImg, x - offsetX, y + offsetY, tileSize, tileSize);
@@ -6570,6 +6654,122 @@
           }
           ctx.restore();
         }
+
+        // 1c. Volumetric God Rays / Sunbeams & Celestial Landmarks
+        ctx.save();
+        const rayColors = {
+          1: 'rgba(250, 204, 21, 0.08)',
+          2: 'rgba(192, 132, 252, 0.08)',
+          3: 'rgba(56, 189, 248, 0.10)',
+          4: 'rgba(253, 224, 71, 0.09)',
+          5: 'rgba(251, 146, 60, 0.09)',
+          6: 'rgba(34, 211, 238, 0.08)'
+        };
+        ctx.fillStyle = rayColors[currentStage] || rayColors[1];
+        for (let r = 0; r < 4; r++) {
+          const rx = ((r * 260 - camX * 0.05) % (vw + 320) + (vw + 320)) % (vw + 320) - 160;
+          ctx.beginPath();
+          ctx.moveTo(rx, 0);
+          ctx.lineTo(rx + 68, 0);
+          ctx.lineTo(rx + 185, VIRTUAL_H);
+          ctx.lineTo(rx + 95, VIRTUAL_H);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // 1d. Multi-Layer Biome Parallax Horizon (Far Layer 0.10x + Mid Layer 0.24x)
+        ctx.save();
+        const fOff = (camX * 0.10) % 320;
+        const mOff = (camX * 0.24) % 240;
+        if (currentStage === 1) {
+          // Emerald Mountain Peaks & Distant Waterfalls
+          ctx.fillStyle = 'rgba(20, 83, 45, 0.55)';
+          for (let x = -fOff - 320; x < vw + 320; x += 320) {
+            ctx.beginPath();
+            ctx.moveTo(x, VIRTUAL_H);
+            ctx.lineTo(x + 95, VIRTUAL_H - 220);
+            ctx.lineTo(x + 190, VIRTUAL_H - 130);
+            ctx.lineTo(x + 255, VIRTUAL_H - 185);
+            ctx.lineTo(x + 320, VIRTUAL_H);
+            ctx.fill();
+            // Animated waterfall ribbon on mountain peak
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.38)';
+            ctx.fillRect(x + 91, VIRTUAL_H - 195, 8, 195);
+            ctx.fillStyle = 'rgba(20, 83, 45, 0.55)';
+          }
+          ctx.fillStyle = 'rgba(22, 101, 52, 0.62)';
+          for (let x = -mOff - 240; x < vw + 240; x += 240) {
+            ctx.fillRect(x + 20, VIRTUAL_H - 135, 110, 135);
+            ctx.fillRect(x + 150, VIRTUAL_H - 110, 75, 110);
+          }
+        } else if (currentStage === 2) {
+          // Underground Mines: Giant Glowing Crystal Spires & Cavern Arches
+          ctx.fillStyle = 'rgba(88, 28, 135, 0.48)';
+          for (let x = -fOff - 320; x < vw + 320; x += 320) {
+            ctx.beginPath();
+            ctx.moveTo(x + 60, VIRTUAL_H);
+            ctx.lineTo(x + 110, VIRTUAL_H - 230);
+            ctx.lineTo(x + 160, VIRTUAL_H);
+            ctx.fill();
+            ctx.fillStyle = 'rgba(192, 132, 252, 0.32)';
+            ctx.beginPath();
+            ctx.moveTo(x + 210, VIRTUAL_H);
+            ctx.lineTo(x + 240, VIRTUAL_H - 175);
+            ctx.lineTo(x + 270, VIRTUAL_H);
+            ctx.fill();
+            ctx.fillStyle = 'rgba(88, 28, 135, 0.48)';
+          }
+        } else if (currentStage === 3) {
+          // Underwater Abyss: Sunken Atlantis Columns & Temple Ruin Silhouettes
+          ctx.fillStyle = 'rgba(15, 118, 110, 0.42)';
+          for (let x = -mOff - 240; x < vw + 240; x += 240) {
+            ctx.fillRect(x + 40, VIRTUAL_H - 210, 24, 210);
+            ctx.fillRect(x + 32, VIRTUAL_H - 218, 40, 12);
+            ctx.fillRect(x + 130, VIRTUAL_H - 175, 24, 175);
+            ctx.fillRect(x + 122, VIRTUAL_H - 183, 40, 12);
+            ctx.fillRect(x + 32, VIRTUAL_H - 226, 130, 8);
+          }
+        } else if (currentStage === 4) {
+          // Sky Islands: Distant Floating Citadels & Cloud Banks
+          ctx.fillStyle = 'rgba(244, 114, 182, 0.28)';
+          for (let x = -fOff - 320; x < vw + 320; x += 320) {
+            ctx.fillRect(x + 70, 135, 110, 26);
+            ctx.fillRect(x + 95, 161, 60, 18);
+            ctx.fillStyle = 'rgba(125, 211, 252, 0.35)';
+            ctx.fillRect(x + 118, 161, 10, 95);
+            ctx.fillStyle = 'rgba(244, 114, 182, 0.28)';
+          }
+        } else if (currentStage === 5) {
+          // Abandoned Ruins: Stepped Ancient Pyramids & Solar Eclipse
+          ctx.fillStyle = 'rgba(251, 146, 60, 0.22)';
+          ctx.beginPath();
+          ctx.arc(vw * 0.72, 130, 48, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(120, 53, 15, 0.55)';
+          for (let x = -fOff - 320; x < vw + 320; x += 320) {
+            ctx.beginPath();
+            ctx.moveTo(x + 30, VIRTUAL_H);
+            ctx.lineTo(x + 135, VIRTUAL_H - 210);
+            ctx.lineTo(x + 240, VIRTUAL_H);
+            ctx.fill();
+          }
+        } else if (currentStage === 6) {
+          // Cyber Citadel: Neon Metropolis Skyline & Pulsing Data Towers
+          for (let x = -mOff - 240; x < vw + 240; x += 240) {
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+            ctx.fillRect(x + 20, VIRTUAL_H - 235, 58, 235);
+            ctx.fillRect(x + 95, VIRTUAL_H - 180, 48, 180);
+            ctx.fillRect(x + 160, VIRTUAL_H - 215, 52, 215);
+            ctx.fillStyle = 'rgba(34, 211, 238, 0.38)';
+            for (let wy = VIRTUAL_H - 215; wy < VIRTUAL_H - 60; wy += 22) {
+              ctx.fillRect(x + 30, wy, 12, 6);
+              ctx.fillRect(x + 52, wy, 12, 6);
+              ctx.fillRect(x + 172, wy, 28, 5);
+            }
+          }
+        }
+        ctx.restore();
 
         // 1e. Ambient Glowing Fireflies / Starlight Motes (Subtle Atmospheric World Polish)
         ctx.save();
@@ -8194,6 +8394,96 @@
           ctx.strokeStyle = '#f43f5e';
           ctx.lineWidth = 1.5;
           ctx.strokeRect(d.x, d.y, d.w, d.h);
+        });
+
+        // 10d. High-Speed Volt Grind Rails
+        grindRails.forEach((gr) => {
+          if (gr.x2 < camX - 100 || gr.x1 > camX + vw + 100) return;
+          ctx.save();
+          ctx.strokeStyle = currentStage === 6 ? '#22d3ee' : '#facc15';
+          ctx.lineWidth = 4;
+          ctx.shadowColor = currentStage === 6 ? '#06b6d4' : '#eab308';
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.moveTo(gr.x1, gr.y1);
+          ctx.lineTo(gr.x2, gr.y2);
+          ctx.stroke();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.8;
+          ctx.shadowBlur = 0;
+          ctx.beginPath();
+          ctx.moveTo(gr.x1, gr.y1);
+          ctx.lineTo(gr.x2, gr.y2);
+          ctx.stroke();
+          ctx.fillStyle = '#334155';
+          ctx.fillRect(gr.x1 - 4, gr.y1, 8, FLOOR_Y - gr.y1);
+          ctx.fillRect(gr.x2 - 4, gr.y2, 8, FLOOR_Y - gr.y2);
+          const sparkT = (clock * 2.5) % 1;
+          const spX = gr.x1 + (gr.x2 - gr.x1) * sparkT;
+          const spY = gr.y1 + (gr.y2 - gr.y1) * sparkT;
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath();
+          ctx.arc(spX, spY, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // 10e. Slam-Through Cracked Floor Caches
+        crackedCaches.forEach((cc) => {
+          if (cc.x + cc.w < camX - 100 || cc.x > camX + vw + 100) return;
+          if (cc.broken) return;
+          ctx.save();
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(cc.x + 2, cc.y - 4, cc.w - 4, 8);
+          ctx.strokeStyle = '#facc15';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 3]);
+          ctx.strokeRect(cc.x + 2, cc.y - 4, cc.w - 4, 8);
+          ctx.setLineDash([]);
+          ctx.fillStyle = '#fde047';
+          ctx.font = 'bold 11px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('⚡↓', cc.x + cc.w / 2, cc.y - 8);
+          ctx.restore();
+        });
+
+        // 10f. Interactive Tactile Foliage / Crystals / Corals on Surface
+        surfaceProps.forEach((sp) => {
+          if (sp.x < camX - 60 || sp.x > camX + vw + 60) return;
+          ctx.save();
+          ctx.translate(sp.x, sp.y);
+          ctx.rotate(sp.tilt);
+          if (currentStage === 1 || currentStage === 4) {
+            ctx.fillStyle = sp.variant === 0 ? '#4ade80' : (sp.variant === 1 ? '#22c55e' : '#f472b6');
+            ctx.beginPath();
+            ctx.moveTo(-3, 0);
+            ctx.quadraticCurveTo(-1, -sp.h * 0.6, 0, -sp.h);
+            ctx.quadraticCurveTo(2, -sp.h * 0.5, 3, 0);
+            ctx.fill();
+          } else if (currentStage === 2) {
+            ctx.fillStyle = sp.variant === 0 ? '#c084fc' : '#a855f7';
+            ctx.beginPath();
+            ctx.moveTo(-3, 0);
+            ctx.lineTo(0, -sp.h);
+            ctx.lineTo(3, 0);
+            ctx.fill();
+          } else if (currentStage === 3) {
+            ctx.fillStyle = sp.variant === 0 ? '#2dd4bf' : '#38bdf8';
+            ctx.beginPath();
+            ctx.arc(0, -sp.h * 0.5, 3, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (currentStage === 5) {
+            ctx.fillStyle = '#d97706';
+            ctx.fillRect(-1.5, -sp.h, 3, sp.h);
+          } else {
+            ctx.fillStyle = '#06b6d4';
+            ctx.fillRect(-1.5, -sp.h, 3, sp.h);
+            ctx.fillStyle = '#f43f5e';
+            ctx.beginPath();
+            ctx.arc(0, -sp.h, 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
         });
 
         // Laser Grids (World 1-6)
