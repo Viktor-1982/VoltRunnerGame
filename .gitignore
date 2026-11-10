@@ -1,0 +1,23 @@
+# Temporary debug and test scripts
+scratch/
+*.log
+
+# OS metadata
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.suo
+*.user
+*.swp
+
+# Node / NPM (if any tools are run locally)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
