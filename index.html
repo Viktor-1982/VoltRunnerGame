@@ -1846,6 +1846,10 @@
 
       async function bootSDK() {
         const sdkScript = document.getElementById('crazygames-sdk');
+        if (!sdkScript) {
+          loadSave(!stageSelectedDuringBoot);
+          return;
+        }
         await new Promise((resolve) => {
           const listeners = new AbortController();
           const timeout = setTimeout(ready, 2000);
