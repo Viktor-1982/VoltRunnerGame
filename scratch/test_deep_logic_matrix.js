@@ -1417,24 +1417,27 @@ function getJson(url) {
       g.stepUpdate(1 / 60);
       const pigCharged = pig.charging === true && Math.abs(pig.vx) > 130;
 
-      // 5. Verify #btn-vic-menu on Victory screen advances stage & opens Cyber Tech Lab (#modal-start) + 2x2 Hero Grid & Zero Scrollbar in RU
+      // 5. Verify #btn-vic-menu on Victory screen advances stage & opens Cyber Tech Lab (#modal-start) + separate Heroes and Worlds panels
       g.startStage(1);
       g.openVictoryModal();
       document.getElementById('btn-vic-menu').click();
-      if (g.lang !== 'ru') document.getElementById('btn-lang').click();
+      const labOpened = !document.getElementById('menu-lab').hidden;
+      document.querySelector('[data-menu-panel=heroes]').click();
       const modalCard = document.querySelector('#modal-start .modal-card');
       const heroTops = new Set(Array.from(document.querySelectorAll('#hero-picker .hero-card')).map(c => Math.round(c.offsetTop / 8)));
+      document.querySelector('[data-menu-panel=worlds]').click();
       const stageTops = new Set(Array.from(document.querySelectorAll('#stage-buttons .stage-btn')).map(b => Math.round(b.offsetTop / 8)));
       const noScrollbar = modalCard.scrollHeight <= modalCard.clientHeight + 2;
       const layoutMetrics = { heroRows: heroTops.size, stageRows: stageTops.size, scrollH: modalCard.scrollHeight, clientH: modalCard.clientHeight, winH: window.innerHeight };
 
-      // Test 2-step progress reset button (#btn-shop-reset)
+      // Test the two-step progress reset in Settings.
+      document.querySelector('[data-menu-panel=settings]').click();
       g.save.fruits = 250;
       g.save.upgrades.maxHp = true;
       g.save.unlockedHeroes.nf = true;
-      document.getElementById('btn-shop-reset').click(); // Step 1: Arm confirmation
-      const armedStillHasFruits = g.save.fruits === 250 && document.getElementById('btn-shop-reset').classList.contains('armed');
-      document.getElementById('btn-shop-reset').click(); // Step 2: Execute reset
+      document.getElementById('btn-reset-save').click(); // Step 1: Arm confirmation
+      const armedStillHasFruits = g.save.fruits === 250 && document.getElementById('btn-reset-save').textContent.includes('CONFIRM');
+      document.getElementById('btn-reset-save').click(); // Step 2: Execute reset
       const wipedClean = armedStillHasFruits && g.save.fruits === 0 && !g.save.upgrades.maxHp && !g.save.unlockedHeroes.nf && g.save.heroId === 'vg';
 
       // Verify: (a) batteries don't stick without magnet/drone, (b) 10 overworld batteries don't trigger turbo, (c) trapped snail shell stops after 4 wall bounces
@@ -1466,8 +1469,7 @@ function getJson(url) {
       const shellStoppedCleanly = snail.state === 'shell_idle' && snail.vx === 0;
 
       g.returnToMainMenu();
-      const vicMenuOpenedLab = g.state === 'menu' && !document.getElementById('modal-start').classList.contains('hidden') && heroTops.size === 2 && stageTops.size === 2 && noScrollbar && wipedClean && noStickyPull && noOverworldTurbo && shellStoppedCleanly;
-      if (g.lang !== 'en') document.getElementById('btn-lang').click();
+      const vicMenuOpenedLab = g.state === 'menu' && !document.getElementById('modal-start').classList.contains('hidden') && labOpened && g.lang === 'en' && heroTops.size === 2 && stageTops.size === 2 && noScrollbar && wipedClean && noStickyPull && noOverworldTurbo && shellStoppedCleanly;
 
       return {
         ok: allStagesHaveRifts && allBossArenasHavePlatforms && coreGave3 && frogHighJump && pinkExtendedCoyote && pigCharged && vicMenuOpenedLab,
@@ -1598,6 +1600,81 @@ function getJson(url) {
     const auditRegressionOk = mobileFits.every(m => m.fits) && stageLockAndAdRes.onlyStage1Enabled && stageLockAndAdRes.stayedOnStage1 && stageLockAndAdRes.launchedStage1;
     assertTest('Аудит QA', '6.15', 'Mobile touch buttons fit 320/360/390px viewports & strict unlockedStage progression lock',
       auditRegressionOk, JSON.stringify({ mobileFits, ...stageLockAndAdRes }));
+
+    // 6.16 New Polish Features Regression:
+    // (1) Menu tab keyboard Enter prevents default (no double-click toggle) & opens/closes panel cleanly
+    // (2) Contextual intro hints (#play-hint) show on fresh Stage 1 start (keyboard & touch) and hide on retry
+    // (3) Boss 5 (ruins) and Boss 6 (citadel) custom arena decks exist
+    // (4) Campaign Complete victory state shows CITADEL CONQUERED + /18 stars
+    const polishRes = await evalJs(`(() => {
+      const g = window._voltGame;
+      const TILE = 44;
+      g.returnToMainMenu();
+      g.resetSaveProgress();
+
+      // 1. Keyboard Enter on menu tab must call preventDefault and keep panel open
+      const worldsTab = document.querySelector('[data-menu-panel="worlds"]');
+      worldsTab.focus();
+      const enterEv = new KeyboardEvent('keydown', { code: 'Enter', key: 'Enter', bubbles: true, cancelable: true });
+      window.dispatchEvent(enterEv);
+      const enterPrevented = enterEv.defaultPrevented;
+      const worldsOpened = !document.getElementById('menu-worlds').hidden && worldsTab.getAttribute('aria-expanded') === 'true';
+      const enterEv2 = new KeyboardEvent('keydown', { code: 'Enter', key: 'Enter', bubbles: true, cancelable: true });
+      window.dispatchEvent(enterEv2);
+      const worldsClosed = document.getElementById('menu-worlds').hidden && worldsTab.getAttribute('aria-expanded') === 'false';
+
+      // 2. Intro hints on fresh Stage 1 start (keyboard + touch) and hidden on retry
+      g.startStage(1);
+      const touchLayer = document.getElementById('touch-layer');
+      touchLayer.classList.remove('active');
+      g.hero.x = 3 * TILE;
+      g.stepUpdate(1 / 60);
+      const playHint = document.getElementById('play-hint');
+      const kbHintOk = !playHint.hidden && playHint.textContent.includes('Space');
+      touchLayer.classList.add('active');
+      g.stepUpdate(1 / 60);
+      const touchHintOk = !playHint.hidden && playHint.textContent.includes('JUMP');
+      touchLayer.classList.remove('active');
+
+      g.startStage(1, true);
+      g.hero.x = 3 * TILE;
+      g.stepUpdate(1 / 60);
+      const retryHidesHint = playHint.hidden;
+
+      // 3. Boss 5 (ruins) & Boss 6 (citadel) custom arena decks
+      g.startStage(5);
+      const ruinsDecks = g.oneWayBridges.filter(b => b.arenaStyle === 'ruins').length;
+      g.startStage(6);
+      const citadelDecks = g.oneWayBridges.filter(b => b.arenaStyle === 'citadel').length;
+
+      // 4. Campaign Complete victory banner & /18 star counter
+      g.save.clearedStages = [1, 2, 3, 4, 5];
+      g.save.stageStars = {
+        1: [true, true, true],
+        2: [true, true, false],
+        3: [true, false, false],
+        4: [false, false, false],
+        5: [false, false, false],
+        6: [false, false, false]
+      };
+      g.openVictoryModal();
+      const campaignModal = document.getElementById('modal-victory');
+      const campaignClearClass = campaignModal.classList.contains('campaign-clear');
+      const campaignRibbon = document.getElementById('txt-vic-ribbon').textContent;
+      const campaignTitle = document.getElementById('txt-vic-title').textContent;
+      const campaignStarsText = document.getElementById('val-s-stars').textContent;
+      const campaignOk = campaignClearClass && campaignRibbon === 'CAMPAIGN COMPLETE' && campaignTitle === 'CITADEL CONQUERED' && campaignStarsText.includes('/18');
+
+      g.returnToMainMenu();
+      g.resetSaveProgress();
+
+      return {
+        ok: enterPrevented && worldsOpened && worldsClosed && kbHintOk && touchHintOk && retryHidesHint && ruinsDecks === 3 && citadelDecks === 4 && campaignOk,
+        enterPrevented, worldsOpened, worldsClosed, kbHintOk, touchHintOk, retryHidesHint, ruinsDecks, citadelDecks, campaignOk, campaignStarsText
+      };
+    })()`);
+    assertTest('Аудит QA', '6.16', 'Menu keyboard Enter fix, contextual play hints, Boss 5/6 arena decks & Campaign Complete victory',
+      polishRes.ok, JSON.stringify(polishRes));
 
     await screenshot('deep_logic_audit_complete.png');
     console.log(`\nPassed ${results.length} game logic checks.`);

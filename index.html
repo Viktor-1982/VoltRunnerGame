@@ -8,8 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <title>Pixel Volt Adventure — Super Action Platformer</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-  <!-- CrazyGames SDK v3 -->
-  <!-- Clean Standalone Build (Poki / Web Ready) -->
+  <script id="crazygames-sdk" async src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -353,36 +352,6 @@
     }
 
     /* HOW TO PLAY COMPACT ARCADE PILLS */
-    .rules-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 6px;
-      width: 100%;
-      text-align: center;
-    }
-
-    .rule-box {
-      background: linear-gradient(180deg, rgba(30, 41, 59, 0.92) 0%, rgba(15, 23, 42, 0.95) 100%);
-      border: 1.5px solid rgba(56, 189, 248, 0.45);
-      border-radius: 10px;
-      padding: 5px 6px;
-      font-size: 10.5px;
-      color: #cbd5e1;
-      line-height: 1.2;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    }
-
-    .rule-box b {
-      color: #fde047;
-    }
-
-    .rule-box b:first-child {
-      display: block;
-      margin-bottom: 2px;
-      font-size: 11px;
-      color: #38bdf8;
-    }
-
     /* CYBER TECH LAB / BATTERY UPGRADE SHOP */
     .shop-bar {
       width: 100%;
@@ -408,24 +377,6 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-    }
-
-    .shop-reset-btn {
-      background: rgba(244, 63, 94, 0.14);
-      border: 1.5px solid rgba(244, 63, 94, 0.55);
-      border-radius: 99px;
-      padding: 1px 7px;
-      color: #fda4af;
-      font-size: 9.5px;
-      font-weight: 900;
-      cursor: pointer;
-      transition: background 0.12s ease, transform 0.1s ease;
-    }
-
-    .shop-reset-btn.armed {
-      background: #e11d48;
-      border-color: #fda4af;
-      color: #ffffff;
     }
 
     .shop-balance {
@@ -670,13 +621,9 @@
       .sub-text { font-size: 9.5px; line-height: 1.05; }
       .hero-card { padding: 2px 6px; font-size: 10px; }
       .hero-card img { width: 20px; height: 20px; }
-      .rules-grid { grid-template-columns: repeat(4, 1fr); gap: 3px; }
-      .rule-box { padding: 2px 4px; font-size: 9px; line-height: 1.05; }
-      .rule-box b:first-child { font-size: 9.5px; margin-bottom: 1px; }
       .shop-bar { padding: 3px 7px; gap: 2px; border-radius: 8px; }
       .shop-header { font-size: 9.5px; }
       .shop-balance { font-size: 9.5px; padding: 0 6px; }
-      .shop-reset-btn { font-size: 8.5px; padding: 0 5px; }
       .shop-grid { gap: 4px; }
       .shop-btn { padding: 2px 4px; font-size: 9px; flex-direction: row; gap: 4px; }
       .shop-btn small { font-size: 8.5px; }
@@ -689,8 +636,6 @@
     }
 
     @media (max-width: 600px) {
-      .rules-grid { grid-template-columns: 1fr; }
-      #modal-start .rules-grid { order: 1; }
       #modal-start .hero-select-row,
       #modal-start .shop-grid,
       #modal-start .stage-row {
@@ -759,7 +704,6 @@
 
     @media (max-width: 380px) {
       #modal-start .sub-text { order: 1; }
-      #modal-start .rules-grid { order: 2; }
     }
   
     /* ARCADE CRT & SCANLINE RETRO GLOW */
@@ -767,12 +711,12 @@
       position: absolute;
       inset: 0;
       pointer-events: none;
-      z-index: 35;
+      z-index: 1;
       background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%),
                   radial-gradient(ellipse at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.45) 100%);
       background-size: 100% 4px, 100% 100%;
       mix-blend-mode: overlay;
-      opacity: 0.65;
+      opacity: 0.26;
     }
 
     @keyframes neonPulse {
@@ -796,11 +740,102 @@
       letter-spacing: 1.5px;
     }
 
+
+    #modal-start .modal-card {
+      width: min(520px, 94vw);
+      padding: clamp(16px, 4vw, 32px);
+      gap: 12px;
+      border: 1px solid #386072 !important;
+      box-shadow: 0 24px 70px #020617bf !important;
+    }
+    #modal-start .title-main { text-shadow: 0 2px 12px #facc1540 !important; }
+    #btn-play { flex-basis: 100%; min-height: 54px; font-size: 18px; animation: none; }
+    .menu-world { margin: 0; color: #b6d7e4; font-size: 14px; }
+    .menu-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; width: 100%; }
+    .menu-nav .cta-btn { min-height: 44px; padding-inline: 6px; }
+    .menu-nav .cta-btn[aria-expanded="true"] { border-color: #65cce1; }
+    .menu-panel { width: 100%; }
+    #hero-picker .hero-card { color: inherit; min-height: 44px; text-align: left; }
+    #hero-picker .hero-card span, #stage-buttons .stage-btn {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+    }
+    #stage-buttons .stage-btn { min-height: 44px; }
+    #stage-buttons .stage-btn:disabled { opacity: .75; color: #a4b7cb; }
+    .menu-settings { text-align: center; }
+    .controls-help { margin: 0 0 12px; color: #d5e5ee; font-size: 13px; }
+    .controls-help p { margin: 4px 0; }
+    #game-root:has(#touch-layer.active) .keyboard-help,
+    #game-root:not(:has(#touch-layer.active)) .touch-help { display: none; }
+    @media (pointer: coarse) and (hover: none) {
+      .controls-help .keyboard-help { display: none; }
+      #game-root .controls-help .touch-help { display: block; }
+    }
+    #play-hint {
+      position: absolute;
+      z-index: 4;
+      inset: min(16vh, 96px) 12px auto;
+      width: fit-content;
+      max-width: calc(100% - 24px);
+      margin: auto;
+      padding: 8px 14px;
+      border: 1px solid #65cce1;
+      border-radius: 8px;
+      background: #101d2df2;
+      color: #f4fbff;
+      font-size: 14px;
+      text-align: center;
+      pointer-events: none;
+    }
+    #discovery {
+      position: absolute;
+      z-index: 4;
+      top: clamp(54px, 18vh, 130px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: max-content;
+      max-width: calc(100% - 24px);
+      padding: 10px 20px 12px;
+      border: 1px solid #649fae;
+      border-bottom: 3px solid #6beafb;
+      border-radius: 10px;
+      background: #0d1a28f5;
+      color: #f8fafc;
+      text-align: center;
+      pointer-events: none;
+    }
+    #discovery-type {
+      display: block;
+      margin-bottom: 3px;
+      color: #9adddf;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    #discovery-name { display: block; font-size: clamp(15px, 3.8vw, 21px); }
+    #modal-victory.campaign-clear .modal-card {
+      border-color: #facc15 !important;
+      box-shadow: 0 0 28px #facc153d, 0 16px 0 #020617 !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cta-btn.green:not(:disabled) { animation: none; }
+    }
+    @media (max-width: 520px) {
+      #modal-start #hero-picker, #modal-start #stage-buttons { grid-template-columns: 1fr; }
+      .menu-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
   </style>
 </head>
 <body>
   <div id="game-root">
     <canvas id="stage" tabindex="0"></canvas>
+
+    <p id="play-hint" hidden></p>
+    <aside id="discovery" hidden role="status">
+      <span id="discovery-type"></span>
+      <strong id="discovery-name"></strong>
+    </aside>
 
     <!-- TOP HUD -->
     <div id="arcade-crt-overlay"></div>
@@ -827,8 +862,8 @@
 
       <div class="hud-group interactive">
         <button class="hud-btn" id="btn-pad" type="button">🎮 PAD</button>
-        <button class="hud-btn" id="btn-mute" type="button">🔊</button>
-        <button class="hud-btn" id="btn-pause" type="button">⏸</button>
+        <button class="hud-btn" id="btn-mute" type="button" aria-label="Mute sound">🔊</button>
+        <button class="hud-btn" id="btn-pause" type="button" aria-label="Pause game">⏸</button>
         <button class="hud-btn" id="btn-hud-menu" type="button" title="Main Menu">🏠 <span id="lbl-hud-menu">MENU</span></button>
       </div>
     </div>
@@ -850,7 +885,6 @@
     <!-- MAIN MENU -->
     <div class="modal-backdrop" id="modal-start">
       <div class="modal-card">
-        <span class="ribbon" id="txt-ribbon">CYBER ARCADE ACTION PLATFORMER</span>
         <h1 class="title-main" id="txt-title">PIXEL VOLT ADVENTURE</h1>
         <p class="sub-text" id="txt-sub">
           Dash, Jump &amp; Stomp through 6 Cyber Worlds!
@@ -858,51 +892,64 @@
 
         <!-- INSTANT ACTION HERO PLAY BUTTON -->
         <div class="cta-row" style="margin: 10px 0 8px; width: 100%;">
-          <button class="cta-btn green pulse" id="btn-play" type="button" disabled style="min-height: 52px; font-size: 19px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 0 25px rgba(16,185,129,0.55); width: 100%;">▶ PLAY GAME</button>
+          <button class="cta-btn green" id="btn-play" type="button" disabled>▶ PLAY GAME</button>
           <button class="cta-btn cyan hidden" id="btn-return-stage" type="button">↩ RESUME WORLD</button>
           <button class="cta-btn purple" id="btn-boost-start" type="button" hidden>⚡ BOOST START</button>
         </div>
-        <div style="font-size: 11px; opacity: 0.85; margin: -2px 0 10px; letter-spacing: 0.5px; text-align: center;">⌨ A / D: RUN • SPACE: JUMP • C / SHIFT: DASH • ⬇ SLAM</div>
+        <p class="menu-world" id="menu-world"></p>
+        <nav class="menu-nav" aria-label="Main menu">
+          <button class="cta-btn slate" type="button" data-menu-panel="worlds" aria-controls="menu-worlds" aria-expanded="false">Worlds</button>
+          <button class="cta-btn slate" type="button" data-menu-panel="heroes" aria-controls="menu-heroes" aria-expanded="false">Heroes</button>
+          <button class="cta-btn slate" type="button" data-menu-panel="lab" aria-controls="menu-lab" aria-expanded="false">Tech Lab</button>
+          <button class="cta-btn slate" type="button" data-menu-panel="settings" aria-controls="menu-settings" aria-expanded="false">Settings</button>
+        </nav>
 
-        <!-- HERO PICKER -->
+        <section class="menu-panel" id="menu-heroes" hidden>
         <div class="hero-select-row" id="hero-picker">
-          <div class="hero-card selected" data-hero="vg">
+          <button type="button" class="hero-card selected" data-hero="vg">
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWAAAAAgCAYAAAAsTqKUAAAAAXNSR0IArs4c6QAABPJJREFUeJztnT9oHEcUh38X0qgRaWwHFzYmxoltEgkM6RLrGnOcQQYTLr1USE3SiDRqjBo34qo0ViF3LnKQgAw6zgJzp6gTBE42imWhYKJCxHKKoEaBFJfiMpfRandvZk+7b27n91X6s7vf09s3M6u9mV2AEEIIIYQQQgghhBBCCCGEEEIIISQPFKQDICTI1Mx85O+ajXrH9DjFUvlEfT9eekj/EPh94n3pAMhppBuAtD/Ou7izCQBo7R9HbjtxaQQA8N0nn3eCMdDvvl+6/rL0h3bAPiXARX+c14cGGOZe3NlEa/841qtQ2yzubJ5JDPTL+lUM6pi6I4xhqn/jK+C8JmAY/NINQNKvuwFg4+VbHM1VjPZdTSql3xl/MIa81b9RB5znBLjul24Akv4o96N7V/HH67/w2dc3Tmx/7uZ1vNt+hXM3rwMA3m2/AgDcX6gnOgf0y/rjYjBhGOq/bwec9wS47JduANJ+nX5u5dNjUF//9OBL3F+odzDAh870Z++Xrr8s/LEdsA8JcNmv41sDbDbqnbtr60b/cZjEYAv9sv4gea1/43vAeU2Aq37pBiDtB4DVO7cT7RcWA/Az/UPkl66/rPyRHbAvCXDVD/jbAJuNeufRvas4P36xd5zD9gFmV/YSx2AD/bJ+hQ/1H3sF7EMCXPRLNwBpP4Cua2UPSc5bWAz0D49fuv6y9Id2wD4lwEU/4HcDLJbKhWaj3hmt1k783PTDz7AYbP4O+mX9gD/1H3kF7EsCXPRLNwBpv84Xn14A0L0Hr3PYPsD58Yu971/88OupfdV9+u0nzxO56ZfxS9dflv7QDtinBLjo1/GxAUbFsVGtYVb7IFTnw48/OLXPYfsAQHcwLZbKhTdLbfqHzC9df2n7+86CyHsCXPfrcfjUAIulcqE5V+lsVGu9c6DHAADY+dP4WMZi+p3wB8lr/RtPQ8trAlz1SzcAaX8wBuVXMZiS5L8W+uX90vWXlT+yA/YlAa76gzEovy8NMBgDAGBtvReH4vtroye2//Hvf9DaP+7NYBn06ot+Ob90/WXhj70C9iEBLvv1GAB41wCB/+djR/HN7lHoz++urWP1zm00G4OtQqRf1g9obSik/qJIOoU0a7/RLYisE6A/tvHK5fGB/G9+b1vfepD260g3AEl/0L3x8m1o7tUgoDp/ndFqDc25SuKl6PQPp1/Vn+v+vs+CkEzAs2+/wuzKHuI6gH7+K5fHe27b5/FK+R8vPcTUzLxYA5D2A93a21qexNh/A9lotdYdCEPORdQgAHQvHraWJzE2/dR6KTj99Kftj12KLJmAqZl5zK6YdQBx/qQdgLRfsXoG+QeSPwxe0j/y0S3stm7h+LdfMDZdiR0IJy6NhC4b31qetPbST39W/tgrYMkE2AwAcf4sRsA0/Ird1sLA+R+bfmqrFfcXS+XCtYkHvbePBOdkB4l6ZodyJ5mFQj/9aftjZ0FIJgCwGwCi/FmNgGn49XMwSP6TTsFzwQ/YvQYq6hiD7Es//Wn5+86CCAug3wdsekc1yBSsqAHAxp/GCJi2X38nnVqVp/8+Sf6nZuYTvRNPwt8PG38a0E//Wfmt34qsVoSFdaz68t3gyjEbVAcQNgDY+pMMANL+OLLIP/3005+N/z1b+dFcpW+nYrqdLfTTTz/9efIbXQHrk/HjDmq6nS30008//Xn0/wtVXBRJpPC8UAAAAABJRU5ErkJggg==" alt="Volt Runner">
             <span>Volt Runner</span>
-          </div>
-          <div class="hero-card" data-hero="nf">
+          </button>
+          <button type="button" class="hero-card" data-hero="nf">
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWAAAAAgCAYAAAAsTqKUAAAAAXNSR0IArs4c6QAABQFJREFUeJztnTFr40gUx//O5sgWR2AxAZNggovdYrcx12/hzrhLsR9g07jYb5CAi0D2G1zh5u4DpHAn3Km4PmSLXHEpzBISFpbdQLjiloTVFfYokj2SPJKtN5L+fzCJZ0b6PZ7em5FGIxmgKIqiKIqiKIqiKIqiKIqiKIqiKIqiKIoqg2rSBlBUUIf9I7hjx1PfO92eH6PB8qDi2gTr/hh+JN9yftW0KW0AFZZ0Akjz3bHj/fVm1//+dux4nW6v5o4d7+Dkm3ab0SC6japLBJNvBV86/vLmLzimag6wjd/ab4cT4PIWyQlQj2yj6orEP3vR8L9ffP0Fp5vXidvFifxi8aXjL0/+whmw9AhYdT4AfLn96f9//NjE6axTHw3qsXYntSkCv9Pt1d7N9nX82MTp5jWOH5to7zygsbsRsrGxuxGyFYBfFmyrjiH59vPVvpXKHv/aKYgqOcA2vnQCSPPdseOdvWiEzrxON6+BO+D4a9Nv1975ifGnZ2jvhPmqbPzp2dO2BiJfli8df3nzFzrgqjnANr50AkjzgakP23iYMh+bM94DgIdQu2kZtGXq7xkaeHf3hfyC8KXjL2++dgqiSg6wjQ9UOwHn5fvvLvUuMon8/PnS8ZcnXzsFUSUH2MgPqooJCMD32VZ/Eiqf/LOL//78O1T2/P1rtF7dxta5Q8eDwbJL8mX5SmWP/8RlaGV3gK186QSQ4ne6vdrb2RTQVn+C3t52qN7BLZ6/fx0qa726RW9vO7ZulAQm3wq+UlXiP7IDrooDbONLJ4A0X9ngjh1vng1gas/ev3Ol24l1JiJfji8df3nztTfhquQA2/jKhqomYJJ+d381av+hM28P+bbzpeMvT772DLhKDrCRH6cqJGCUnJt7fOiYb6M7juQXjw+UL/6NH0UumwOKxJdOAGm+bj/OzX1su1UmP/myfOn4WwffqAMuowOKxJdOgDz5nW6vNho4nm4aKMmmeft+DFvodHu1yfCC/ILwl2UVPf6NOuAyOsBWvnQCSPOVDe7Q8ZzZjVATX6rjothGYPLF+dLxlxc/sgOuigNs5SsbqpqA8zYAACLexaHTj2HL3z4tm3xZvnT85cGPPQOuggNs5gdtAFC5BASmTybqXoL025uXkducX17h4OQbRoM6XMMXwZBvFx94iqU08bcKrZO/1BSEhAMCr26rtYbt1B3A5PNFqrknab6SdAJI8tOwVf355RWA6VJCd5jOBvLt5CfZEIw/2/kbusJ5A9Rn3oCoDwC//VZ/Evke3Tgd9o9w2D9Ca7/tZeG39tue2ldR+Krzz5IASmn8L81X7OBDMM7Nfeo3zaWxgXx7+SbxZzs/sgOWdoCyQaoDsIEfVJYEALL/HIwU37m59+fRo85G1inyyV8nP3EKIjiXmacDngaAbd+OtDaoywAYPIoszVeS8r80PzT3DPVIuPmKkuBctOlNWPLJXzc/dhVElAHnl1eJcyDLGpAkXQdgws8qSX7wGGTx/+TzRaabkJJ8YPFnnkz4WW+Akk/+OvmJqyB0BowGdYzwPXK7g5PFfZgqbgAw4a9jBFw3PzhfrB6LDtab+t904JPmJ8mEvw6RT/6q+MaPIk/PCOvajjV42a7aZZFuADDlr3oEzJOvUxr/qw51FT8LXkT+KkU++avkx66C0MGXWde6bDtTkU8++eSXib/UGXDwcjxup8u2MxX55JNPfhn5/wOlAZOxzHJ5ewAAAABJRU5ErkJggg==" alt="Neon Acrobat">
             <span>Neon Acrobat</span>
-          </div>
-          <div class="hero-card" data-hero="md">
+          </button>
+          <button type="button" class="hero-card" data-hero="md">
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWAAAAAgCAYAAAAsTqKUAAAAAXNSR0IArs4c6QAABdVJREFUeJztnU1oG0cUx/8KvQRKSMA1JZc2TaE2PUQlDT6Y2OhQV8jQUh10Ls2hhYAx6NYQbGOamyAYUuqDcugxB4ENFqovwjY+mDbUohinkLQFg2kdQYow5JSqB2XWI3t39nvfaOf9T9qd1fweb997szv7BbBYLBaLxWKxWCYpQ20Ai2Wnr77+1nZ9s1Hv5vKFTNBloYfL95ivMd8UvUFtAMte1AlAzXdiT69vYG1qspvLFzLNRr27f/c+RhdnrWVVu28g88n41PGXFN+xAJviAF35TmxTEtCOfaHyCAAgGDvFCgBAMNzaw9jAfFq+sCFt8X8uiAHNRr0rlvfv3u9bVrWHlcn80wnQbNT7AtxL+yDym416N8r957cv5tPy5f+mMf49T0FQj4Cm8qMKfrkvP3ZQ8sUABgCji7Oh+dPrGwCAtanJLjxc/2A+LV/YEBp8qi+d4t/1CJh6BDSZLxJAJEFYTa9vQD5C150va6dYQadcwtZv/2BtahIAMFYro7P3yioOqnYxOAYV85PnU8dfEnxlATbBATrzZZmYgLl8ITO6OIvO3itrXadc6ttmrFbuW1a1C9u8HgExn5YvK63x73kKYqdYwVi5hK3KI8vJY7UydlCxnNxRtEfhANP4rxPAmsoQDFl+E6BTLiGXL2T+XN7Vni9sGKuVuwAwPzKEg/Y5fPn9FwCA53v7KC5sWutvjF8AAAxnL6O4sIna3ATe+nAUAHCzVLL68wRmPjmfOv6S4CsLsAkO0JkvbDA1AYHeWcj2zCWML72w1j3f2/f8f3nboHPwzKfjU8df3HzXI+C0O0B3PnUCUPKbjXq3Vf0Mx60tAMDbH1zEQbuDtQdPAADTt0ds/3e0e2j9FtsGEfNp+cKGNMe/awFOuwN05lMnADXfSXd++QkA8N3Hn9q2D2cvAytPsfbgibVt9d2PmD9gfOr4S4KvLMAmOEBnvpNMSEDh+yCS/R9UzKflq5Sm+A/0KHKaHKArnzoBqPkqCb9X20fK7artI8BhHzFfbz51/CXFdyzApjhAV75KJiSgStO3R1Bc2MQff/2K9xQDm2ivzU2guqC2lfmDw6eOvyj5gY6A0+SAQeRTJwA1X0jsh4N273b2v3//t6/9x/wnkTOZT8+njr8o+YEKcJocMIh8obQn4HFrC29eu6nc5tbQ8MlA2O5fD/zH/AHmuykN8R/qdZRpcIDOfOoEoOTn8oXM+FK926qerOv59+ThTTG/fge9fSGWZc0HnPtnPi0fMCP+lQXYBAfoyqdOAGq+kLgDRdbR7iFqcxNnzj7sLnTW5iZCzckzn4ZPHX9J8R0LsCkO0JUvZGoCAif7YHvmEnr3YrcxPzKEn7c7uAHgh8/fd+3jaPcQ36w8DfwUFvPp+ED64991CiLtDtCZT50A1HzZBgCWDQBQXfE+px7mNaTMp+NTx18SfNd3QaTdATrzZRsA8xIQOHs74PbM2QHRSfLTi8wfTL7cD0X8xc33dBGOwgHSJ3sy40vZxAsANV+IOgEo+Xb3YrvNyfdr9fU+s/8sFPMHj+83/nTne3oUOU4DnCS+yRZFAZC/v+b0rTfd+HZsgD4BkuKLd3AIHbe2ML70Ak4Px5y/eh0vnz3G+avXAQAvnz222oLYwPw08Fe15yufhKN0gLDBawFw4vfY2dgLUNT8h8v3cOWdrLUcJgFEf36KPzVf5gJQsu14UYn5zI+T7/kiXNIO8DsAqPhJjIBR82UukN4AdJI89wz0fOhFp+0QZyFBXkPKfObHzXe9DS1uA9zktQA48cOKkn/6ApgX2fnfzwvgdeMD4T6MGPYCJPOZHyff9S4IOwOu3VpVQuVCFcXVf6C/APjhxzECJsEXp+u5fCEThf/9nv5T81Xyw49DzGd+VHzfjyKLI0K7giKfttvdP+tXdgOAX37UI2CSfDsl6X/mM5/58fJdP0t/Gi5OKaPYzq+Yz3zmMz9NfE9HwPLpuKpTr9v5FfOZz3zmp5H/P5NWwsb6p3jdAAAAAElFTkSuQmCC" alt="Titan Core">
             <span>Titan Core</span>
-          </div>
-          <div class="hero-card" data-hero="pm">
+          </button>
+          <button type="button" class="hero-card" data-hero="pm">
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWAAAAAgCAYAAAAsTqKUAAAAAXNSR0IArs4c6QAABUVJREFUeJztnT9oG1ccx7+qCyGLh66BSKqhQZhiFQ/a3HqTjeuAlwzJJA/KqFZkEVilNgQ6GLS6IE+ZPBgcjG1oGrfePJRYFCM7OHEcnKXdtBQTzOsg3uVZ3En3Tnf3u3v3+4LQ8Xj3Pj9++v1+7+7dHwEsFovFYrFYLBaLxWKxWCwWi8VisVgsFstXpagNYLHsVCrXrO39vR0ht6eLswNj1qn/+tpT5seEnxR9Tm0Ay17UCUDNV8faPdjGvbt3AABfZr4R/WzQ7c/8aPKp4y8svmMBTooDospXx0piAtqNBQBv371yHFP2V9WvP/OjzbezwbT4H3gEbLoDosynTgBq/iDb7Npnpuawe7CN0/cfbtjtt5gfPJ86/sLg9y3ASXBAlPmDbLNrNykBnfT23atAxmV+PPiAOfHveQ3YFAfEkU+dAGHw1cnv9P0HALD8OVN85GqM3b1nAD5NgtC46Mx8Wn4/mRT/ngqwSQ6IKp86Aaj5TpopPsLGkzHXfaUNfon54fCp4y8svmMBTooDosp3UlISUJWyno5Wcx4AcHts0rZve7kOAMjVl7HxxB8bmE/LV2Va/GsfAZvmgDjwqROAmt+7nHN7bNLiSOXqy2gv1/H1+hEA4O9SHrn6MoA3Q7GZT8+njr8g+a4KsMkOiAOfOgGo+U5r6SorSDGflk8df0HyXRVgkx0QBz51AlDzWckWdfwFydc6Ag7CAOazvCjz8L7l98zD+45tzDeTb4r4UeSYijoBKPi7B9uYmJpDq9k9C8nVby4D9bZ9/3gDjV9/Yb4hfFWmxL/nAmyKA+LEp04Aav69u3csG4Dnruz1815s5tPyqeMvCL5WATbRAXHiUydAmPzp4mxqZmpOtJcauLX47Q0bdO7Dvmr+idxKBdPF2dT52hHzY8K3k4nxr1WATXRAVPnUCUDNlzbkViqijYbVptoyiAvAYmuBmU/Op46/sPiOBTgpDogqX9qQ1ATstQEA2ksN/PvjS1f7FTar1v5e2cyn5VPHXxj8vkfASXBAlPmqDUDyEhDoPpHYXvrk/9HxEQBA5/jacZ/R8RG0xxvIrVSwv7cz9NvwmE/HB7o5BHTjT+bVIL7cxw8FyXe1BBFnB5xfHA299kTJp04ASn4vu3N8bfHt7JBtqg4XVlHYrHp+Gx7z48lvL3XjL+r8z9wYID+9sF6Hq23S8MOFVcc3h/XT+tpTPLj12hpLdYQOP5vOi1K5duMF63HgA/YB4JYv5dX/1Pz9vR3Ras4jt1JBbqWCzvG1dVTdy1S/e1XYrKLVnNe2gfnMD4PvWICpHVAq1/B468yxALjley0A1Hz57xl++F8dLy58oHtXyes/fkarOY/CZhWHC6u2/ZzYAKxHx72I+cwn42fTefHxfEt8PN8SnRd1kU3nxcnFpRBCWN9OOrm4FCcXlyKbzovOi7q1vy5f7pdN58U/P/wusum8Nl8dJ058aYMf/vfCpuaXyjVI/0m2F7786J6BMJ/5YfD73gXx1Xc/WYlzuLCK0d/OcIUzZABc4czR+IyyPbH43BpPdy20OwNN4r83f2FisWqtwerwh58B6fjqbzCM/73egxkFPtA9G/uicYrR8RFt/rAXQJnP/CD5A++CkAao7YMusKmn7cPcgdA7AXjhe50AqPlyxpwuzqb88H+pXPP0p6RU/H7S4Qch5jPfL772o8hyHdTpP9Fkoep3ldyt7CYAXb5fMyAF305h+p/5zGd+sHytAiwvxAwqKm776Yr5zGd+Mvjq2VI2nTeW76oATxdnU4XNqpDbw/bTFfOZz3zmm8j/H5m6wKAeefw9AAAAAElFTkSuQmCC" alt="Quantum Dash">
             <span>Quantum Dash</span>
-          </div>
+          </button>
         </div>
 
-        <div class="rules-grid">
-          <div class="rule-box" id="r-1"><b>⬅/➡ &amp; SPACE</b>Run &amp; Double Jump</div>
-          <div class="rule-box" id="r-2"><b>⚡ C / SHIFT / X</b>Volt Dash &amp; Fire 🔥</div>
-          <div class="rule-box" id="r-3"><b>🐌 STOMP &amp; KICK</b>Squash Foes &amp; Shells</div>
-          <div class="rule-box" id="r-4"><b>🕳️ ⬇ ON PIPES</b>Vaults &amp; Boss 🏆</div>
-        </div>
+        </section>
 
+        <section class="menu-panel" id="menu-lab" hidden>
         <div class="shop-bar" id="cyber-shop">
           <div class="shop-header">
             <span id="txt-shop-title">🔬 CYBER TECH LAB (PERMANENT UPGRADES)</span>
             <div class="shop-header-right">
-              <button class="shop-reset-btn" id="btn-shop-reset" type="button">🗑️ Reset</button>
               <span class="shop-balance" id="txt-shop-bank">🔋 0</span>
             </div>
           </div>
           <div class="shop-grid" id="shop-buttons"></div>
         </div>
 
-        <div class="stage-row" id="stage-buttons"></div>
+        </section>
+        <section class="menu-panel" id="menu-worlds" hidden>
+          <div class="stage-row" id="stage-buttons"></div>
+        </section>
+        <section class="menu-panel menu-settings" id="menu-settings" hidden>
+          <div class="controls-help">
+            <p class="keyboard-help">A / D or arrow keys to move · Space to double jump</p>
+            <p class="keyboard-help">C or Shift to dash · ↓ in the air to slam · ↓ on a pipe to enter</p>
+            <p class="touch-help">Left / Right to move · Tap Jump twice to double jump</p>
+            <p class="touch-help">Tap Dash to dash · Tap Slam in the air or on a pipe</p>
+          </div>
+          <button class="cta-btn slate" id="btn-reset-save" type="button" style="border-color: rgba(244,63,94,0.65); color: #fda4af;">🗑️ RESET PROGRESS</button>
+        </section>
       </div>
     </div>
 
@@ -932,13 +979,11 @@
     <!-- PAUSE MODAL -->
     <div class="modal-backdrop hidden" id="modal-pause">
       <div class="modal-card" style="max-width: 420px;">
-        <span class="ribbon" id="txt-pause-ribbon">GAME PAUSED</span>
         <h2 class="title-main" id="txt-pause-title">PAUSED</h2>
         <div class="cta-row">
           <button class="cta-btn green" id="btn-resume" type="button">▶ RESUME</button>
           <button class="cta-btn slate" id="btn-restart" type="button">↻ RESTART STAGE</button>
           <button class="cta-btn slate" id="btn-menu" type="button">🏠 MAIN MENU</button>
-          <button class="cta-btn slate" id="btn-reset-save" type="button" style="border-color: rgba(244,63,94,0.65); color: #fda4af;">🗑️ RESET PROGRESS</button>
         </div>
         <div id="secret-world-tools" hidden>
           <p id="secret-world-tools-title"></p>
@@ -994,13 +1039,8 @@
        * ========================================================================= */
       const I18N = {
         en: {
-          ribbon: 'CYBER ARCADE ACTION PLATFORMER',
           title: 'PIXEL VOLT ADVENTURE',
           sub: 'Dash, Jump & Stomp through 6 Cyber Worlds!',
-          r1: '<b>⬅/➡ &amp; SPACE</b>Run &amp; Double Jump',
-          r2: '<b>⚡ C / SHIFT / X</b>Volt Dash &amp; Fire 🔥',
-          r3: '<b>⬇ IN AIR: SLAM</b>Smash &amp; Air Combo 🔥',
-          r4: '<b>🕳️ ⬇ ON PIPES</b>Vaults &amp; Boss 🏆',
           playBtn: (lvl) => `▶ PLAY WORLD 1-${lvl}`,
           loading: 'LOADING…',
           adLoading: 'Loading…',
@@ -1059,15 +1099,12 @@
           nextBtn: (lvl) => `▶ NEXT: WORLD 1-${lvl}`,
           vicLabBtn: '🔬 TECH LAB / MENU',
           doubleBtn: '⚡ DOUBLE BATTERIES x2',
-          pauseRibbon: 'GAME PAUSED',
           pauseTitle: 'PAUSED',
           resume: '▶ RESUME',
           restart: '↻ RESTART STAGE',
           menu: '🏠 MAIN MENU',
           resetSave: '🗑️ RESET PROGRESS',
           resetConfirm: '⚠️ CONFIRM RESET? (CLICK AGAIN)',
-          shopReset: '🗑️ Reset',
-          shopResetConfirm: '⚠️ Sure?',
           hudMenu: 'MENU',
           overRibbon: 'OUT OF HEARTS',
           overTitle: 'TRY AGAIN!',
@@ -1410,6 +1447,35 @@
       let audioCtx = null;
       let bgmInterval = null;
       let bgmStep = 0;
+      let musicBus = null;
+      let musicFilter = null;
+
+      function connectMusic(a) {
+        if (musicBus) return;
+        musicBus = a.createGain();
+        musicBus.gain.value = 0.65;
+        musicFilter = a.createBiquadFilter();
+        musicFilter.type = 'lowpass';
+        const compressor = a.createDynamicsCompressor();
+        compressor.threshold.value = -20;
+        compressor.ratio.value = 3;
+        musicBus.connect(musicFilter).connect(compressor).connect(a.destination);
+      }
+
+      function playPad(a, root, at, inVault) {
+        for (const ratio of [1, inVault ? 1.1892 : 1.4983, 2]) {
+          const note = a.createOscillator();
+          const gain = a.createGain();
+          note.type = 'triangle';
+          note.frequency.value = root * ratio;
+          gain.gain.setValueAtTime(0.0001, at);
+          gain.gain.exponentialRampToValueAtTime(0.017, at + 0.24);
+          gain.gain.exponentialRampToValueAtTime(0.0001, at + 1.5);
+          note.connect(gain).connect(musicBus);
+          note.start(at);
+          note.stop(at + 1.52);
+        }
+      }
       let noiseBuffer = null;
 
       function getNoiseBuffer(ctx) {
@@ -1425,6 +1491,7 @@
 
       function playDrum(type, now, a) {
         if (!a || isMuted()) return;
+        connectMusic(a);
         const nb = getNoiseBuffer(a);
         if (type === 'kick') {
           const osc = a.createOscillator();
@@ -1435,7 +1502,7 @@
           g.gain.setValueAtTime(0.24, now);
           g.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
           osc.connect(g);
-          g.connect(a.destination);
+          g.connect(musicBus);
           osc.start(now);
           osc.stop(now + 0.095);
         } else if (type === 'snare') {
@@ -1451,7 +1518,7 @@
           g.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
           src.connect(flt);
           flt.connect(g);
-          g.connect(a.destination);
+          g.connect(musicBus);
           src.start(now);
           src.stop(now + 0.125);
 
@@ -1464,7 +1531,7 @@
           og.gain.setValueAtTime(0.12, now);
           og.gain.exponentialRampToValueAtTime(0.001, now + 0.075);
           osc.connect(og);
-          og.connect(a.destination);
+          og.connect(musicBus);
           osc.start(now);
           osc.stop(now + 0.08);
         } else if (type === 'hihat' || type === 'openhat') {
@@ -1479,7 +1546,7 @@
           g.gain.exponentialRampToValueAtTime(0.001, now + dur);
           src.connect(flt);
           flt.connect(g);
-          g.connect(a.destination);
+          g.connect(musicBus);
           src.start(now);
           src.stop(now + dur + 0.01);
         }
@@ -1517,7 +1584,10 @@
       function syncMuteUI() {
         const m = isMuted();
         const btn = document.getElementById('btn-mute');
-        if (btn) btn.textContent = m ? '🔇' : '🔊';
+        if (btn) {
+          btn.textContent = m ? '🔇' : '🔊';
+          btn.setAttribute('aria-label', m ? 'Unmute sound' : 'Mute sound');
+        }
         if (audioCtx) {
           try {
             if (m && audioCtx.state === 'running') audioCtx.suspend();
@@ -1553,23 +1623,27 @@
           if (isMuted() || state !== 'playing') return;
           const a = getAudio();
           if (!a) return;
+          connectMusic(a);
           const now = a.currentTime;
+          const inBossFight = boss && !boss.dead && Math.abs(hero.x - boss.x) < 520 && !inSecretRoom;
+          musicFilter.frequency.setTargetAtTime(inBossFight ? 9200 : currentStage === 3 ? 1750 : inSecretRoom ? 3600 : 7200, now, 0.09);
           // Biome transposition & waveform palette per stage
           const stageMult = currentStage === 2 ? 1.05946 : (currentStage === 3 ? 0.89090 : (currentStage === 4 ? 1.12246 : (currentStage === 5 ? 0.94387 : 1.0)));
           const leadFreq = CYBER_LEAD[bgmStep % CYBER_LEAD.length] * stageMult;
           const bassFreq = CYBER_BASS[bgmStep % CYBER_BASS.length] * stageMult;
           const arpList = BIOME_ARP[currentStage] || BIOME_ARP[1];
           const arpFreq = arpList[bgmStep % arpList.length];
-          const stepInBar = bgmStep % 8;
+          const stepInBar = bgmStep % 16;
+          const phraseBar = Math.floor(bgmStep / 16) % 4;
           bgmStep++;
 
           try {
             // 1. Biome-Shaped Lead Melody
-            if (leadFreq > 0) {
+            if (leadFreq > 0 && (!inSecretRoom || stepInBar % 4 === 0)) {
               const osc = a.createOscillator();
               const flt = a.createBiquadFilter();
               const g = a.createGain();
-              osc.type = (currentStage === 2 || currentStage === 3) ? 'triangle' : (currentStage === 6 ? 'sawtooth' : 'square');
+              osc.type = inBossFight ? 'sawtooth' : 'triangle';
               osc.frequency.setValueAtTime(leadFreq, now);
               flt.type = 'lowpass';
               flt.frequency.setValueAtTime(currentStage === 3 ? 1150 : 1850, now);
@@ -1578,7 +1652,7 @@
               g.gain.exponentialRampToValueAtTime(0.0008, now + 0.13);
               osc.connect(flt);
               flt.connect(g);
-              g.connect(a.destination);
+              g.connect(musicBus);
               osc.start(now);
               osc.stop(now + 0.135);
             }
@@ -1588,11 +1662,11 @@
               const aOsc = a.createOscillator();
               const ag = a.createGain();
               aOsc.type = currentStage === 3 ? 'sine' : 'triangle';
-              aOsc.frequency.setValueAtTime(inSecretRoom ? arpFreq * 1.25 : arpFreq, now);
+              aOsc.frequency.setValueAtTime(inSecretRoom ? arpFreq * 0.5 : arpFreq, now);
               ag.gain.setValueAtTime(0.016, now);
               ag.gain.exponentialRampToValueAtTime(0.0008, now + 0.11);
               aOsc.connect(ag);
-              ag.connect(a.destination);
+              ag.connect(musicBus);
               aOsc.start(now);
               aOsc.stop(now + 0.115);
             }
@@ -1605,15 +1679,18 @@
             bg.gain.setValueAtTime(currentStage === 6 ? 0.028 : 0.040, now);
             bg.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
             bOsc.connect(bg);
-            bg.connect(a.destination);
+            bg.connect(musicBus);
             bOsc.start(now);
             bOsc.stop(now + 0.125);
 
-            // 4. Punchy 16-Bit Drum Track (Kick, Snare, Hi-Hats)
-            const step16 = bgmStep % 16;
-            if (DRUM_KICKS.has(step16)) playDrum('kick', now, a);
-            if (DRUM_SNARES.has(step16)) playDrum('snare', now, a);
-            if (DRUM_HATS.has(step16)) playDrum(step16 === 10 ? 'openhat' : 'hihat', now, a);
+            if (stepInBar === 0 && !inBossFight) playPad(a, bassFreq * 2, now, inSecretRoom);
+            if (!inSecretRoom) {
+              if (DRUM_KICKS.has(stepInBar) || (inBossFight && stepInBar % 4 === 0)) playDrum('kick', now, a);
+              if (DRUM_SNARES.has(stepInBar)) playDrum('snare', now, a);
+              if (DRUM_HATS.has(stepInBar) && (inBossFight || stepInBar % 2 === 0 || phraseBar === 3)) {
+                playDrum(stepInBar === 10 ? 'openhat' : 'hihat', now, a);
+              }
+            }
           } catch (e) {}
         }, 135);
       }
@@ -1702,7 +1779,7 @@
               const og = a.createGain();
               o.type = 'triangle';
               o.frequency.setValueAtTime(f, t + idx * 0.032);
-              og.gain.setValueAtTime(0.09, t + idx * 0.032);
+              og.gain.setValueAtTime(0.055, t + idx * 0.032);
               og.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.032 + 0.18);
               o.connect(og);
               og.connect(a.destination);
@@ -1745,19 +1822,24 @@
             src.start(t);
             src.stop(t + 0.115);
           } else if (type === 'powerup') {
-            // Glorious arcade ascending fanfare
+            // Balanced arcade ascending chime (blends cleanly over BGM)
             const chord = [293.66, 369.99, 440.00, 587.33, 739.99];
+            const flt = a.createBiquadFilter();
+            flt.type = 'lowpass';
+            flt.frequency.setValueAtTime(2200, t);
+            flt.connect(a.destination);
             chord.forEach((f, idx) => {
               const o = a.createOscillator();
               const og = a.createGain();
-              o.type = 'sawtooth';
-              o.frequency.setValueAtTime(f, t + idx * 0.045);
-              og.gain.setValueAtTime(0.11, t + idx * 0.045);
-              og.gain.linearRampToValueAtTime(0.001, t + idx * 0.045 + 0.26);
+              const startAt = t + idx * 0.045;
+              o.type = 'triangle';
+              o.frequency.setValueAtTime(f, startAt);
+              og.gain.setValueAtTime(0.048, startAt);
+              og.gain.exponentialRampToValueAtTime(0.001, startAt + 0.22);
               o.connect(og);
-              og.connect(a.destination);
-              o.start(t + idx * 0.045);
-              o.stop(t + idx * 0.045 + 0.27);
+              og.connect(flt);
+              o.start(startAt);
+              o.stop(startAt + 0.23);
             });
           } else if (type === 'fire') {
             osc.type = 'sawtooth';
@@ -1791,7 +1873,7 @@
             osc.type = 'triangle';
             const notes = [523.25, 659.25, 783.99, 987.77, 1046.50];
             notes.forEach((n, idx) => osc.frequency.setValueAtTime(n, t + idx * 0.045));
-            g.gain.setValueAtTime(0.13, t);
+            g.gain.setValueAtTime(0.08, t);
             g.gain.linearRampToValueAtTime(0.001, t + 0.28);
             osc.start(t);
             osc.stop(t + 0.28);
@@ -1833,7 +1915,7 @@
       function refreshTouchUI() {
         const layer = document.getElementById('touch-layer');
         if (!layer) return;
-        const devType = window.CrazyGames?.SDK?.systemInfo?.device?.type;
+        const devType = sdkReady && window.CrazyGames.SDK.user?.systemInfo?.device?.type;
         if (devType === 'desktop') {
           layer.classList.remove('active');
           return;
@@ -1854,7 +1936,7 @@
           loadSave(!stageSelectedDuringBoot);
           return;
         }
-        await new Promise((resolve) => {
+        if (!window.CrazyGames?.SDK) await new Promise((resolve) => {
           const listeners = new AbortController();
           const timeout = setTimeout(ready, 2000);
           function ready() {
@@ -1883,7 +1965,7 @@
             syncMuteUI();
           };
           syncHostMute(sdk.game.settings);
-          sdk.game.addEventListener('settingsChanged', syncHostMute);
+          sdk.game.addSettingsChangeListener(syncHostMute);
           loadSave(!stageSelectedDuringBoot);
         } catch (e) {
           sdkReady = false;
@@ -2019,130 +2101,56 @@
       // Menu & Joystick Navigation State
       let canResumeCurrentStage = false;
       let activeStageInProgress = 1;
-      let menuRow = 1; // 0: Hero Cards, 1: Stage Buttons (1-1..1-6), 2: CTA Action Buttons
-      let menuCtaIdx = 0;
       let subModalIdx = 0;
+      const menuTabs = [...document.querySelectorAll('[data-menu-panel]')];
 
       function getActiveModalButtons() {
-        if (state === 'menu') {
-          return ['btn-return-stage', 'btn-play', 'btn-boost-start']
-            .map((id) => document.getElementById(id))
-            .filter((el) => el && !el.hidden && !el.disabled && !el.classList.contains('hidden'));
-        }
-        if (state === 'paused') {
-          return ['btn-resume', 'btn-restart', 'btn-menu']
-            .map((id) => document.getElementById(id))
-            .filter(Boolean);
-        }
-        if (state === 'victory') {
-          return ['btn-next', 'btn-double']
-            .map((id) => document.getElementById(id))
-            .filter((el) => el && !el.hidden && !el.disabled);
-        }
-        if (state === 'gameover') {
-          return ['btn-revive', 'btn-retry', 'btn-over-menu']
-            .map((id) => document.getElementById(id))
-            .filter((el) => el && !el.hidden);
-        }
-        return [];
+        const modal = document.querySelector('.modal-backdrop:not(.hidden)');
+        if (!modal) return [];
+        return [...modal.querySelectorAll('button')].filter((button) =>
+          !button.disabled && !button.closest('[hidden], .hidden'));
       }
 
       function updateMenuFocusUI() {
         document.querySelectorAll('.pad-focus').forEach((el) => el.classList.remove('pad-focus'));
-        if (state === 'playing' || state === 'celebrating') return;
-
-        if (state === 'menu') {
-          if (menuRow === 0) {
-            const heroCard = document.querySelector(`#hero-picker .hero-card[data-hero="${save.heroId || 'vg'}"]`)
-              || document.querySelector('#hero-picker .hero-card.selected');
-            if (heroCard) heroCard.classList.add('pad-focus');
-          } else if (menuRow === 1) {
-            const stageBtns = document.querySelectorAll('#stage-buttons .stage-btn');
-            const activeStageBtn = stageBtns[currentStage - 1];
-            if (activeStageBtn) activeStageBtn.classList.add('pad-focus');
-          } else if (menuRow === 2) {
-            const ctas = getActiveModalButtons();
-            if (ctas.length > 0) {
-              menuCtaIdx = Math.max(0, Math.min(ctas.length - 1, menuCtaIdx));
-              ctas[menuCtaIdx].classList.add('pad-focus');
-            }
-          }
-          return;
-        }
-
-        const btns = getActiveModalButtons();
-        if (btns.length > 0) {
-          subModalIdx = Math.max(0, Math.min(btns.length - 1, subModalIdx));
-          btns[subModalIdx].classList.add('pad-focus');
-        }
+        const buttons = getActiveModalButtons();
+        subModalIdx = Math.min(subModalIdx, Math.max(0, buttons.length - 1));
+        if (buttons[subModalIdx] === document.activeElement) buttons[subModalIdx].classList.add('pad-focus');
       }
 
       function navigateMenu(dir) {
+        const buttons = getActiveModalButtons();
+        if (!buttons.length) return;
         getAudio();
-        if (state === 'menu') {
-          if (dir === 'up') {
-            menuRow = Math.max(0, menuRow - 1);
-            sfx('fruit');
-            updateMenuFocusUI();
-            return;
-          }
-          if (dir === 'down') {
-            menuRow = Math.min(2, menuRow + 1);
-            sfx('fruit');
-            updateMenuFocusUI();
-            return;
-          }
-          const d = dir === 'right' ? 1 : -1;
-          if (menuRow === 0) {
-            const heroIds = ['vg', 'nf', 'md', 'pm'].filter((id) => save.unlockedHeroes?.[id] || id === 'vg');
-            const curIdx = Math.max(0, heroIds.indexOf(save.heroId || 'vg'));
-            const nextId = heroIds[(curIdx + d + heroIds.length) % heroIds.length];
-            selectOrUnlockHero(nextId);
-            updateMenuFocusUI();
-          } else if (menuRow === 1) {
-            const maxUnlocked = Math.max(1, save.unlockedStage || 1);
-            currentStage = ((currentStage - 1 + d + maxUnlocked) % maxUnlocked) + 1;
-            stageSelectedDuringBoot = true;
-            sfx('fruit');
-            applyTexts();
-            updateMenuFocusUI();
-          } else if (menuRow === 2) {
-            const ctas = getActiveModalButtons();
-            if (ctas.length > 0) {
-              menuCtaIdx = (menuCtaIdx + d + ctas.length) % ctas.length;
-              sfx('fruit');
-              updateMenuFocusUI();
-            }
-          }
-          return;
-        }
-
-        const btns = getActiveModalButtons();
-        if (btns.length > 0) {
-          const d = (dir === 'down' || dir === 'right') ? 1 : -1;
-          subModalIdx = (subModalIdx + d + btns.length) % btns.length;
-          sfx('fruit');
-          updateMenuFocusUI();
-        }
+        const focused = buttons.indexOf(document.activeElement);
+        const index = focused >= 0 ? focused : subModalIdx;
+        const delta = dir === 'down' || dir === 'right' ? 1 : -1;
+        subModalIdx = (index + delta + buttons.length) % buttons.length;
+        buttons[subModalIdx].focus();
+        sfx('fruit');
+        updateMenuFocusUI();
       }
 
       function confirmMenuSelection() {
         getAudio();
-        if (state === 'menu') {
-          if (menuRow === 2) {
-            const ctas = getActiveModalButtons();
-            if (ctas[menuCtaIdx]) {
-              ctas[menuCtaIdx].click();
-              return;
-            }
-          }
-          startStage(false);
-          return;
+        const buttons = getActiveModalButtons();
+        const focused = document.activeElement;
+        (buttons.includes(focused) ? focused : buttons[subModalIdx])?.click();
+      }
+
+      function showMenuPanel(panelId) {
+        for (const tab of menuTabs) {
+          const open = tab.dataset.menuPanel === panelId;
+          tab.setAttribute('aria-expanded', String(open));
+          document.getElementById(tab.getAttribute('aria-controls')).hidden = !open;
         }
-        const btns = getActiveModalButtons();
-        if (btns.length > 0 && btns[subModalIdx]) {
-          btns[subModalIdx].click();
-        }
+        updateMenuFocusUI();
+      }
+
+      for (const tab of menuTabs) {
+        tab.addEventListener('click', () => {
+          showMenuPanel(tab.getAttribute('aria-expanded') === 'true' ? null : tab.dataset.menuPanel);
+        });
       }
 
       window.addEventListener('keydown', (e) => {
@@ -2170,7 +2178,6 @@
             if (state === 'paused') {
               startStage(false);
             } else {
-              menuRow = 1;
               applyTexts();
               updateMenuFocusUI();
             }
@@ -2197,6 +2204,7 @@
             return;
           }
           if (c === 'Enter' || c === 'Space' || k === ' ') {
+            e.preventDefault();
             confirmMenuSelection();
             return;
           }
@@ -2454,6 +2462,7 @@
       const VIRTUAL_H = 528;
       const TILE = 44;
       const FLOOR_Y = 440; // 10 * 44
+      const CLOUD_FADE_TIME = 0.75;
       const WATER_SURFACE_Y = 112;
       const PIT_Y = FLOOR_Y + 130;
       const CONVEYOR_HEIGHT = 14;
@@ -3122,9 +3131,21 @@
             if (boss.hp <= 2) add('flame', center + side * 150 - 44, FLOOR_Y - 62, 88, 62);
           }
           if (stage === 6) {
+            const decks = oneWayBridges.filter(bridge => bridge.arenaStyle === 'citadel');
+            const outerDeck = side < 0 ? decks[0] : decks.at(-1);
+            const deckCenter = outerDeck.x + outerDeck.w / 2;
+            // All beams are fixed during the warning, including the one cycling between side decks.
             add('laser', center - 24, WATER_SURFACE_Y, 48, FLOOR_Y - WATER_SURFACE_Y);
-            add('laser', center + side * 165 - 24, WATER_SURFACE_Y, 48, FLOOR_Y - WATER_SURFACE_Y);
-            if (enraged) add('laser', Math.max(boss.minX, center - 165), WATER_SURFACE_Y, 44, FLOOR_Y - WATER_SURFACE_Y);
+            if (Math.abs(deckCenter - center) >= 48) {
+              add('laser', deckCenter - 24, WATER_SURFACE_Y, 48, FLOOR_Y - WATER_SURFACE_Y);
+            }
+            if (enraged) {
+              const innerDeck = side < 0 ? decks[2] : decks[1];
+              const innerCenter = innerDeck.x + innerDeck.w / 2;
+              if (Math.abs(innerCenter - center) >= 48) {
+                add('laser', innerCenter - 24, WATER_SURFACE_Y, 48, FLOOR_Y - WATER_SURFACE_Y);
+              }
+            }
           }
           boss.attackCd = enraged ? 3.5 : 4.6;
         }
@@ -3272,21 +3293,21 @@
           'MARKED ROCKS FALL: MOVE ASIDE',
           'BUBBLE SHOT: SWIM UP OR DOWN',
           'LOW GUST: JUMP OVER IT',
-          'MARKED FLAMES: MOVE OR JUMP',
-          'LASERS ALTERNATE: LEAVE THE MARKS'
+          'FIRE ERUPTS BELOW: JUMP TO A STONE LEDGE',
+          'LASERS HIT THE DECKS TOO: MOVE OUT OF THE BEAM'
         ];
-        // Tactical Boss Arena Platforms & Aerial Bounce Orb (verticality in every Boss Fight!)
-        oneWayBridges.push({ x: 491.5 * TILE, y: FLOOR_Y - 3.3 * TILE, w: 3.5 * TILE, h: 16 });
-        oneWayBridges.push({ x: 506.5 * TILE, y: FLOOR_Y - 3.3 * TILE, w: 3.5 * TILE, h: 16 });
-        rainbowBubbles.push({
-          x: 500.5 * TILE,
-          y: FLOOR_Y - 4.6 * TILE,
-          baseY: FLOOR_Y - 4.6 * TILE,
-          r: 22,
-          popped: false,
-          respawnTimer: 0,
-          phase: 0.7
-        });
+        // The ruins offer raised refuge from ground fire. The citadel has staggered decks.
+        const arena = stageNum === 5
+          ? { style: 'ruins', ledges: [[492, 2.1, 3], [500, 2.1, 4], [508, 2.1, 3]], orb: [499, 3.6] }
+          : stageNum === 6
+            ? { style: 'citadel', ledges: [[489, 2.1, 3], [496, 3.4, 3], [502, 3.4, 3], [508, 2.1, 4]], orb: [504, 5] }
+            : { ledges: [[491.5, 3.3, 3.5], [506.5, 3.3, 3.5]], orb: [500.5, 4.6] };
+        for (const [col, height, width] of arena.ledges) {
+          oneWayBridges.push({ x: col * TILE, y: FLOOR_Y - height * TILE, w: width * TILE, h: 16, arenaStyle: arena.style });
+        }
+        const [orbCol, orbHeight] = arena.orb;
+        const orbY = FLOOR_Y - orbHeight * TILE;
+        rainbowBubbles.push({ x: orbCol * TILE, y: orbY, baseY: orbY, r: 22, popped: false, respawnTimer: 0, phase: 0.7 });
         addSign(486, 2.8, bossHints[stageNum]);
         addSign(END_COL - 1.5, 3.2, '🏆 TOUCH TROPHY TO OPEN GATES');
 
@@ -3700,7 +3721,7 @@
           // WORLD 1-4: SKY ISLANDS (Unique Macro Layout: Warp @ 68, Star #2 @ 160, Star #3 @ 438)
           // ===================================================================
           const skyIsles = [
-            [0, 10], [16, 22], [28, 36], [42, 50], [56, 74],
+            [0, 4], [8, 22], [28, 36], [42, 50], [56, 74],
             [82, 96], [104, 116], [124, 136], [144, 166], [174, 196],
             [204, 222], [230, 248], [256, 276], [286, 306], [314, 336],
             [344, 366], [374, 398], [406, 426], [434, 456], [464, 485]
@@ -3708,7 +3729,7 @@
           skyIsles.forEach(([cs, ce]) => addGroundSpan(cs, ce));
 
           const cloudGaps = [
-            [11, 15], [23, 27], [37, 41], [51, 55], [75, 81],
+            [5, 7], [23, 27], [37, 41], [51, 55], [75, 81],
             [97, 103], [117, 123], [137, 143], [167, 173], [197, 203],
             [223, 229], [249, 255], [277, 285], [307, 313], [337, 343],
             [367, 373], [399, 405], [427, 433], [457, 463]
@@ -3719,13 +3740,11 @@
           });
 
           addFruitArc(2, 1, 4, 'apple');
-          addSign(7, 3.7, '☁️ CLOUDS FADE');
-          for (const col of [11, 23, 37, 51, 97, 137, 197, 249, 307, 367, 427]) addFruitArc(col, 1.65, 4, 'kiwi');
+          for (const col of [5, 23, 37, 51, 97, 137, 197, 249, 307, 367, 427]) addFruitArc(col, 1.65, 4, 'kiwi');
 
           // SECTION 1 (Cols 0..50): Cloud Hopping & Wind Turbines
-          addTile(4, 3, 'crate1', 'fruits');
-          addTile(5, 3, 'brick');
-          addMarioPipe(8, 1);
+          addTile(9, 3, 'crate1', 'fruits');
+          addTile(10, 3, 'brick');
           enemies.push({ type: 'mush', x: 18 * TILE, y: FLOOR_Y - 36, w: 32, h: 32, vx: -75, dead: false, hitTimer: 0, state: 'walk' });
           enemies.push({ type: 'bird', x: 25 * TILE, y: FLOOR_Y - 4.2 * TILE, baseX: 25 * TILE, baseY: FLOOR_Y - 4.2 * TILE, w: 34, h: 30, vx: -95, dead: false, hitTimer: 0, state: 'walk' });
           enemies.push({ type: 'snail', x: 31 * TILE, y: FLOOR_Y - 32, w: 34, h: 28, vx: -55, dead: false, hitTimer: 0, state: 'walk' });
@@ -4839,8 +4858,48 @@
         }
       }
 
+      const playHint = document.getElementById('play-hint');
+      const discovery = document.getElementById('discovery');
+      let discoveryUntil = 0;
+
+      function announceDiscovery(type, name) {
+        document.getElementById('discovery-type').textContent = type;
+        document.getElementById('discovery-name').textContent = name;
+        discoveryUntil = clock + 2.2;
+      }
+
+      const introHints = {
+        1: [
+          { from: 2, to: 7, keyboard: 'Move right · Space to jump', touch: 'Hold RIGHT · Tap JUMP' },
+          { from: 12, to: 21, keyboard: 'C or Shift · Dash', touch: 'Tap DASH' },
+          { from: 43, to: 49, keyboard: 'Down · Enter the green pipe', touch: 'Enter the green pipe · Tap SLAM' }
+        ],
+        3: [
+          { from: 2, to: 18, keyboard: 'Space: swim up · Hold ↓ to dive', touch: 'Tap JUMP to swim up · Hold SLAM to dive' }
+        ],
+        4: [
+          { from: 2, to: 12, keyboard: 'Clouds fade after landing · Jump again quickly', touch: 'Clouds fade after landing · Tap JUMP again' }
+        ]
+      };
+      let showIntroHints = false;
+
+      function updatePlayHint() {
+        const column = hero.x / TILE;
+        const showingDiscovery = state === 'playing' && clock < discoveryUntil;
+        discovery.hidden = !showingDiscovery;
+        const hint = !showingDiscovery && state === 'playing' && showIntroHints && !pipeAnim.active
+          ? introHints[currentStage]?.find(({ from, to }) => column >= from && column < to)
+          : null;
+        playHint.hidden = !hint;
+        if (!hint) return;
+        const touch = document.getElementById('touch-layer').classList.contains('active');
+        const text = touch ? hint.touch : hint.keyboard;
+        if (playHint.textContent !== text) playHint.textContent = text;
+      }
+
       function update(dt) {
         clock += dt;
+        updatePlayHint();
 
         // Micro-Freeze (HitStop) on heavy combat impacts for punchy arcade weight
         if (hitStop > 0) {
@@ -5034,7 +5093,7 @@
                 addPopup(hero.x, hero.y - 14, I18N[lang].popSecretExit, '#f59e0b');
               } else {
                 const roomBanner = activeVault?.kind === 'amber' ? 'Amber Cache' : I18N[lang].secretWorlds[currentStage - 1];
-                addPopup(hero.x, hero.y - 28, roomBanner, activeVault?.kind === 'amber' ? '#facc15' : '#38bdf8');
+                announceDiscovery('Secret vault discovered', roomBanner);
                 triggerScreenShake(4, 0.2);
               }
             }
@@ -5116,7 +5175,7 @@
                 hero.onGround = true;
                 rememberSafeFooting();
                 camX = Math.max(0, hero.x - 240);
-                addPopup(hero.x, hero.y - 28, '💎 CRYSTAL RIFT WORLD!', '#c084fc');
+                announceDiscovery('Hidden route discovered', 'Crystal Rift');
               } else {
                 inSecretRoom = false;
                 activeVault = null;
@@ -5246,7 +5305,7 @@
           }
           if (cp.stepped) {
             cp.shakeTimer += dt;
-            if (cp.shakeTimer >= 0.75) {
+            if (cp.shakeTimer >= CLOUD_FADE_TIME) {
               cp.dissolved = true;
               cp.respawnTimer = 3.0;
               sfx('jump');
@@ -6510,7 +6569,7 @@
             trophyObj.animFrame = 0;
             addScore(1000);
             sfx('win');
-            celebrateHappytime();
+            if (currentStage === 6) celebrateHappytime();
             addPopup(trophyObj.x, trophyObj.y - 18, I18N[lang].popStageClear, '#4ade80');
             // Spawn 36 tiny 8x8 colorful confetti particles flying out in a fountain!
             for (let k = 0; k < 36; k++) {
@@ -6835,7 +6894,7 @@
         const bgImg = IMG[key];
         if (bgImg && bgImg.complete && bgImg.naturalWidth) {
           ctx.save();
-          ctx.globalAlpha = 0.34;
+          ctx.globalAlpha = 0.2;
           const tileSize = 64;
           const offsetX = Math.floor((camX * 0.16) % tileSize);
           const offsetY = Math.floor((clock * 10) % tileSize);
@@ -7426,7 +7485,17 @@
         // 3. One-Way Jump-Through Bridges & Moving Platforms
         oneWayBridges.forEach((br) => {
           if (br.x + br.w < camX - 100 || br.x > camX + vw + 100) return;
-          if (ter && ter.complete) {
+          if (br.arenaStyle) {
+            const ruins = br.arenaStyle === 'ruins';
+            ctx.fillStyle = ruins ? '#473328' : '#12223a';
+            ctx.fillRect(br.x, br.y, br.w, br.h);
+            ctx.fillStyle = ruins ? '#eabb72' : '#6beafb';
+            ctx.fillRect(br.x, br.y, br.w, 4);
+            ctx.fillStyle = ruins ? '#96613d' : '#3c6890';
+            for (let x = br.x + 12; x < br.x + br.w - 12; x += 22) {
+              ctx.fillRect(x, br.y + 7, ruins ? 14 : 5, 5);
+            }
+          } else if (ter && ter.complete) {
             for (let x = br.x; x < br.x + br.w; x += TILE) {
               ctx.drawImage(ter, 272, 16, 48, 8, x, br.y, TILE, 14);
             }
@@ -8133,6 +8202,16 @@
           ctx.lineWidth = 3;
           ctx.strokeStyle = colors[a.kind];
           ctx.fillStyle = colors[a.kind];
+          if (a.kind === 'flame') {
+            // Illuminate the raised ledges during the eruption. Its damage stays at floor level.
+            ctx.fillStyle = '#ffe3a3';
+            for (const ledge of oneWayBridges) {
+              if (ledge.arenaStyle === 'ruins' && ledge.x < a.x + a.w && ledge.x + ledge.w > a.x) {
+                ctx.fillRect(ledge.x, ledge.y - 2, ledge.w, 4);
+              }
+            }
+            ctx.fillStyle = colors.flame;
+          }
           if (a.warning > 0) {
             const y = a.kind === 'rock' ? FLOOR_Y - 8 : a.y;
             const h = a.kind === 'rock' ? 8 : a.h;
@@ -8152,7 +8231,7 @@
             ctx.textAlign = 'center';
             ctx.strokeStyle = '#0f172a';
             ctx.lineWidth = 4;
-            const labelY = Math.max(190, Math.min(FLOOR_Y - 100, a.y - 14));
+            const labelY = a.kind === 'flame' ? FLOOR_Y - 158 : Math.max(190, Math.min(FLOOR_Y - 100, a.y - 14));
             ctx.strokeText(labels[a.kind], a.x + a.w / 2 + a.vx * 0.9, labelY);
             ctx.fillText(labels[a.kind], a.x + a.w / 2 + a.vx * 0.9, labelY);
           } else {
@@ -8497,7 +8576,7 @@
           if (cp.x + cp.w < camX - 100 || cp.x > camX + vw + 100) return;
           if (cp.dissolved) return;
           const wobble = cp.stepped ? Math.sin(cp.shakeTimer * 32) * 3 : 0;
-          const alpha = cp.stepped ? Math.max(0.2, 1 - (cp.shakeTimer / 0.75)) : 1.0;
+          const alpha = cp.stepped ? Math.max(0.2, 1 - (cp.shakeTimer / CLOUD_FADE_TIME)) : 1.0;
           ctx.save();
           ctx.globalAlpha = alpha;
           ctx.fillStyle = '#ffffff';
@@ -8507,6 +8586,18 @@
           ctx.roundRect(cp.x, cp.y + wobble, cp.w, cp.h, 9);
           ctx.fill();
           ctx.stroke();
+          if (cp.stepped) {
+            // Keep the countdown visible even while the cloud itself fades.
+            ctx.globalAlpha = 1;
+            const meterX = cp.x + 12;
+            const meterY = cp.y + cp.h + 6;
+            const meterWidth = cp.w - 24;
+            ctx.fillStyle = '#172245';
+            ctx.fillRect(meterX, meterY, meterWidth, 5);
+            ctx.fillStyle = '#ffbc5c';
+            ctx.fillRect(meterX, meterY, meterWidth * Math.max(0, 1 - cp.shakeTimer / CLOUD_FADE_TIME), 5);
+            ctx.globalAlpha = alpha;
+          }
           // Cute cartoon expression on cloud center!
           const cx = cp.x + cp.w / 2;
           const cy = cp.y + wobble + 9;
@@ -9286,16 +9377,12 @@
       function applyTexts() {
         const t = I18N[lang];
         document.getElementById('btn-pad').textContent = t.padBtn;
-        document.getElementById('txt-ribbon').textContent = t.ribbon;
         document.getElementById('txt-title').textContent = t.title;
         document.getElementById('txt-sub').textContent = t.sub;
-        document.getElementById('r-1').innerHTML = t.r1;
-        document.getElementById('r-2').innerHTML = t.r2;
-        document.getElementById('r-3').innerHTML = t.r3;
-        document.getElementById('r-4').innerHTML = t.r4;
         const playBtn = document.getElementById('btn-play');
         playBtn.textContent = gameReady ? t.playBtn(currentStage) : t.loading;
         playBtn.disabled = !gameReady;
+        document.getElementById('menu-world').textContent = t.stages[currentStage - 1];
         const secretTools = document.getElementById('secret-world-tools');
         secretTools.hidden = new URLSearchParams(window.location.search).get('debug') !== '1';
         document.getElementById('secret-world-tools-title').textContent = t.secretTools;
@@ -9311,7 +9398,6 @@
         boostBtn.textContent = superStartArmed ? t.boostArmed : t.boostBtn;
         boostBtn.hidden = !gameReady || !canRequestReward();
         boostBtn.disabled = superStartArmed;
-        document.getElementById('txt-pause-ribbon').textContent = t.pauseRibbon;
         document.getElementById('txt-pause-title').textContent = t.pauseTitle;
         document.getElementById('btn-resume').textContent = t.resume;
         document.getElementById('btn-restart').textContent = t.restart;
@@ -9321,11 +9407,6 @@
           resetBtn.textContent = resetConfirmArmed ? t.resetConfirm : t.resetSave;
           resetBtn.style.background = resetConfirmArmed ? 'linear-gradient(180deg, #e11d48 0%, #9f1239 100%)' : '';
           resetBtn.style.color = resetConfirmArmed ? '#ffffff' : '#fda4af';
-        }
-        const shopResetBtn = document.getElementById('btn-shop-reset');
-        if (shopResetBtn) {
-          shopResetBtn.textContent = resetConfirmArmed ? t.shopResetConfirm : t.shopReset;
-          shopResetBtn.classList.toggle('armed', resetConfirmArmed);
         }
         document.getElementById('txt-over-ribbon').textContent = t.overRibbon;
         document.getElementById('txt-over-title').textContent = t.overTitle;
@@ -9344,10 +9425,11 @@
           const sp = card.querySelector('span');
           const im = card.querySelector('img');
           if (sp && t.heroes[hid]) sp.textContent = t.heroes[hid];
-          if (im && t.heroes[hid]) im.alt = t.heroes[hid];
+          if (im) im.alt = '';
           const unlocked = Boolean(save.unlockedHeroes[hid]);
           const isSel = (save.heroId || 'vg') === hid && unlocked;
           card.classList.toggle('selected', isSel);
+          card.setAttribute('aria-pressed', String(isSel));
           card.classList.toggle('locked', !unlocked);
           let badge = card.querySelector('.hero-badge');
           if (!badge) {
@@ -9457,7 +9539,11 @@
           clearTimeout(resetConfirmTimer);
           resetConfirmTimer = null;
         }
-        if (id) resetAllInputs();
+        if (id) {
+          resetAllInputs();
+          playHint.hidden = true;
+          discovery.hidden = true;
+        }
         ['modal-start', 'modal-victory', 'modal-pause', 'modal-gameover'].forEach((m) => {
           const el = document.getElementById(m);
           if (el) {
@@ -9466,10 +9552,7 @@
           }
         });
         subModalIdx = 0;
-        if (id === 'modal-start') {
-          menuRow = 1;
-          menuCtaIdx = 0;
-        }
+        if (id === 'modal-start') showMenuPanel(null);
         if (focus) {
           document.activeElement?.blur?.();
           window.focus();
@@ -9511,6 +9594,8 @@
           star.collected = Boolean(runStarsCollected[star.id - 1]);
         }
         spawnHero(retrying);
+        showIntroHints = Boolean(introHints[currentStage]) && !retrying;
+        discoveryUntil = 0;
         applyTexts();
         showModal(null);
         state = 'playing';
@@ -9537,14 +9622,22 @@
 
         const starCount = runStarsCollected.filter(Boolean).length;
         const t = I18N[lang];
-        document.getElementById('txt-vic-ribbon').textContent = t.vicRibbon;
-        document.getElementById('txt-vic-title').textContent = t.vicTitle(currentStage);
+        const campaignComplete = currentStage === 6 && save.clearedStages.length === 6;
+        document.getElementById('modal-victory').classList.toggle('campaign-clear', campaignComplete);
+        document.getElementById('txt-vic-ribbon').textContent = campaignComplete ? 'CAMPAIGN COMPLETE' : t.vicRibbon;
+        document.getElementById('txt-vic-title').textContent = campaignComplete ? 'CITADEL CONQUERED' : t.vicTitle(currentStage);
         const starsDisp = document.getElementById('vic-stars-display');
         if (starsDisp) starsDisp.textContent = '⭐'.repeat(starCount) + '☆'.repeat(3 - starCount);
         const lblStars = document.getElementById('lbl-s-stars');
         if (lblStars) lblStars.textContent = t.sStars;
         const valStars = document.getElementById('val-s-stars');
-        if (valStars) valStars.textContent = `${starCount}/3 ⭐`;
+        const campaignStars = campaignComplete
+          ? t.stages.reduce((total, _, i) => {
+              const stars = save.stageStars[i + 1];
+              return total + (Array.isArray(stars) ? stars.filter(Boolean).length : 0);
+            }, 0)
+          : starCount;
+        if (valStars) valStars.textContent = campaignStars + '/' + (campaignComplete ? 18 : 3) + ' ⭐';
 
         document.getElementById('lbl-s-fruits').textContent = t.sFruits;
         document.getElementById('val-s-fruits').textContent = `${runFruits} 🔋`;
@@ -9626,6 +9719,7 @@
         if (state !== 'victory' || adPending) return;
         if (currentStage < 6) currentStage++;
         returnToMainMenu();
+        showMenuPanel('lab');
       });
 
       document.getElementById('btn-double').addEventListener('click', (e) => {
@@ -9661,7 +9755,6 @@
       document.getElementById('btn-resume').addEventListener('click', resumeGame);
       document.getElementById('btn-restart').addEventListener('click', () => startStage(false));
       document.getElementById('btn-reset-save')?.addEventListener('click', handleResetClick);
-      document.getElementById('btn-shop-reset')?.addEventListener('click', handleResetClick);
 
       function resumeFromMainMenu() {
         if (!canResumeCurrentStage) {
