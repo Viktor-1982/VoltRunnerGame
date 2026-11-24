@@ -820,10 +820,303 @@
     }
     @media (prefers-reduced-motion: reduce) {
       .cta-btn.green:not(:disabled) { animation: none; }
+      #hud-combo, #boss-intro { animation: none !important; transition: none !important; }
     }
     @media (max-width: 520px) {
       #modal-start #hero-picker, #modal-start #stage-buttons { grid-template-columns: 1fr; }
       .menu-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    /* =========================================================================
+     * PREMIUM CRAZYGAMES UI: SVG ICONS, LIVE MENU GLASS, COMBO, BOSS INTRO, RANKS
+     * ========================================================================= */
+    .ico {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      vertical-align: -2px;
+      flex-shrink: 0;
+      fill: currentColor;
+      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+    }
+    .ico-lg { width: 20px; height: 20px; vertical-align: -4px; }
+    .ico-xl { width: 28px; height: 28px; vertical-align: -5px; }
+    .ico-heart { color: #fb7185; }
+    .ico-heart-empty { color: rgba(251, 113, 133, 0.28); }
+    .ico-battery { color: #facc15; }
+    .ico-bolt { color: #38bdf8; }
+    .ico-fire { color: #fb923c; }
+    .ico-drone { color: #22d3ee; }
+    .ico-star { color: #fbbf24; }
+    .ico-star-empty { color: rgba(251, 191, 36, 0.25); }
+    .ico-trophy { color: #fcd34d; }
+    .ico-timer { color: #67e8f9; }
+    .ico-lock { color: #94a3b8; }
+    .ico-check { color: #4ade80; }
+    .ico-crown { color: #f59e0b; }
+
+    .hud-pill, .summary-box, #hud-timer, #hud-combo {
+      font-variant-numeric: tabular-nums;
+    }
+    .hud-pill.timer { border-color: #22d3ee; color: #cffafe; }
+    .hud-pill.hardcore-pill { border-color: #f43f5e; color: #fecdd3; background: rgba(69, 10, 26, 0.92); }
+    .hud-pill .ico { width: 15px; height: 15px; }
+    .hud-btn .ico { width: 15px; height: 15px; }
+    .cta-btn .ico { width: 15px; height: 15px; vertical-align: -2px; margin-right: 4px; }
+
+    /* Translucent Live-World Main Menu Backdrop */
+    #modal-start {
+      background: radial-gradient(circle at 50% 35%, rgba(12, 20, 40, 0.34), rgba(6, 10, 22, 0.72));
+      backdrop-filter: blur(3px);
+    }
+    #modal-start .modal-card {
+      width: min(560px, 95vw);
+      background: linear-gradient(180deg, rgba(20, 30, 52, 0.88) 0%, rgba(11, 18, 34, 0.94) 100%);
+      border: 1.5px solid rgba(56, 189, 248, 0.55) !important;
+      box-shadow: 0 24px 70px rgba(2, 6, 23, 0.78), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    }
+    #modal-start .title-main {
+      font-family: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+      letter-spacing: 2.2px;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, #fef08a 0%, #facc15 55%, #f97316 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 3px 0 rgba(15, 23, 42, 0.95)) drop-shadow(0 0 18px rgba(250, 204, 21, 0.4));
+    }
+    .menu-nav {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      width: 100%;
+    }
+    .menu-nav .cta-btn {
+      min-height: 40px;
+      padding: 4px 4px;
+      font-size: 11.5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .menu-nav .cta-btn[aria-expanded="true"] {
+      border-color: #38bdf8;
+      background: linear-gradient(180deg, #0ea5e9 0%, #0369a1 100%);
+      color: #fff;
+    }
+
+    /* World cards with biome strip, stars & rank badges */
+    #stage-buttons .stage-btn {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+      text-align: left;
+      padding: 7px 10px 7px 13px;
+      overflow: hidden;
+    }
+    #stage-buttons .stage-btn::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: var(--biome-accent, #38bdf8);
+    }
+    .stage-btn-top {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .stage-btn-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10.5px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+    .rank-S { background: linear-gradient(135deg, #fde047, #f59e0b); color: #1e1b4b; box-shadow: 0 0 10px rgba(250, 204, 21, 0.55); }
+    .rank-A { background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; }
+    .rank-B { background: rgba(148, 163, 184, 0.28); color: #e2e8f0; border: 1px solid rgba(148, 163, 184, 0.45); }
+
+    /* Multi-Tier Tech Lab Pips */
+    .tier-pips {
+      display: inline-flex;
+      gap: 3px;
+      margin-top: 2px;
+    }
+    .tier-pip {
+      width: 12px;
+      height: 5px;
+      border-radius: 2px;
+      background: rgba(148, 163, 184, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .tier-pip.filled {
+      background: linear-gradient(90deg, #38bdf8, #4ade80);
+      border-color: #86efac;
+      box-shadow: 0 0 6px rgba(74, 222, 128, 0.55);
+    }
+
+    /* Trophies / Achievements Gallery */
+    .trophy-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      width: 100%;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .trophy-card {
+      background: rgba(15, 23, 42, 0.78);
+      border: 1.5px solid rgba(71, 85, 105, 0.7);
+      border-radius: 10px;
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+      opacity: 0.72;
+    }
+    .trophy-card.unlocked {
+      opacity: 1;
+      border-color: rgba(250, 204, 21, 0.75);
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.92), rgba(50, 38, 14, 0.52));
+    }
+    .trophy-card-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .trophy-card-title { font-size: 11px; font-weight: 800; color: #f8fafc; line-height: 1.15; }
+    .trophy-card-sub { font-size: 10px; color: #94a3b8; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; }
+    .trophy-card.unlocked .trophy-card-sub { color: #fde047; }
+
+    /* Animated Combo Meter Badge */
+    #hud-combo {
+      position: absolute;
+      top: max(54px, calc(env(safe-area-inset-top) + 46px));
+      right: max(14px, env(safe-area-inset-right));
+      z-index: 24;
+      pointer-events: none;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(88, 28, 135, 0.92));
+      border: 2px solid #facc15;
+      border-radius: 12px;
+      padding: 5px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 900;
+      font-size: 14px;
+      color: #fef08a;
+      box-shadow: 0 4px 16px rgba(250, 204, 21, 0.32), 0 4px 0 rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transform: translateY(-6px) scale(0.9);
+      transition: opacity 0.16s ease, transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #hud-combo.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    #hud-combo.pop {
+      transform: translateY(-2px) scale(1.12);
+    }
+
+    /* Cinematic Boss Entrance Banner */
+    #boss-intro {
+      position: absolute;
+      top: 34%;
+      left: 0;
+      right: 0;
+      z-index: 28;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      background: linear-gradient(90deg, rgba(225, 29, 72, 0) 0%, rgba(15, 23, 42, 0.94) 18%, rgba(45, 10, 24, 0.96) 50%, rgba(15, 23, 42, 0.94) 82%, rgba(225, 29, 72, 0) 100%);
+      border-top: 2px solid rgba(244, 63, 94, 0.85);
+      border-bottom: 2px solid rgba(250, 204, 21, 0.85);
+      text-align: center;
+      opacity: 0;
+      transform: scaleY(0.2);
+      transition: opacity 0.2s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #boss-intro.show {
+      opacity: 1;
+      transform: scaleY(1);
+    }
+    #boss-intro-tag {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #fda4af;
+      text-transform: uppercase;
+    }
+    #boss-intro-name {
+      font-size: clamp(18px, 3.6vw, 28px);
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      color: #fde047;
+      text-shadow: 0 3px 0 #000, 0 0 18px rgba(244, 63, 94, 0.65);
+      margin-top: 2px;
+    }
+
+    /* Victory Rank Stamp & Record Pill */
+    .vic-rank-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 2px 0;
+    }
+    .vic-rank-stamp {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 900;
+      border: 2.5px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    }
+    .record-pill {
+      font-size: 10px;
+      font-weight: 900;
+      padding: 2px 7px;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      color: #fff;
+      letter-spacing: 0.7px;
+      margin-left: 6px;
+    }
+    .settings-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    @media (max-width: 600px) {
+      .trophy-grid { grid-template-columns: 1fr; }
+      #hud-timer { display: none; }
     }
   </style>
 </head>
@@ -843,33 +1136,43 @@
     <!-- TOP HUD -->
     <div id="hud">
       <div class="hud-group">
-        <div class="hud-pill hearts" id="hud-hp">❤️❤️ 2/2</div>
-        <div class="hud-pill fruits" id="hud-fruits">🔋 0</div>
-        <div class="hud-pill stars" id="hud-stars">⭐ 0/3</div>
-        <div class="hud-pill score" id="hud-score">🏆 0</div>
+        <div class="hud-pill hearts" id="hud-hp">2/2</div>
+        <div class="hud-pill fruits" id="hud-fruits">0</div>
+        <div class="hud-pill stars" id="hud-stars">0/3</div>
+        <div class="hud-pill score" id="hud-score">0</div>
+        <div class="hud-pill timer" id="hud-timer">00:00.0</div>
         <div class="hud-pill stage" id="hud-stage">WORLD 1-1</div>
       </div>
 
       <div class="hud-group">
         <div class="progress-pill">
-          <span class="progress-icon">🏃</span>
+          <span class="progress-icon" id="hud-prog-start"></span>
           <div class="progress-track">
             <div class="progress-fill" id="progress-fill"></div>
           </div>
-          <span class="progress-icon">🚩🏆</span>
+          <span class="progress-icon" id="hud-prog-end"></span>
         </div>
       </div>
 
       <div class="hud-group interactive">
-        <button class="hud-btn" id="btn-pad" type="button">🎮 PAD</button>
-        <button class="hud-btn" id="btn-mute" type="button" aria-label="Mute sound">🔊</button>
-        <button class="hud-btn" id="btn-pause" type="button" aria-label="Pause game">⏸</button>
-        <button class="hud-btn" id="btn-hud-menu" type="button" title="Main Menu">🏠 <span id="lbl-hud-menu">MENU</span></button>
+        <button class="hud-btn" id="btn-pad" type="button">PAD</button>
+        <button class="hud-btn" id="btn-mute" type="button" aria-label="Mute sound"></button>
+        <button class="hud-btn" id="btn-pause" type="button" aria-label="Pause game"></button>
+        <button class="hud-btn" id="btn-hud-menu" type="button" title="Main Menu"><span id="lbl-hud-menu">MENU</span></button>
       </div>
     </div>
 
+    <!-- ANIMATED COMBO METER -->
+    <div id="hud-combo" aria-live="polite"></div>
+
+    <!-- CINEMATIC BOSS INTRO BANNER -->
+    <div id="boss-intro" aria-hidden="true">
+      <span id="boss-intro-tag">WARNING // GUARDIAN DETECTED</span>
+      <strong id="boss-intro-name">FOREST GUARDIAN BEHEMOTH MK-1</strong>
+    </div>
+
     <!-- ACHIEVEMENT TOAST -->
-    <div id="ach-toast" role="status" aria-live="polite">🏆 ACHIEVEMENT UNLOCKED!</div>
+    <div id="ach-toast" role="status" aria-live="polite">ACHIEVEMENT UNLOCKED!</div>
 
     <!-- BOSS HEALTH BAR -->
     <div id="boss-banner">
@@ -901,6 +1204,7 @@
           <button class="cta-btn slate" type="button" data-menu-panel="worlds" aria-controls="menu-worlds" aria-expanded="false">Worlds</button>
           <button class="cta-btn slate" type="button" data-menu-panel="heroes" aria-controls="menu-heroes" aria-expanded="false">Heroes</button>
           <button class="cta-btn slate" type="button" data-menu-panel="lab" aria-controls="menu-lab" aria-expanded="false">Tech Lab</button>
+          <button class="cta-btn slate" type="button" data-menu-panel="trophies" aria-controls="menu-trophies" aria-expanded="false">Trophies</button>
           <button class="cta-btn slate" type="button" data-menu-panel="settings" aria-controls="menu-settings" aria-expanded="false">Settings</button>
         </nav>
 
@@ -941,6 +1245,15 @@
         <section class="menu-panel" id="menu-worlds" hidden>
           <div class="stage-row" id="stage-buttons"></div>
         </section>
+        <section class="menu-panel" id="menu-trophies" hidden>
+          <div class="shop-bar">
+            <div class="shop-header">
+              <span id="txt-trophies-title">TROPHIES &amp; MEDALS</span>
+              <span class="shop-balance" id="txt-trophies-count">0/10</span>
+            </div>
+            <div class="trophy-grid" id="trophy-grid"></div>
+          </div>
+        </section>
         <section class="menu-panel menu-settings" id="menu-settings" hidden>
           <div class="controls-help">
             <p class="keyboard-help">A / D or arrow keys to move · Space to double jump</p>
@@ -948,7 +1261,10 @@
             <p class="touch-help">Left / Right to move · Tap Jump twice to double jump</p>
             <p class="touch-help">Tap Dash to dash · Tap Slam in the air or on a pipe</p>
           </div>
-          <button class="cta-btn slate" id="btn-reset-save" type="button" style="border-color: rgba(244,63,94,0.65); color: #fda4af;">🗑️ RESET PROGRESS</button>
+          <div class="settings-row">
+            <button class="cta-btn slate" id="btn-hardcore" type="button" aria-pressed="false">HARDCORE MODE: OFF</button>
+            <button class="cta-btn slate" id="btn-reset-save" type="button" style="border-color: rgba(244,63,94,0.65); color: #fda4af;">RESET PROGRESS</button>
+          </div>
         </section>
       </div>
     </div>
@@ -956,22 +1272,26 @@
     <!-- STAGE CLEAR / VICTORY MODAL -->
     <div class="modal-backdrop hidden" id="modal-victory">
       <div class="modal-card" style="max-width: 500px;">
-        <span class="ribbon" id="txt-vic-ribbon">STAGE COMPLETE! 🏆🚩</span>
+        <span class="ribbon" id="txt-vic-ribbon">STAGE COMPLETE!</span>
         <h2 class="title-main" id="txt-vic-title">WORLD 1-1 CLEARED!</h2>
-        <div id="vic-stars-display" style="font-size: 32px; letter-spacing: 10px; margin: 6px 0;">⭐⭐⭐</div>
+        <div class="vic-rank-row">
+          <div id="vic-stars-display" style="display:flex; align-items:center; gap:8px; margin: 4px 0;"></div>
+          <div class="vic-rank-stamp rank-B" id="vic-rank-badge" title="Stage Rank">B</div>
+        </div>
 
         <div class="summary-box">
-          <div class="sum-line"><span id="lbl-s-fruits">Batteries Collected:</span><span id="val-s-fruits">0 🔋</span></div>
-          <div class="sum-line"><span id="lbl-s-stars">Secret Stars:</span><span id="val-s-stars">0/3 ⭐</span></div>
+          <div class="sum-line"><span id="lbl-s-time">Clear Time:</span><span id="val-s-time">00:00.0</span></div>
+          <div class="sum-line"><span id="lbl-s-fruits">Batteries Collected:</span><span id="val-s-fruits">0</span></div>
+          <div class="sum-line"><span id="lbl-s-stars">Secret Stars:</span><span id="val-s-stars">0/3</span></div>
           <div class="sum-line"><span id="lbl-s-enemies">Enemies Defeated:</span><span id="val-s-enemies">0</span></div>
           <div class="sum-line"><span id="lbl-s-trophy">Trophy Bonus:</span><span id="val-s-trophy">+1000 PTS</span></div>
           <div class="sum-line"><span id="lbl-s-total">Total Score:</span><span id="val-s-total">0 PTS</span></div>
         </div>
 
         <div class="cta-row">
-          <button class="cta-btn green" id="btn-next" type="button">▶ NEXT WORLD</button>
-          <button class="cta-btn cyan" id="btn-vic-menu" type="button">🔬 TECH LAB / MENU</button>
-          <button class="cta-btn purple" id="btn-double" type="button" hidden>🎬 DOUBLE BATTERIES x2 (AD)</button>
+          <button class="cta-btn green" id="btn-next" type="button">NEXT WORLD</button>
+          <button class="cta-btn cyan" id="btn-vic-menu" type="button">TECH LAB / MENU</button>
+          <button class="cta-btn purple" id="btn-double" type="button" hidden>DOUBLE BATTERIES x2</button>
         </div>
       </div>
     </div>
@@ -1035,24 +1355,75 @@
       'use strict';
 
       /* =========================================================================
+       * 0. PREMIUM INLINE SVG ICON SYSTEM (ZERO SYSTEM EMOJIS IN UI)
+       * ========================================================================= */
+      const SVG_PATHS = {
+        heart: '<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>',
+        battery: '<path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4zM13 18h-2v-4H9l4-7v4h2l-2 7z"/>',
+        bolt: '<path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/>',
+        fire: '<path d="M13.5 2s.5 3.5-1.5 5.5c-1.1 1.1-2 1.8-2 3.2 0 1.4 1.1 2.3 2.5 2.3 1.7 0 3-1.4 3-3.5 0-1.1-.4-2.2-1-3.1 2.9 1.5 4.5 4.3 4.5 7.4C19 18.2 15.9 22 12 22s-7-3.4-7-7.8c0-3.5 2.2-6.7 5-8.9 1.2-1 2.4-2.1 3.5-3.3z"/>',
+        drone: '<path d="M12 2a2 2 0 012 2v1.1A7 7 0 0119 12v3a3 3 0 01-3 3h-1v2h-2v-2h-2v2H9v-2H8a3 3 0 01-3-3v-3a7 7 0 015-6.9V4a2 2 0 012-2zm-3 9a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm6 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/>',
+        star: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>',
+        trophy: '<path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/>',
+        flag: '<path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6z"/>',
+        runner: '<path d="M13.5 5.5a2 2 0 100-4 2 2 0 000 4zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6a2.1 2.1 0 00-2.6-.8L6 8.3V13h2V9.6l1.8-.7z"/>',
+        lock: '<path d="M18 8h-1V6a5 5 0 00-10 0v2H6a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V10a2 2 0 00-2-2zm-6 9a2 2 0 110-4 2 2 0 010 4zm3.1-9H8.9V6a3.1 3.1 0 016.2 0v2z"/>',
+        check: '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>',
+        play: '<path d="M8 5v14l11-7L8 5z"/>',
+        pause: '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+        soundOn: '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>',
+        soundOff: '<path d="M16.5 12A4.5 4.5 0 0014 7.97v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.8 8.8 0 0021 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 003.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>',
+        menu: '<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/>',
+        gamepad: '<path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm4-3a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/>',
+        lab: '<path d="M6 22h12a2 2 0 001.73-3l-5.73-9.9V4h1V2H9v2h1v5.1L4.27 19A2 2 0 006 22zm4-11.5V4h4v6.5l2.6 4.5H7.4l2.6-4.5z"/>',
+        timer: '<path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42a11.05 11.05 0 00-1.41-1.41l-1.42 1.42A8.96 8.96 0 0012 4a9 9 0 109 9c0-2.12-.74-4.07-1.97-5.61zM12 20a7 7 0 110-14 7 7 0 010 14z"/>',
+        shield: '<path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3z"/>',
+        crown: '<path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/>',
+        retry: '<path d="M17.65 6.35A7.96 7.96 0 0012 4a8 8 0 108 8h-2a6 6 0 11-1.76-4.24L13 11h7V4l-2.35 2.35z"/>'
+      };
+      function ico(name, extraCls = '') {
+        const p = SVG_PATHS[name] || '';
+        return `<svg class="ico ${extraCls}" viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
+      }
+
+      const BIOME_ACCENTS = {
+        1: '#22c55e',
+        2: '#a855f7',
+        3: '#06b6d4',
+        4: '#facc15',
+        5: '#f97316',
+        6: '#38bdf8'
+      };
+      const STAGE_PAR_TIMES = { 1: 75, 2: 90, 3: 95, 4: 95, 5: 105, 6: 115 };
+
+      function formatTime(sec) {
+        const s = Math.max(0, Number(sec) || 0);
+        const mins = Math.floor(s / 60);
+        const rem = s % 60;
+        const whole = Math.floor(rem);
+        const tenths = Math.floor((rem - whole) * 10);
+        return `${String(mins).padStart(2, '0')}:${String(whole).padStart(2, '0')}.${tenths}`;
+      }
+
+      /* =========================================================================
        * 1. BILINGUAL LOCALIZATION (DEFAULT ENGLISH IN DOM + INSTANT RU SWITCH)
        * ========================================================================= */
       const I18N = {
         en: {
           title: 'PIXEL VOLT ADVENTURE',
           sub: 'Dash, Jump & Stomp through 6 Cyber Worlds!',
-          playBtn: (lvl) => `▶ PLAY WORLD 1-${lvl}`,
+          playBtn: (lvl) => `PLAY WORLD 1-${lvl}`,
           loading: 'LOADING…',
           adLoading: 'Loading…',
           adUnavailable: 'Unavailable right now.',
           secretTools: 'Test secret worlds',
           secretWorlds: ['Emerald Grotto', 'Amethyst Crystal Caverns', 'Sunken Atlantis', 'Solar Cyber Foundry', 'Volcanic Magma Chamber', 'Quantum Hyper-Grid'],
-          returnStageBtn: (lvl) => `↩ RETURN TO WORLD 1-${lvl}`,
-          boostBtn: '⚡ SUPER START (3 HEARTS + FIRE 🔥)',
-          boostArmed: '✅ SUPER START READY!',
+          returnStageBtn: (lvl) => `RETURN TO WORLD 1-${lvl}`,
+          boostBtn: 'SUPER START (3 HEARTS + FIRE)',
+          boostArmed: 'SUPER START READY!',
           world: (lvl) => `WORLD 1-${lvl}`,
-          padBtn: '🎮 PAD',
-          heroes: { vg: 'Volt Runner ⚡ Agile', nf: 'Neon Acrobat 🟢 Jump+', md: 'Titan Core 🛡️ Heavy', pm: 'Quantum Dash 💨 Speed+' },
+          padBtn: 'PAD',
+          heroes: { vg: 'Volt Runner · Agile', nf: 'Neon Acrobat · Jump+', md: 'Titan Core · Heavy', pm: 'Quantum Dash · Speed+' },
           touch: { left: 'LEFT', right: 'RIGHT', down: 'SLAM', dash: 'DASH', fire: 'FIRE', jump: 'JUMP' },
           bossName: (isEnraged, st) => {
             const names = {
@@ -1089,35 +1460,36 @@
           popStarFound: '⭐ SECRET STAR FOUND! +500',
           popSecretEnter: '🕳️ SECRET VAULT ENTERED!',
           popSecretExit: '🚀 SECRET EXIT!',
-          vicRibbon: 'STAGE COMPLETE! 🏆🚩',
+          vicRibbon: 'STAGE COMPLETE!',
           vicTitle: (lvl) => `WORLD 1-${lvl} CLEARED!`,
+          sTime: 'Clear Time:',
           sFruits: 'Batteries Collected:',
           sStars: 'Secret Stars Found:',
           sEnemies: 'Enemies Defeated:',
           sTrophy: 'Golden Trophy Bonus:',
           sTotal: 'Total Score:',
-          nextBtn: (lvl) => `▶ NEXT: WORLD 1-${lvl}`,
-          vicLabBtn: '🔬 TECH LAB / MENU',
-          doubleBtn: '⚡ DOUBLE BATTERIES x2',
+          nextBtn: (lvl) => `NEXT: WORLD 1-${lvl}`,
+          vicLabBtn: 'TECH LAB / MENU',
+          doubleBtn: 'DOUBLE BATTERIES x2',
           pauseTitle: 'PAUSED',
-          resume: '▶ RESUME',
-          restart: '↻ RESTART STAGE',
-          menu: '🏠 MAIN MENU',
-          resetSave: '🗑️ RESET PROGRESS',
-          resetConfirm: '⚠️ CONFIRM RESET? (CLICK AGAIN)',
+          resume: 'RESUME',
+          restart: 'RESTART STAGE',
+          menu: 'MAIN MENU',
+          resetSave: 'RESET PROGRESS',
+          resetConfirm: 'CONFIRM RESET? (CLICK AGAIN)',
           hudMenu: 'MENU',
           overRibbon: 'OUT OF HEARTS',
           overTitle: 'TRY AGAIN!',
           overSub: 'Retry from your last checkpoint, or start over if you haven’t reached one yet.',
-          revive: '⚡ REVIVE HERE (3 HEARTS + FIRE 🔥)',
-          retryCheck: '↻ FROM CHECKPOINT',
-          shopTitle: '🔬 CYBER TECH LAB (SPEND 🔋 FOR PERMANENT UPGRADES)',
-          shopOwned: '✅ ACTIVE',
+          revive: 'REVIVE HERE (3 HEARTS + FIRE)',
+          retryCheck: 'FROM CHECKPOINT',
+          shopTitle: 'CYBER TECH LAB (UPGRADES LV.1-3)',
+          shopOwned: 'MAXED',
           shopItems: [
-            { key: 'maxHp', label: '❤️ +1 Max Shield', cost: 80 },
-            { key: 'magnet', label: '🧲 Battery Magnet', cost: 140 },
-            { key: 'startDrone', label: '🤖 Starter Drone', cost: 220 },
-            { key: 'startFire', label: '🔥 Starter Plasma', cost: 320 }
+            { key: 'maxHp', icon: 'heart', label: '+1 Max Shield', costs: [80, 160, 260], desc: ['+1 HP', '+2 HP', '+2 HP & +Invuln'] },
+            { key: 'magnet', icon: 'bolt', label: 'Battery Magnet', costs: [140, 220, 320], desc: ['120px Pull', '185px Pull', '250px & +20% Pts'] },
+            { key: 'startDrone', icon: 'drone', label: 'Starter Drone', costs: [220, 320, 440], desc: ['Auto-Drone', 'Rapid Fire', 'Twin Pulse'] },
+            { key: 'startFire', icon: 'fire', label: 'Starter Plasma', costs: [320, 420, 560], desc: ['Plasma Start', 'Super Plasma', 'Fast Dash CD'] }
           ],
           stages: ['1-1 Emerald Hills', '1-2 Underground Mines', '1-3 Underwater Abyss', '1-4 Sky Islands', '1-5 Abandoned Ruins', '1-6 Cyber Citadel']
         }
@@ -1178,12 +1550,23 @@
         currentStage: 1,
         clearedStages: [],
         stageStars: { 1: [false,false,false], 2: [false,false,false], 3: [false,false,false], 4: [false,false,false], 5: [false,false,false], 6: [false,false,false] },
+        stageBestTime: {},
+        stageRank: {},
         upgrades: { maxHp: false, magnet: false, startDrone: false, startFire: false },
+        upgradeTiers: { maxHp: 0, magnet: 0, startDrone: 0, startFire: 0 },
         unlockedHeroes: { vg: true, nf: false, md: false, pm: false },
         achievements: {},
+        hardcoreMode: false,
+        hardcoreCleared: [],
         userChosenLang: false,
         lang: 'en'
       };
+
+      function getUpgradeTier(key) {
+        const t = save.upgradeTiers && typeof save.upgradeTiers[key] === 'number' ? save.upgradeTiers[key] : 0;
+        if (t > 0) return Math.min(3, Math.floor(t));
+        return save.upgrades && save.upgrades[key] ? 1 : 0;
+      }
 
       function loadSave(restoreStage = true) {
         const raw = getSaved(SAVE_KEY);
@@ -1204,6 +1587,8 @@
           }
           if (Array.isArray(d.clearedStages)) save.clearedStages = d.clearedStages;
           if (d.stageStars && typeof d.stageStars === 'object') save.stageStars = Object.assign(save.stageStars, d.stageStars);
+          if (d.stageBestTime && typeof d.stageBestTime === 'object') save.stageBestTime = Object.assign({}, d.stageBestTime);
+          if (d.stageRank && typeof d.stageRank === 'object') save.stageRank = Object.assign({}, d.stageRank);
           if (d.upgrades && typeof d.upgrades === 'object') {
             save.upgrades = {
               maxHp: Boolean(d.upgrades.maxHp),
@@ -1212,6 +1597,13 @@
               startFire: Boolean(d.upgrades.startFire)
             };
           }
+          const tiers = d.upgradeTiers && typeof d.upgradeTiers === 'object' ? d.upgradeTiers : {};
+          save.upgradeTiers = {
+            maxHp: Math.max(save.upgrades.maxHp ? 1 : 0, Math.min(3, Number(tiers.maxHp) || 0)),
+            magnet: Math.max(save.upgrades.magnet ? 1 : 0, Math.min(3, Number(tiers.magnet) || 0)),
+            startDrone: Math.max(save.upgrades.startDrone ? 1 : 0, Math.min(3, Number(tiers.startDrone) || 0)),
+            startFire: Math.max(save.upgrades.startFire ? 1 : 0, Math.min(3, Number(tiers.startFire) || 0))
+          };
           if (d.unlockedHeroes && typeof d.unlockedHeroes === 'object') {
             save.unlockedHeroes = {
               vg: true,
@@ -1224,6 +1616,8 @@
           if (d.achievements && typeof d.achievements === 'object') {
             save.achievements = Object.assign({}, d.achievements);
           }
+          save.hardcoreMode = Boolean(d.hardcoreMode);
+          save.hardcoreCleared = Array.isArray(d.hardcoreCleared) ? d.hardcoreCleared.slice() : [];
           save.lang = 'en';
         } catch (e) {}
       }
@@ -1234,20 +1628,26 @@
       }
 
       function addScore(pts) {
-        runScore += pts;
-        save.totalScore += pts;
+        const mult = (getUpgradeTier('magnet') >= 3 ? 1.2 : 1) * (save.hardcoreMode ? 2 : 1);
+        const finalPts = Math.round(pts * mult);
+        runScore += finalPts;
+        save.totalScore += finalPts;
         if (save.totalScore > save.bestScore) save.bestScore = save.totalScore;
         updateHud();
         writeSave();
       }
 
       const ACHIEVEMENTS_META = {
-        first_slam: { reward: 25, en: '⚡ Thunder Slammer (Ground Slam)' },
-        dash_breaker: { reward: 30, en: '💨 Volt Breaker (Dash Smash)' },
-        air_combo_3: { reward: 35, en: '🔥 Air Acrobat (3x Air Combo)' },
-        ring_master: { reward: 40, en: '⭕ Ring Master (Energy Ring Trial)' },
-        boss_stunner: { reward: 45, en: '👾 Titan Breaker (Boss Stun)' },
-        flawless_clear: { reward: 60, en: '🛡️ Flawless Runner (Full HP Clear)' }
+        first_slam: { icon: 'bolt', reward: 25, en: 'Thunder Slammer (Ground Slam)' },
+        dash_breaker: { icon: 'bolt', reward: 30, en: 'Volt Breaker (Dash Smash)' },
+        air_combo_3: { icon: 'fire', reward: 35, en: 'Air Acrobat (3x Air Combo)' },
+        ring_master: { icon: 'star', reward: 40, en: 'Ring Master (Energy Ring Trial)' },
+        boss_stunner: { icon: 'shield', reward: 45, en: 'Titan Breaker (Boss Stun)' },
+        flawless_clear: { icon: 'heart', reward: 60, en: 'Flawless Runner (Full HP Clear)' },
+        speed_demon: { icon: 'timer', reward: 75, en: 'Speed Demon (First S-Rank)' },
+        star_hunter: { icon: 'star', reward: 80, en: 'Star Hunter (9+ Secret Stars)' },
+        tech_maxed: { icon: 'lab', reward: 90, en: 'Master Engineer (Max Lv.3 Tech)' },
+        campaign_hero: { icon: 'crown', reward: 150, en: 'Citadel Champion (All 6 Worlds)' }
       };
       let achToastTimer = null;
 
@@ -1264,8 +1664,7 @@
         sfx('powerup');
         const toastEl = document.getElementById('ach-toast');
         if (toastEl) {
-          const title = meta.en;
-          toastEl.textContent = `🏆 ${title} (+${meta.reward} 🔋)`;
+          toastEl.innerHTML = `${ico('trophy', 'ico-trophy')} ${meta.en} (+${meta.reward} ${ico('battery', 'ico-battery')})`;
           toastEl.classList.add('show');
           if (achToastTimer) clearTimeout(achToastTimer);
           achToastTimer = setTimeout(() => {
@@ -1585,7 +1984,7 @@
         const m = isMuted();
         const btn = document.getElementById('btn-mute');
         if (btn) {
-          btn.textContent = m ? '🔇' : '🔊';
+          btn.innerHTML = m ? ico('soundOff') : ico('soundOn');
           btn.setAttribute('aria-label', m ? 'Unmute sound' : 'Mute sound');
         }
         if (audioCtx) {
@@ -1772,8 +2171,9 @@
             osc.start(t);
             osc.stop(t + 0.12);
           } else if (type === 'fruit') {
-            // Crystalline polyphonic chime
-            const notes = [587.33, 739.99, 880.00];
+            // Crystalline polyphonic chime with ascending streak pitch!
+            const streakMult = Math.pow(1.06, Math.min(8, typeof batteryStreak === 'number' ? batteryStreak : 0));
+            const notes = [587.33 * streakMult, 739.99 * streakMult, 880.00 * streakMult];
             notes.forEach((f, idx) => {
               const o = a.createOscillator();
               const og = a.createGain();
@@ -1785,6 +2185,40 @@
               og.connect(a.destination);
               o.start(t + idx * 0.032);
               o.stop(t + idx * 0.032 + 0.19);
+            });
+          } else if (type === 'uiClick') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(620, t);
+            osc.frequency.exponentialRampToValueAtTime(920, t + 0.045);
+            g.gain.setValueAtTime(0.055, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.055);
+            osc.start(t);
+            osc.stop(t + 0.06);
+          } else if (type === 'bossIntro') {
+            playDrum('kick', t, a);
+            playDrum('kick', t + 0.18, a);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(146.83, t);
+            osc.frequency.setValueAtTime(138.59, t + 0.18);
+            osc.frequency.exponentialRampToValueAtTime(73.42, t + 0.65);
+            g.gain.setValueAtTime(0.16, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.68);
+            osc.start(t);
+            osc.stop(t + 0.7);
+          } else if (type === 'rankS') {
+            const notes = [587.33, 739.99, 880.00, 1174.66, 1479.98];
+            notes.forEach((f, idx) => {
+              const o = a.createOscillator();
+              const og = a.createGain();
+              o.type = 'triangle';
+              const sAt = t + idx * 0.07;
+              o.frequency.setValueAtTime(f, sAt);
+              og.gain.setValueAtTime(0.08, sAt);
+              og.gain.exponentialRampToValueAtTime(0.001, sAt + 0.32);
+              o.connect(og);
+              og.connect(a.destination);
+              o.start(sAt);
+              o.stop(sAt + 0.34);
             });
           } else if (type === 'stomp') {
             // Satisfying punch thud + crunch
@@ -1990,6 +2424,7 @@
 
       function showMidgameAd(onDone) {
         if (adPending || !canRequestReward()) { onDone(); return; }
+        setGameplay(false);
         const root = document.getElementById('game-root');
         adPending = true;
         root.inert = true;
@@ -2022,6 +2457,7 @@
 
       function showRewardedAd(onReward) {
         if (adPending || !canRequestReward()) return;
+        setGameplay(false);
         const root = document.getElementById('game-root');
         const status = document.getElementById('ad-status');
         clearTimeout(adStatusTimer);
@@ -2034,6 +2470,7 @@
         const finish = (watched) => {
           if (settled) return;
           settled = true;
+          clearTimeout(preStartTimer);
           adPending = false;
           adPlaying = false;
           root.inert = false;
@@ -2045,9 +2482,12 @@
           else adStatusTimer = setTimeout(() => { status.textContent = ''; }, 3500);
         };
 
+        // 4000ms fallback if adStarted never fires so root.inert never hangs
+        const preStartTimer = setTimeout(() => finish(false), 4000);
         try {
           window.CrazyGames.SDK.ad.requestAd('rewarded', {
             adStarted: () => {
+              clearTimeout(preStartTimer);
               if (settled) return;
               status.textContent = '';
               adPlaying = true;
@@ -2555,6 +2995,81 @@
       let screenShakeAmp = 0;
       let hitStop = 0;
       let bounceCombo = 0;
+      let runTime = 0;
+      let batteryStreak = 0;
+      let batteryStreakTimer = 0;
+      let bossIntroShown = false;
+      let bossIntroTimer = 0;
+      let camZoom = 1;
+      let menuAttractCamX = 0;
+      let ambientParticles = [];
+      let lastComboText = '';
+
+      function initAmbientParticles(st) {
+        ambientParticles = [];
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduced) return;
+        const count = 24;
+        for (let i = 0; i < count; i++) {
+          ambientParticles.push({
+            x: Math.random() * 1200,
+            y: Math.random() * VIRTUAL_H,
+            r: 1.5 + Math.random() * 2.8,
+            vx: (st === 4 ? -34 : (st === 6 ? 0 : (Math.random() - 0.5) * 22)),
+            vy: st === 3 ? -(18 + Math.random() * 26) : (st === 5 ? -(22 + Math.random() * 34) : (st === 6 ? (42 + Math.random() * 60) : (Math.random() - 0.5) * 14)),
+            phase: Math.random() * Math.PI * 2,
+            alpha: 0.35 + Math.random() * 0.5
+          });
+        }
+      }
+
+      function updateComboHud(forcePop = false) {
+        const el = document.getElementById('hud-combo');
+        if (!el) return;
+        const activeAir = bounceCombo >= 2;
+        const activeStreak = batteryStreak >= 3 && batteryStreakTimer > 0;
+        if (state !== 'playing' || (!activeAir && !activeStreak)) {
+          if (lastComboText !== '') {
+            lastComboText = '';
+            el.classList.remove('active', 'pop');
+          }
+          return;
+        }
+        const html = activeAir
+          ? `${ico('fire', 'ico-fire')} AIR COMBO ×${Math.min(8, Math.pow(2, bounceCombo - 1))}`
+          : `${ico('bolt', 'ico-bolt')} STREAK ×${batteryStreak}`;
+        if (html !== lastComboText) {
+          lastComboText = html;
+          el.innerHTML = html;
+        }
+        el.classList.add('active');
+        if (forcePop) {
+          el.classList.remove('pop');
+          void el.offsetWidth;
+          el.classList.add('pop');
+        }
+      }
+
+      function triggerBossIntro(stageNum) {
+        if (bossIntroShown) return;
+        bossIntroShown = true;
+        bossIntroTimer = 1.45;
+        camZoom = 1.045;
+        sfx('bossIntro');
+        triggerScreenShake(7, 0.28);
+        const el = document.getElementById('boss-intro');
+        const nameEl = document.getElementById('boss-intro-name');
+        if (el && nameEl) {
+          nameEl.textContent = I18N[lang].bossName(false, stageNum);
+          el.classList.add('show');
+        }
+      }
+
+      function hideBossIntro() {
+        bossIntroTimer = 0;
+        const el = document.getElementById('boss-intro');
+        if (el) el.classList.remove('show');
+      }
       let overchargeGauge = 0;   // 0..10 batteries
       let turboTimer = 0;        // Overcharge turbo mode timer   // { x, y, w, h, animTimer }
       let stalactites = [];   // { col, x, y, startY, w: 24, h: 44, vy: 0, state: 'idle'|'shake'|'falling'|'broken', shakeTimer: 0 }
@@ -4453,10 +4968,14 @@
 
       function spawnHero(retrying) {
         const upg = save.upgrades || {};
+        const hpTier = getUpgradeTier('maxHp');
+        const fireTier = getUpgradeTier('startFire');
+        const droneTier = getUpgradeTier('startDrone');
         const isMaskTitan = (save.heroId || 'vg') === 'md';
-        const baseMaxHp = 2 + (upg.maxHp ? 1 : 0) + (isMaskTitan ? 1 : 0);
-        if (superStartArmed) {
-          hero.maxHp = Math.min(4, Math.max(3, baseMaxHp + 1));
+        const hpBonus = hpTier >= 2 ? 2 : (hpTier >= 1 ? 1 : 0);
+        const baseMaxHp = save.hardcoreMode ? 1 : (2 + hpBonus + (isMaskTitan ? 1 : 0));
+        if (superStartArmed && !save.hardcoreMode) {
+          hero.maxHp = Math.min(5, Math.max(3, baseMaxHp + 1));
           hero.hp = hero.maxHp;
           hero.hasFire = true;
           hero.superFire = true;
@@ -4465,14 +4984,15 @@
         } else if (!retrying) {
           hero.maxHp = baseMaxHp;
           hero.hp = baseMaxHp;
-          hero.hasFire = Boolean(upg.startFire);
-          hero.superFire = false;
-          hero.hasDrone = Boolean(upg.startDrone);
+          hero.hasFire = Boolean(upg.startFire || fireTier >= 1);
+          hero.superFire = fireTier >= 2;
+          hero.hasDrone = Boolean(upg.startDrone || droneTier >= 1);
         } else {
-          hero.maxHp = Math.max(hero.maxHp || baseMaxHp, baseMaxHp);
-          hero.hp = Math.max(baseMaxHp, hero.hp);
-          if (upg.startFire) hero.hasFire = true;
-          if (upg.startDrone) hero.hasDrone = true;
+          hero.maxHp = save.hardcoreMode ? 1 : Math.max(hero.maxHp || baseMaxHp, baseMaxHp);
+          hero.hp = save.hardcoreMode ? 1 : Math.max(baseMaxHp, hero.hp);
+          if (upg.startFire || fireTier >= 1) hero.hasFire = true;
+          if (fireTier >= 2) hero.superFire = true;
+          if (upg.startDrone || droneTier >= 1) hero.hasDrone = true;
         }
 
         hero.x = retrying && checkpoint?.stage === currentStage ? checkpoint.x : 2.5 * TILE;
@@ -4899,6 +5419,37 @@
 
       function update(dt) {
         clock += dt;
+        if (state === 'playing') {
+          runTime += dt;
+          updateTimerHud();
+        }
+        if (batteryStreakTimer > 0) {
+          batteryStreakTimer -= dt;
+          if (batteryStreakTimer <= 0) {
+            batteryStreak = 0;
+            updateComboHud();
+          }
+        }
+        if (bossIntroTimer > 0) {
+          bossIntroTimer -= dt;
+          if (bossIntroTimer <= 0) hideBossIntro();
+        }
+        if (Math.abs(camZoom - 1) > 0.0005) {
+          camZoom += (1 - camZoom) * Math.min(1, 5.5 * dt);
+        } else {
+          camZoom = 1;
+        }
+        const ambVw = canvas.width / (scale || 1);
+        for (let i = 0; i < ambientParticles.length; i++) {
+          const p = ambientParticles[i];
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.phase += dt * 2.5;
+          if (p.x < -20) p.x = ambVw + 20;
+          if (p.x > ambVw + 20) p.x = -20;
+          if (p.y < -20) p.y = VIRTUAL_H + 20;
+          if (p.y > VIRTUAL_H + 20) p.y = -20;
+        }
         updatePlayHint();
 
         // Micro-Freeze (HitStop) on heavy combat impacts for punchy arcade weight
@@ -5696,10 +6247,12 @@
           }
         });
 
-        // Synergistic battery pull: Helper Drone (72px) + Magnet Upgrade (105px) stack into Super-Magnet (150px)!
-        if (hero.hasDrone || save.upgrades?.magnet) {
-          const pullRadius = (hero.hasDrone && save.upgrades?.magnet) ? 150 : (save.upgrades?.magnet ? 105 : 72);
-          const pullSpeed = (hero.hasDrone && save.upgrades?.magnet) ? 310 : (save.upgrades?.magnet ? 235 : 185);
+        // Synergistic battery pull: Helper Drone + Multi-Tier Magnet Upgrade (Lv.1-3)
+        const magnetTier = getUpgradeTier('magnet');
+        if (hero.hasDrone || magnetTier > 0) {
+          const baseMagnet = magnetTier >= 3 ? 250 : (magnetTier === 2 ? 185 : (magnetTier === 1 ? 120 : 0));
+          const pullRadius = baseMagnet > 0 ? baseMagnet + (hero.hasDrone ? 35 : 0) : 72;
+          const pullSpeed = baseMagnet > 0 ? (220 + magnetTier * 55 + (hero.hasDrone ? 45 : 0)) : 185;
           fruits.forEach((f) => {
             if (f.collected) return;
             const dx = (hero.x + hero.w / 2) - (f.x + 18);
@@ -5755,13 +6308,16 @@
           dashRequested = false;
           if (hero.dashCd <= 0 && hero.dashTimer <= 0 && !pipeAnim.active) {
             const isMaskTitan = (save.heroId || 'vg') === 'md';
+            const plasmaTier = getUpgradeTier('startFire');
             hero.dashTimer = isMaskTitan ? 0.22 : 0.18;
-            hero.dashCd = isMaskTitan ? 0.9 : 1.4;
+            hero.dashCd = (isMaskTitan ? 0.9 : 1.4) * (plasmaTier >= 3 ? 0.72 : 1);
             hero.groundSlam = false;
+            hero.squashX = 1.32;
+            hero.squashY = 0.78;
             hero.vx = hero.dir * (isMaskTitan ? 670 : 620);
             if (currentStage !== 3 && hero.vy > 0) hero.vy = 0;
-            sfx('jump');
-            addPopup(hero.x, hero.y - 14, '⚡ VOLT DASH!', '#38bdf8');
+            sfx('dash');
+            addPopup(hero.x, hero.y - 14, 'VOLT DASH!', '#38bdf8');
           }
         }
 
@@ -5926,7 +6482,10 @@
           if (Math.hypot((hero.x + hero.w / 2) - (f.x + 18), (hero.y + hero.h / 2) - (f.y + 18)) < 29) {
             f.collected = true;
             f.popTimer = 0.30;
-            const batVal = f.bonusVal || ((f.kind === 'cherry' || f.kind === 'melon') ? 2 : 1);
+            const baseBat = f.bonusVal || ((f.kind === 'cherry' || f.kind === 'melon') ? 2 : 1);
+            const batVal = baseBat * (save.hardcoreMode ? 2 : 1);
+            batteryStreak = Math.min(20, batteryStreak + 1);
+            batteryStreakTimer = 1.25;
             runFruits += batVal;
             save.fruits += batVal;
             addScore(100 * batVal);
@@ -5935,8 +6494,9 @@
               overchargeGauge = 0;
             }
             sfx('fruit');
+            updateComboHud(true);
             const popColor = batVal >= 3 ? '#facc15' : (batVal === 2 ? '#f472b6' : '#38bdf8');
-            addPopup(f.x, f.y - 12, `+${100 * batVal} 🔋${batVal > 1 ? '×' + batVal : ''}`, popColor);
+            addPopup(f.x, f.y - 12, `+${100 * batVal}${batVal > 1 ? ' ×' + batVal : ''}`, popColor);
             updateHud();
           }
         });
@@ -6244,6 +6804,9 @@
           if (!Number.isFinite(boss.jumpCd)) boss.jumpCd = 1.8;
 
           if (Math.abs(hero.x - boss.x) < 780) {
+            if (!bossIntroShown && state === 'playing' && !inSecretRoom) {
+              triggerBossIntro(boss.stageNum);
+            }
             bossBanner.style.display = 'block';
             const nameEl = document.getElementById('boss-name');
             const hpEl = document.getElementById('boss-hp-txt');
@@ -7265,6 +7828,11 @@
           screenShakeTime -= (1/60);
           shakeX = (Math.random() - 0.5) * screenShakeAmp;
           shakeY = (Math.random() - 0.5) * screenShakeAmp;
+        }
+        if (Math.abs(camZoom - 1) > 0.001 && (state === 'playing' || state === 'celebrating')) {
+          ctx.translate(vw / 2, VIRTUAL_H / 2);
+          ctx.scale(camZoom, camZoom);
+          ctx.translate(-vw / 2, -VIRTUAL_H / 2);
         }
         ctx.translate(-Math.floor(camX) + Math.round(shakeX), Math.round(shakeY));
 
@@ -9220,43 +9788,138 @@
         });
 
         ctx.restore();
+
+        // 14. Screen-space Biome Ambient Particles (fireflies, crystals, bubbles, clouds, embers, cyber data)
+        if (ambientParticles.length > 0 && !inSecretRoom) {
+          ctx.save();
+          ctx.scale(scale, scale);
+          for (let i = 0; i < ambientParticles.length; i++) {
+            const p = ambientParticles[i];
+            const tw = 0.65 + 0.35 * Math.sin(p.phase);
+            ctx.globalAlpha = p.alpha * tw;
+            if (currentStage === 1) {
+              ctx.fillStyle = '#fef08a';
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+              ctx.fill();
+            } else if (currentStage === 2) {
+              ctx.fillStyle = i % 2 === 0 ? '#c084fc' : '#67e8f9';
+              ctx.fillRect(p.x, p.y, p.r * 1.4, p.r * 1.4);
+            } else if (currentStage === 3) {
+              ctx.strokeStyle = '#bae6fd';
+              ctx.lineWidth = 1.2;
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.r + 1, 0, Math.PI * 2);
+              ctx.stroke();
+            } else if (currentStage === 4) {
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(p.x, p.y, p.r * 3.2, p.r * 1.1);
+            } else if (currentStage === 5) {
+              ctx.fillStyle = i % 2 === 0 ? '#fb923c' : '#fde047';
+              ctx.fillRect(p.x, p.y, p.r * 1.3, p.r * 1.3);
+            } else {
+              ctx.fillStyle = i % 2 === 0 ? '#38bdf8' : '#22d3ee';
+              ctx.fillRect(p.x, p.y, 1.8, p.r * 4.5);
+            }
+          }
+          ctx.restore();
+        }
       }
 
       /* =========================================================================
-       * 10. UI FLOW, HERO PICKER, STAGE SELECT & VICTORY MODAL
+       * 10. UI FLOW, HERO PICKER, STAGE SELECT, TECH LAB, TROPHIES & VICTORY MODAL
        * ========================================================================= */
       const batteryHud = document.getElementById('hud-fruits');
+      const timerHud = document.getElementById('hud-timer');
+      let lastTimerText = '';
+
+      function updateTimerHud() {
+        if (!timerHud) return;
+        const txt = formatTime(runTime);
+        if (txt !== lastTimerText) {
+          lastTimerText = txt;
+          timerHud.innerHTML = `${ico('timer', 'ico-timer')} ${txt}`;
+        }
+      }
 
       function updateBatteryHud() {
-        const text = turboTimer > 0
-          ? `⚡ ${'TURBO'} ${turboTimer.toFixed(1)}${'s'}`
-          : `🔋 ${save.fruits}`;
-        if (batteryHud.textContent !== text) batteryHud.textContent = text;
+        const html = turboTimer > 0
+          ? `${ico('bolt', 'ico-bolt')} TURBO ${turboTimer.toFixed(1)}s`
+          : `${ico('battery', 'ico-battery')} ${save.fruits}`;
+        if (batteryHud.dataset.lastHtml !== html) {
+          batteryHud.dataset.lastHtml = html;
+          batteryHud.innerHTML = html;
+        }
       }
 
       function updateHud() {
-        const heartsStr = '❤️'.repeat(Math.max(0, hero.hp)) + (hero.hasFire ? ' 🔥' : '') + (hero.hasDrone ? ' 🤖' : '');
-        document.getElementById('hud-hp').textContent = `${heartsStr} ${Math.max(0, hero.hp)}/${hero.maxHp}`;
+        const hpEl = document.getElementById('hud-hp');
+        if (hpEl) {
+          const filled = Math.max(0, hero.hp);
+          const empty = Math.max(0, (hero.maxHp || 2) - filled);
+          let hHtml = ico('heart', 'ico-heart').repeat(filled) + ico('heart', 'ico-heart-empty').repeat(empty);
+          if (hero.hasFire) hHtml += ' ' + ico('fire', 'ico-fire');
+          if (hero.hasDrone) hHtml += ' ' + ico('drone', 'ico-drone');
+          hHtml += ` ${filled}/${hero.maxHp}`;
+          if (hpEl.dataset.lastHtml !== hHtml) {
+            hpEl.dataset.lastHtml = hHtml;
+            hpEl.innerHTML = hHtml;
+          }
+          hpEl.classList.toggle('hardcore-pill', Boolean(save.hardcoreMode));
+        }
         updateBatteryHud();
+        updateTimerHud();
         const scoreEl = document.getElementById('hud-score');
-        if (scoreEl) scoreEl.textContent = `🏆 ${runScore}`;
-        document.getElementById('hud-stage').textContent = I18N[lang].world(currentStage);
+        if (scoreEl) {
+          const sHtml = `${ico('trophy', 'ico-trophy')} ${runScore}`;
+          if (scoreEl.dataset.lastHtml !== sHtml) {
+            scoreEl.dataset.lastHtml = sHtml;
+            scoreEl.innerHTML = sHtml;
+          }
+        }
+        const stageEl = document.getElementById('hud-stage');
+        if (stageEl) {
+          const stTxt = save.hardcoreMode ? `${I18N[lang].world(currentStage)} · HC` : I18N[lang].world(currentStage);
+          if (stageEl.textContent !== stTxt) stageEl.textContent = stTxt;
+        }
         const starCount = runStarsCollected.filter(Boolean).length;
         const starEl = document.getElementById('hud-stars');
-        if (starEl) starEl.textContent = `⭐ ${starCount}/3`;
+        if (starEl) {
+          const stHtml = `${ico('star', 'ico-star')} ${starCount}/3`;
+          if (starEl.dataset.lastHtml !== stHtml) {
+            starEl.dataset.lastHtml = stHtml;
+            starEl.innerHTML = stHtml;
+          }
+        }
       }
 
+      const UPGRADE_TIER_COSTS = {
+        maxHp: [80, 160, 260],
+        magnet: [140, 220, 320],
+        startDrone: [220, 320, 440],
+        startFire: [320, 420, 560]
+      };
       const UPGRADE_COSTS = { maxHp: 80, magnet: 140, startDrone: 220, startFire: 320 };
       const HERO_COSTS = { vg: 0, nf: 100, md: 180, pm: 260 };
 
       function syncHeroUpgradeLoadout() {
         const upg = save.upgrades || {};
+        const hpTier = getUpgradeTier('maxHp');
         const isMaskTitan = (save.heroId || 'vg') === 'md';
-        const targetMax = 2 + (upg.maxHp ? 1 : 0) + (isMaskTitan ? 1 : 0);
-        hero.maxHp = Math.max(hero.maxHp || targetMax, targetMax);
-        if (state === 'menu') hero.hp = hero.maxHp;
-        if (upg.startDrone) hero.hasDrone = true;
-        if (upg.startFire) hero.hasFire = true;
+        if (save.hardcoreMode) {
+          hero.maxHp = 1;
+          hero.hp = Math.min(hero.hp || 1, 1);
+        } else {
+          const hpBonus = hpTier >= 2 ? 2 : (hpTier >= 1 ? 1 : 0);
+          const targetMax = 2 + hpBonus + (isMaskTitan ? 1 : 0);
+          hero.maxHp = Math.max(hero.maxHp || targetMax, targetMax);
+          if (state === 'menu') hero.hp = hero.maxHp;
+        }
+        if (upg.startDrone || getUpgradeTier('startDrone') >= 1) hero.hasDrone = true;
+        if (upg.startFire || getUpgradeTier('startFire') >= 1) {
+          hero.hasFire = true;
+          if (getUpgradeTier('startFire') >= 2) hero.superFire = true;
+        }
       }
 
       function selectOrUnlockHero(hid) {
@@ -9266,7 +9929,7 @@
           save.heroId = hid;
           syncHeroUpgradeLoadout();
           writeSave();
-          sfx('fruit');
+          sfx('uiClick');
           applyTexts();
           return true;
         }
@@ -9287,22 +9950,28 @@
 
       function buyUpgrade(key) {
         if (!save.upgrades) save.upgrades = { maxHp: false, magnet: false, startDrone: false, startFire: false };
-        const cost = UPGRADE_COSTS[key];
-        if (!cost) return false;
-        if (save.upgrades[key]) {
-          sfx('fruit');
+        if (!save.upgradeTiers) save.upgradeTiers = { maxHp: 0, magnet: 0, startDrone: 0, startFire: 0 };
+        const tierCosts = UPGRADE_TIER_COSTS[key];
+        if (!tierCosts) return false;
+        const curTier = getUpgradeTier(key);
+        if (curTier >= 3) {
+          sfx('uiClick');
           return true;
         }
+        const cost = tierCosts[curTier];
         if (save.fruits < cost) {
           sfx('hurt');
           return false;
         }
         save.fruits -= cost;
+        const nextTier = curTier + 1;
+        save.upgradeTiers[key] = nextTier;
         save.upgrades[key] = true;
         syncHeroUpgradeLoadout();
-        if (key === 'maxHp') {
+        if (key === 'maxHp' && !save.hardcoreMode) {
           hero.hp = hero.maxHp;
         }
+        if (nextTier >= 3) unlockAchievement('tech_maxed');
         writeSave();
         sfx('powerup');
         applyTexts();
@@ -9315,26 +9984,54 @@
         const grid = document.getElementById('shop-buttons');
         if (!grid) return;
         const t = I18N[lang];
-        if (titleEl) titleEl.textContent = t.shopTitle;
-        if (bankEl) bankEl.textContent = `🔋 ${save.fruits}`;
+        if (titleEl) titleEl.innerHTML = `${ico('lab', 'ico-bolt')} ${t.shopTitle}`;
+        if (bankEl) bankEl.innerHTML = `${ico('battery', 'ico-battery')} ${save.fruits}`;
         grid.innerHTML = '';
         (t.shopItems || []).forEach((item) => {
-          const owned = Boolean(save.upgrades && save.upgrades[item.key]);
+          const tier = getUpgradeTier(item.key);
+          const maxed = tier >= 3;
+          const nextCost = maxed ? 0 : item.costs[tier];
           const btn = document.createElement('button');
           btn.type = 'button';
-          btn.className = 'shop-btn' + (owned ? ' owned' : '');
+          btn.className = 'shop-btn' + (tier >= 1 ? ' owned' : '');
           btn.dataset.upgrade = item.key;
-          const nameSpan = document.createElement('span');
-          nameSpan.textContent = item.label;
-          const costSmall = document.createElement('small');
-          costSmall.textContent = owned ? t.shopOwned : `🔋 ${item.cost}`;
-          btn.appendChild(nameSpan);
-          btn.appendChild(costSmall);
+          const descText = maxed ? item.desc[2] : item.desc[tier];
+          const pipsHtml = [1, 2, 3].map((lvl) => `<span class="tier-pip${tier >= lvl ? ' filled' : ''}"></span>`).join('');
+          btn.innerHTML =
+            `<span>${ico(item.icon || 'bolt', item.icon === 'heart' ? 'ico-heart' : (item.icon === 'fire' ? 'ico-fire' : 'ico-drone'))} ${item.label} <em style="font-style:normal;opacity:0.78;font-size:10px;">Lv.${tier}/3</em></span>` +
+            `<span class="tier-pips">${pipsHtml}</span>` +
+            `<small>${maxed ? `${ico('check', 'ico-check')} ${t.shopOwned}` : `${ico('battery', 'ico-battery')} ${nextCost} · ${descText}`}</small>`;
           btn.addEventListener('click', () => {
             buyUpgrade(item.key);
           });
           grid.appendChild(btn);
         });
+      }
+
+      function renderTrophies() {
+        const grid = document.getElementById('trophy-grid');
+        const countEl = document.getElementById('txt-trophies-count');
+        const titleEl = document.getElementById('txt-trophies-title');
+        if (!grid) return;
+        if (titleEl) titleEl.innerHTML = `${ico('trophy', 'ico-trophy')} TROPHIES &amp; MEDALS`;
+        const ids = Object.keys(ACHIEVEMENTS_META);
+        let unlockedCount = 0;
+        grid.innerHTML = '';
+        ids.forEach((id) => {
+          const meta = ACHIEVEMENTS_META[id];
+          const unlocked = Boolean(save.achievements && save.achievements[id]);
+          if (unlocked) unlockedCount++;
+          const card = document.createElement('div');
+          card.className = 'trophy-card' + (unlocked ? ' unlocked' : '');
+          card.innerHTML =
+            `${ico(unlocked ? (meta.icon || 'trophy') : 'lock', unlocked ? 'ico-lg ico-trophy' : 'ico-lg ico-lock')}` +
+            `<div class="trophy-card-info">` +
+              `<span class="trophy-card-title">${meta.en}</span>` +
+              `<span class="trophy-card-sub">${unlocked ? `${ico('check', 'ico-check')} UNLOCKED` : `REWARD +${meta.reward} ${ico('battery', 'ico-battery')}`}</span>` +
+            `</div>`;
+          grid.appendChild(card);
+        });
+        if (countEl) countEl.innerHTML = `${ico('trophy', 'ico-trophy')} ${unlockedCount}/${ids.length}`;
       }
 
       function renderStageButtons() {
@@ -9349,10 +10046,23 @@
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.disabled = !isUnlocked;
+          btn.style.setProperty('--biome-accent', BIOME_ACCENTS[stNum] || '#38bdf8');
           btn.className = 'stage-btn' + (currentStage === stNum ? ' active' : '') + (!isUnlocked ? ' locked' : '');
           const stStars = (save.stageStars && save.stageStars[stNum]) ? save.stageStars[stNum].filter(Boolean).length : 0;
-          const starBadge = stStars > 0 ? ` (${stStars}/3⭐)` : '';
-          btn.textContent = isUnlocked ? `${label}${starBadge}` : `🔒 ${label}`;
+          const rank = save.stageRank && save.stageRank[stNum];
+          const bestT = save.stageBestTime && save.stageBestTime[stNum];
+          const hcDone = Array.isArray(save.hardcoreCleared) && save.hardcoreCleared.includes(stNum);
+          if (isUnlocked) {
+            const starsHtml = ico('star', 'ico-star').repeat(stStars) + ico('star', 'ico-star-empty').repeat(3 - stStars);
+            const rankHtml = rank ? `<span class="rank-badge rank-${rank}">${rank}</span>` : '';
+            const timeHtml = typeof bestT === 'number' ? `<span>${ico('timer', 'ico-timer')} ${formatTime(bestT)}</span>` : '';
+            const hcHtml = hcDone ? ico('crown', 'ico-crown') : '';
+            btn.innerHTML =
+              `<span class="stage-btn-top"><span>${label}</span><span style="display:inline-flex;align-items:center;gap:4px;">${hcHtml}${rankHtml}</span></span>` +
+              `<span class="stage-btn-meta"><span style="display:inline-flex;gap:1px;">${starsHtml}</span>${timeHtml}</span>`;
+          } else {
+            btn.innerHTML = `<span class="stage-btn-top"><span>${ico('lock', 'ico-lock')} ${label}</span></span>`;
+          }
           btn.addEventListener('click', () => {
             if (stNum > Math.max(1, save.unlockedStage || 1)) {
               sfx('hurt');
@@ -9360,6 +10070,13 @@
             }
             currentStage = stNum;
             stageSelectedDuringBoot = true;
+            if (state === 'menu') {
+              buildStage(currentStage);
+              spawnHero(false);
+              menuAttractCamX = 0;
+              initAmbientParticles(currentStage);
+            }
+            sfx('uiClick');
             applyTexts();
           });
           row.appendChild(btn);
@@ -9376,11 +10093,21 @@
 
       function applyTexts() {
         const t = I18N[lang];
-        document.getElementById('btn-pad').textContent = t.padBtn;
+        document.getElementById('btn-pad').innerHTML = `${ico('gamepad')} ${t.padBtn}`;
+        const pauseBtn = document.getElementById('btn-pause');
+        if (pauseBtn) pauseBtn.innerHTML = ico('pause');
+        const hudMenuBtn = document.getElementById('btn-hud-menu');
+        if (hudMenuBtn) hudMenuBtn.innerHTML = `${ico('menu')} <span id="lbl-hud-menu">${t.hudMenu}</span>`;
+        const progStart = document.getElementById('hud-prog-start');
+        if (progStart) progStart.innerHTML = ico('runner', 'ico-bolt');
+        const progEnd = document.getElementById('hud-prog-end');
+        if (progEnd) progEnd.innerHTML = ico('flag', 'ico-trophy');
+        syncMuteUI();
+
         document.getElementById('txt-title').textContent = t.title;
         document.getElementById('txt-sub').textContent = t.sub;
         const playBtn = document.getElementById('btn-play');
-        playBtn.textContent = gameReady ? t.playBtn(currentStage) : t.loading;
+        playBtn.innerHTML = gameReady ? `${ico('play')} ${t.playBtn(currentStage)}` : t.loading;
         playBtn.disabled = !gameReady;
         document.getElementById('menu-world').textContent = t.stages[currentStage - 1];
         const secretTools = document.getElementById('secret-world-tools');
@@ -9391,17 +10118,25 @@
         });
         const retBtn = document.getElementById('btn-return-stage');
         if (retBtn) {
-          retBtn.textContent = t.returnStageBtn(activeStageInProgress);
+          retBtn.innerHTML = `${ico('retry')} ${t.returnStageBtn(activeStageInProgress)}`;
           retBtn.classList.toggle('hidden', !canResumeCurrentStage);
         }
         const boostBtn = document.getElementById('btn-boost-start');
-        boostBtn.textContent = superStartArmed ? t.boostArmed : t.boostBtn;
+        boostBtn.innerHTML = superStartArmed ? `${ico('check', 'ico-check')} ${t.boostArmed}` : `${ico('bolt', 'ico-bolt')} ${t.boostBtn}`;
         boostBtn.hidden = !gameReady || !canRequestReward();
         boostBtn.disabled = superStartArmed;
         document.getElementById('txt-pause-title').textContent = t.pauseTitle;
-        document.getElementById('btn-resume').textContent = t.resume;
-        document.getElementById('btn-restart').textContent = t.restart;
-        document.getElementById('btn-menu').textContent = t.menu;
+        document.getElementById('btn-resume').innerHTML = `${ico('play')} ${t.resume}`;
+        document.getElementById('btn-restart').innerHTML = `${ico('retry')} ${t.restart}`;
+        document.getElementById('btn-menu').innerHTML = `${ico('menu')} ${t.menu}`;
+        const hcBtn = document.getElementById('btn-hardcore');
+        if (hcBtn) {
+          const on = Boolean(save.hardcoreMode);
+          hcBtn.innerHTML = `${ico('crown', on ? 'ico-crown' : '')} HARDCORE MODE: ${on ? 'ON (1 HP · ×2)' : 'OFF'}`;
+          hcBtn.setAttribute('aria-pressed', String(on));
+          hcBtn.style.borderColor = on ? '#f43f5e' : '';
+          hcBtn.style.background = on ? 'linear-gradient(180deg, #be123c 0%, #881337 100%)' : '';
+        }
         const resetBtn = document.getElementById('btn-reset-save');
         if (resetBtn) {
           resetBtn.textContent = resetConfirmArmed ? t.resetConfirm : t.resetSave;
@@ -9411,11 +10146,9 @@
         document.getElementById('txt-over-ribbon').textContent = t.overRibbon;
         document.getElementById('txt-over-title').textContent = t.overTitle;
         document.getElementById('txt-over-sub').textContent = t.overSub;
-        document.getElementById('btn-revive').textContent = t.revive;
-        document.getElementById('btn-retry').textContent = t.retryCheck;
-        document.getElementById('btn-over-menu').textContent = t.menu;
-        const hudMenuLbl = document.getElementById('lbl-hud-menu');
-        if (hudMenuLbl) hudMenuLbl.textContent = t.hudMenu;
+        document.getElementById('btn-revive').innerHTML = `${ico('bolt', 'ico-bolt')} ${t.revive}`;
+        document.getElementById('btn-retry').innerHTML = `${ico('retry')} ${t.retryCheck}`;
+        document.getElementById('btn-over-menu').innerHTML = `${ico('menu')} ${t.menu}`;
 
         // Localize Hero Picker Cards & Render Unlock Price / Selected Badges
         if (!save.unlockedHeroes) save.unlockedHeroes = { vg: true, nf: false, md: false, pm: false };
@@ -9438,9 +10171,9 @@
             card.appendChild(badge);
           }
           if (unlocked) {
-            badge.textContent = isSel ? ('✅ ACTIVE') : ('OWNED');
+            badge.innerHTML = isSel ? `${ico('check', 'ico-check')} ACTIVE` : 'OWNED';
           } else {
-            badge.textContent = `🔒 ${HERO_COSTS[hid]} 🔋`;
+            badge.innerHTML = `${ico('lock', 'ico-lock')} ${HERO_COSTS[hid]} ${ico('battery', 'ico-battery')}`;
           }
         });
         document.title = 'Pixel Volt Adventure — 16-Bit Action Platformer';
@@ -9467,6 +10200,7 @@
 
         renderShopButtons();
         renderStageButtons();
+        renderTrophies();
         updateHud();
       }
 
@@ -9497,9 +10231,14 @@
           5: [false, false, false],
           6: [false, false, false]
         };
+        save.stageBestTime = {};
+        save.stageRank = {};
         save.upgrades = { maxHp: false, magnet: false, startDrone: false, startFire: false };
+        save.upgradeTiers = { maxHp: 0, magnet: 0, startDrone: 0, startFire: 0 };
         save.unlockedHeroes = { vg: true, nf: false, md: false, pm: false };
         save.achievements = {};
+        save.hardcoreMode = false;
+        save.hardcoreCleared = [];
         currentStage = 1;
         canResumeCurrentStage = false;
         checkpoint = null;
@@ -9576,17 +10315,25 @@
         overchargeGauge = 0;
         hitStop = 0;
         screenShakeTime = 0;
+        camZoom = 1;
+        batteryStreak = 0;
+        batteryStreakTimer = 0;
+        bossIntroShown = false;
+        hideBossIntro();
+        updateComboHud();
         if (!retrying) {
           checkpoint = null;
           runFruits = 0;
           runKills = 0;
           runScore = 0;
+          runTime = 0;
           runStarsCollected = [false, false, false];
           reviveUsed = false;
         }
         canResumeCurrentStage = true;
         activeStageInProgress = currentStage;
         buildStage(currentStage);
+        initAmbientParticles(currentStage);
         for (const sw of cyberSwitches) {
           if (openedSwitches?.has(sw.switchId)) activateCyberSwitch(sw);
         }
@@ -9603,44 +10350,93 @@
         updateHud();
       }
 
+      function computeStageRank(stageNum, clearSec, starCount, flawless) {
+        const par = STAGE_PAR_TIMES[stageNum] || 95;
+        if ((clearSec <= par && starCount >= 2) || starCount >= 3 || (flawless && clearSec <= par * 1.2)) {
+          return 'S';
+        }
+        if (clearSec <= par * 1.35 || starCount >= 2) {
+          return 'A';
+        }
+        return 'B';
+      }
+
       function openVictoryModal() {
         state = 'victory';
         setGameplay(false);
-        if (hero.hp >= hero.maxHp) {
+        hideBossIntro();
+        updateComboHud();
+        const isFlawless = hero.hp >= hero.maxHp;
+        if (isFlawless) {
           unlockAchievement('flawless_clear');
         }
         save.unlockedStage = Math.max(save.unlockedStage, Math.min(6, currentStage + 1));
         save.bestScore = Math.max(save.bestScore, runScore);
         if (!save.clearedStages.includes(currentStage)) save.clearedStages.push(currentStage);
+        if (save.hardcoreMode) {
+          if (!Array.isArray(save.hardcoreCleared)) save.hardcoreCleared = [];
+          if (!save.hardcoreCleared.includes(currentStage)) save.hardcoreCleared.push(currentStage);
+        }
 
         if (!save.stageStars) save.stageStars = {};
         if (!save.stageStars[currentStage]) save.stageStars[currentStage] = [false, false, false];
         for (let i = 0; i < 3; i++) {
           if (runStarsCollected[i]) save.stageStars[currentStage][i] = true;
         }
-        writeSave();
 
         const starCount = runStarsCollected.filter(Boolean).length;
+        const rank = computeStageRank(currentStage, runTime, starCount, isFlawless);
+        const rankOrder = { B: 1, A: 2, S: 3 };
+        if (!save.stageRank) save.stageRank = {};
+        if (!save.stageRank[currentStage] || rankOrder[rank] > (rankOrder[save.stageRank[currentStage]] || 0)) {
+          save.stageRank[currentStage] = rank;
+        }
+        if (!save.stageBestTime) save.stageBestTime = {};
+        const prevBest = save.stageBestTime[currentStage];
+        const isNewRecord = runTime > 0 && (typeof prevBest !== 'number' || runTime < prevBest);
+        if (isNewRecord) save.stageBestTime[currentStage] = Number(runTime.toFixed(2));
+
+        // Meta-progression achievements
+        if (rank === 'S') {
+          unlockAchievement('speed_demon');
+          sfx('rankS');
+        }
+        const totalCampaignStars = [1, 2, 3, 4, 5, 6].reduce((total, st) => {
+          const arr = save.stageStars[st];
+          return total + (Array.isArray(arr) ? arr.filter(Boolean).length : 0);
+        }, 0);
+        if (totalCampaignStars >= 9) unlockAchievement('star_hunter');
+        if (save.clearedStages.length >= 6) unlockAchievement('campaign_hero');
+        writeSave();
+
         const t = I18N[lang];
         const campaignComplete = currentStage === 6 && save.clearedStages.length === 6;
         document.getElementById('modal-victory').classList.toggle('campaign-clear', campaignComplete);
         document.getElementById('txt-vic-ribbon').textContent = campaignComplete ? 'CAMPAIGN COMPLETE' : t.vicRibbon;
         document.getElementById('txt-vic-title').textContent = campaignComplete ? 'CITADEL CONQUERED' : t.vicTitle(currentStage);
         const starsDisp = document.getElementById('vic-stars-display');
-        if (starsDisp) starsDisp.textContent = '⭐'.repeat(starCount) + '☆'.repeat(3 - starCount);
+        if (starsDisp) {
+          starsDisp.innerHTML = ico('star', 'ico-xl ico-star').repeat(starCount) + ico('star', 'ico-xl ico-star-empty').repeat(3 - starCount);
+        }
+        const rankBadge = document.getElementById('vic-rank-badge');
+        if (rankBadge) {
+          rankBadge.textContent = rank;
+          rankBadge.className = `vic-rank-stamp rank-${rank}`;
+        }
+        const lblTime = document.getElementById('lbl-s-time');
+        if (lblTime) lblTime.textContent = t.sTime;
+        const valTime = document.getElementById('val-s-time');
+        if (valTime) {
+          valTime.innerHTML = `${ico('timer', 'ico-timer')} ${formatTime(runTime)}${isNewRecord ? '<span class="record-pill">NEW BEST</span>' : ''}`;
+        }
         const lblStars = document.getElementById('lbl-s-stars');
         if (lblStars) lblStars.textContent = t.sStars;
         const valStars = document.getElementById('val-s-stars');
-        const campaignStars = campaignComplete
-          ? t.stages.reduce((total, _, i) => {
-              const stars = save.stageStars[i + 1];
-              return total + (Array.isArray(stars) ? stars.filter(Boolean).length : 0);
-            }, 0)
-          : starCount;
-        if (valStars) valStars.textContent = campaignStars + '/' + (campaignComplete ? 18 : 3) + ' ⭐';
+        const campaignStars = campaignComplete ? totalCampaignStars : starCount;
+        if (valStars) valStars.innerHTML = `${campaignStars}/${campaignComplete ? 18 : 3} ${ico('star', 'ico-star')}`;
 
         document.getElementById('lbl-s-fruits').textContent = t.sFruits;
-        document.getElementById('val-s-fruits').textContent = `${runFruits} 🔋`;
+        document.getElementById('val-s-fruits').innerHTML = `${runFruits} ${ico('battery', 'ico-battery')}`;
         document.getElementById('lbl-s-enemies').textContent = t.sEnemies;
         document.getElementById('val-s-enemies').textContent = `${runKills}`;
         document.getElementById('lbl-s-trophy').textContent = t.sTrophy;
@@ -9648,11 +10444,11 @@
         document.getElementById('lbl-s-total').textContent = t.sTotal;
         document.getElementById('val-s-total').textContent = `${runScore} ${t.pts}`;
 
-        document.getElementById('btn-next').textContent = currentStage < 6 ? t.nextBtn(currentStage + 1) : t.menu;
+        document.getElementById('btn-next').innerHTML = currentStage < 6 ? `${ico('play')} ${t.nextBtn(currentStage + 1)}` : `${ico('menu')} ${t.menu}`;
         const vicMenuBtn = document.getElementById('btn-vic-menu');
-        if (vicMenuBtn) vicMenuBtn.textContent = t.vicLabBtn;
+        if (vicMenuBtn) vicMenuBtn.innerHTML = `${ico('lab')} ${t.vicLabBtn}`;
         const doubleBtn = document.getElementById('btn-double');
-        doubleBtn.textContent = t.doubleBtn;
+        doubleBtn.innerHTML = `${ico('bolt', 'ico-bolt')} ${t.doubleBtn}`;
         doubleBtn.hidden = !canRequestReward() || runFruits === 0;
         doubleBtn.disabled = false;
 
@@ -9755,6 +10551,13 @@
       document.getElementById('btn-resume').addEventListener('click', resumeGame);
       document.getElementById('btn-restart').addEventListener('click', () => startStage(false));
       document.getElementById('btn-reset-save')?.addEventListener('click', handleResetClick);
+      document.getElementById('btn-hardcore')?.addEventListener('click', () => {
+        save.hardcoreMode = !save.hardcoreMode;
+        syncHeroUpgradeLoadout();
+        writeSave();
+        sfx('uiClick');
+        applyTexts();
+      });
 
       function resumeFromMainMenu() {
         if (!canResumeCurrentStage) {
@@ -9836,8 +10639,26 @@
         }
 
         pollPhysicalGamepad(dt);
-        if (!document.hidden && !adPending && (state === 'playing' || state === 'celebrating')) {
-          update(dt);
+        if (!document.hidden && !adPending) {
+          if (state === 'playing' || state === 'celebrating') {
+            update(dt);
+          } else if (state === 'menu') {
+            clock += dt;
+            const maxPan = Math.max(0, 120 * TILE);
+            menuAttractCamX = (menuAttractCamX + 46 * dt) % (maxPan || 1);
+            camX = menuAttractCamX;
+            const vw = canvas.width / (scale || 1);
+            for (let i = 0; i < ambientParticles.length; i++) {
+              const p = ambientParticles[i];
+              p.x += p.vx * dt;
+              p.y += p.vy * dt;
+              p.phase += dt * 2.5;
+              if (p.x < -20) p.x = vw + 20;
+              if (p.x > vw + 20) p.x = -20;
+              if (p.y < -20) p.y = VIRTUAL_H + 20;
+              if (p.y > VIRTUAL_H + 20) p.y = -20;
+            }
+          }
         }
         render();
         requestAnimationFrame(loop);
@@ -9878,6 +10699,14 @@
         get runScore() { return runScore; },
         get runFruits() { return runFruits; },
         get runKills() { return runKills; },
+        get runTime() { return runTime; },
+        set runTime(v) { runTime = v; },
+        get menuAttractCamX() { return menuAttractCamX; },
+        get camZoom() { return camZoom; },
+        get bossIntroShown() { return bossIntroShown; },
+        getUpgradeTier: (k) => getUpgradeTier(k),
+        computeStageRank: (st, sec, stars, flawless) => computeStageRank(st, sec, stars, flawless),
+        showRewardedAd: (cb) => showRewardedAd(cb),
         get save() { return save; },
         get state() { return state; },
         get lang() { return lang; },
@@ -9954,6 +10783,7 @@
 
       Promise.all([bootSDK(), preloadAllImages()]).then(() => {
         buildStage(currentStage);
+        initAmbientParticles(currentStage);
         spawnHero(false);
         refreshFullscreenButton();
         refreshTouchUI();

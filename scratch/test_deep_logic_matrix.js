@@ -1676,6 +1676,76 @@ function getJson(url) {
     assertTest('Аудит QA', '6.16', 'Menu keyboard Enter fix, contextual play hints, Boss 5/6 arena decks & Campaign Complete victory',
       polishRes.ok, JSON.stringify(polishRes));
 
+    // 6.17 CrazyGames Premium Edition Regression:
+    // (1) Custom inline SVG icons in HUD pills (zero raw emojis in HUD)
+    // (2) Live menu attract camera advances while in main menu
+    // (3) Speedrun timer, S/A/B rank calculation, best time & rank persistence
+    // (4) Trophies tab gallery (10 achievements) & Multi-Tier Tech Lab (Lv.1 -> Lv.3)
+    // (5) Hardcore mode (1 HP + 2x score)
+    const premiumRes = await evalJs(`(async () => {
+      const g = window._voltGame;
+      g.returnToMainMenu();
+      g.resetSaveProgress();
+
+      // 1. SVG icons in HUD & no raw emojis
+      const hudIds = ['hud-hp', 'hud-fruits', 'hud-stars', 'hud-score', 'hud-timer'];
+      const svgHudOk = hudIds.every(id => {
+        const el = document.getElementById(id);
+        return el && el.querySelectorAll('svg.ico').length >= 1 && !/[❤️🔋⭐🏆🎮🔊🔇⏸🏠]/.test(el.textContent);
+      });
+
+      // 2. Live menu attract camera advances
+      const cam0 = g.menuAttractCamX;
+      await new Promise(r => setTimeout(r, 140));
+      const cam1 = g.menuAttractCamX;
+      const liveMenuOk = cam1 > cam0;
+
+      // 3. Trophies tab & 10 cards
+      const trophiesTab = document.querySelector('[data-menu-panel="trophies"]');
+      trophiesTab.click();
+      const trophyCards = document.querySelectorAll('#trophy-grid .trophy-card').length;
+      const trophiesTabOk = !document.getElementById('menu-trophies').hidden && trophyCards === 10;
+      trophiesTab.click();
+
+      // 4. Multi-tier Tech Lab Lv.1 -> Lv.3
+      g.save.fruits = 1200;
+      g.buyUpgrade('maxHp');
+      const t1 = g.getUpgradeTier('maxHp');
+      g.buyUpgrade('maxHp');
+      const t2 = g.getUpgradeTier('maxHp');
+      g.buyUpgrade('maxHp');
+      const t3 = g.getUpgradeTier('maxHp');
+      const tierLabOk = t1 === 1 && t2 === 2 && t3 === 3 && Boolean(g.save.upgrades.maxHp) && Boolean(g.save.achievements.tech_maxed);
+
+      // 5. Speedrun timer + S-rank + Best Time persistence
+      g.startStage(1);
+      g.stepUpdate(1 / 60);
+      const timerTicked = g.runTime > 0;
+      g.runTime = 42.5;
+      g.runStarsCollected[0] = true;
+      g.runStarsCollected[1] = true;
+      g.openVictoryModal();
+      const rankStamp = document.getElementById('vic-rank-badge')?.textContent;
+      const rankSaved = g.save.stageRank[1] === 'S' && g.save.stageBestTime[1] === 42.5 && Boolean(g.save.achievements.speed_demon);
+      const rankOk = timerTicked && rankStamp === 'S' && rankSaved;
+
+      // 6. Hardcore mode (1 HP max)
+      g.returnToMainMenu();
+      document.getElementById('btn-hardcore').click();
+      g.startStage(1);
+      const hardcoreOk = g.save.hardcoreMode === true && g.hero.maxHp === 1 && g.hero.hp === 1;
+
+      g.returnToMainMenu();
+      g.resetSaveProgress();
+
+      return {
+        ok: svgHudOk && liveMenuOk && trophiesTabOk && tierLabOk && rankOk && hardcoreOk,
+        svgHudOk, liveMenuOk, trophiesTabOk, trophyCards, tierLabOk, t1, t2, t3, rankOk, rankStamp, hardcoreOk
+      };
+    })()`);
+    assertTest('Premium Edition', '6.17', 'SVG HUD icons, Live Menu camera, Trophies tab, Multi-tier Tech Lab, Speedrun S-Rank & Hardcore Mode',
+      premiumRes.ok, JSON.stringify(premiumRes));
+
     await screenshot('deep_logic_audit_complete.png');
     console.log(`\nPassed ${results.length} game logic checks.`);
 
